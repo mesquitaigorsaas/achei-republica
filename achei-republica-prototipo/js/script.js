@@ -55,6 +55,61 @@ document.getElementById('limparFiltros').addEventListener('click', () => {
 });
 
 /* ---------------------------------------------------------------------
+   Cidade escolhida
+
+   Manda em tudo que vem abaixo: o título da vitrine, quais anúncios
+   aparecem, a contagem e o selo da primeira dobra. Hoje só Alfenas tem
+   anúncio; as outras caem no estado vazio, que é onde o pedido de
+   cadastro faz mais sentido — a falta de oferta está na cara de quem
+   está olhando naquele instante.
+   --------------------------------------------------------------------- */
+const selCidade = document.getElementById('selCidade');
+const nomeCidade = document.getElementById('nomeCidade');
+const nomeCidadeVazia = document.getElementById('nomeCidadeVazia');
+const barraConta = document.getElementById('barraConta');
+const vitrineVazia = document.getElementById('vitrineVazia');
+const chapeuDobra = document.querySelector('.heroi .chapeu');
+
+function trocarCidade() {
+    const slug = selCidade.value;
+    const nome = selCidade.options[selCidade.selectedIndex].textContent.trim();
+
+    const cartoes = [...document.querySelectorAll('.anuncio')];
+    const daCidade = cartoes.filter(c => c.dataset.cidade === slug);
+
+    cartoes.forEach(c => { c.hidden = c.dataset.cidade !== slug; });
+
+    nomeCidade.textContent = nome;
+    nomeCidadeVazia.textContent = nome;
+
+    const temAnuncio = daCidade.length > 0;
+    vitrineVazia.hidden = temAnuncio;
+    document.getElementById('vitrine').hidden = !temAnuncio;
+
+    // Sem anúncio não há o que ordenar nem filtrar: os controles somem
+    // junto, senão viram botão que promete resultado e não entrega.
+    document.querySelector('.fichas').hidden = !temAnuncio;
+    document.getElementById('abrirFiltros').hidden = !temAnuncio;
+    if (!temAnuncio) {
+        painelFiltros.classList.remove('aberto');
+        abrirFiltros.classList.remove('aberto');
+        abrirFiltros.setAttribute('aria-expanded', 'false');
+    }
+
+    barraConta.classList.toggle('vazia', !temAnuncio);
+    barraConta.innerHTML = temAnuncio
+        ? `<span class="bolinha"></span><b>${daCidade.length}</b>&nbsp;repúblicas com vaga aberta`
+        : `<span class="bolinha"></span>Nenhuma república cadastrada ainda`;
+
+    chapeuDobra.innerHTML = temAnuncio
+        ? `<span class="pisca"></span>${nome}, MG · no ar`
+        : `<span class="pisca"></span>${nome}, MG · em breve`;
+}
+
+selCidade.addEventListener('change', trocarCidade);
+trocarCidade();
+
+/* ---------------------------------------------------------------------
    Questionário e cálculo de compatibilidade
    --------------------------------------------------------------------- */
 const PERGUNTAS = [
@@ -306,7 +361,11 @@ const vitrine = document.getElementById('vitrine');
 const aviso = document.getElementById('resultadoAviso');
 
 function aplicarResultado() {
-    const cartoes = [...vitrine.querySelectorAll('.anuncio')];
+    // Só a cidade escolhida entra na conta: ordenar república de Lavras
+    // junto com as de Alfenas não faria sentido nenhum para quem está
+    // procurando em uma das duas.
+    const cartoes = [...vitrine.querySelectorAll('.anuncio')].filter(c => !c.hidden);
+    if (!cartoes.length) return;
 
     const pontuados = cartoes.map(cartao => ({ cartao, ...pontuar(cartao) }));
     pontuados.sort((a, b) => b.pontos - a.pontos);

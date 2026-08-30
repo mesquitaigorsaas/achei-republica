@@ -67,7 +67,7 @@
 
         <div class="heroi-prova">
           <div><b>30s</b>é o que leva</div>
-          <div><b>13</b>cidades no plano</div>
+          <div><b>14</b>cidades no plano</div>
           <div><b>0</b>taxa para o aluno</div>
         </div>
       </div>
@@ -101,6 +101,40 @@
 
       </div>
 
+    </div>
+  </div>
+</section>
+
+<!-- =====================================================================
+     SELETOR DE CIDADE
+
+     Fica entre a primeira dobra e o resto porque é a primeira decisão
+     que importa: tudo abaixo — título da vitrine, anúncios e contagem —
+     passa a falar da cidade escolhida aqui.
+     ===================================================================== -->
+<section class="barra-cidade" id="cidade">
+  <div class="wrap">
+    <div class="barra-caixa">
+      <div class="barra-campo">
+        <label for="selCidade">Estou procurando em</label>
+        <select id="selCidade">
+          <option value="alfenas" selected>Alfenas</option>
+          <option value="campos-gerais">Campos Gerais</option>
+          <option value="guaxupe">Guaxupé</option>
+          <option value="itajuba">Itajubá</option>
+          <option value="lavras">Lavras</option>
+          <option value="machado">Machado</option>
+          <option value="muzambinho">Muzambinho</option>
+          <option value="passos">Passos</option>
+          <option value="pocos-de-caldas">Poços de Caldas</option>
+          <option value="pouso-alegre">Pouso Alegre</option>
+          <option value="santa-rita-do-sapucai">Santa Rita do Sapucaí</option>
+          <option value="sao-sebastiao-do-paraiso">São Sebastião do Paraíso</option>
+          <option value="tres-coracoes">Três Corações</option>
+          <option value="varginha">Varginha</option>
+        </select>
+      </div>
+      <p class="barra-conta" id="barraConta"></p>
     </div>
   </div>
 </section>
@@ -161,7 +195,7 @@
 <section class="secao" id="republicas">
   <div class="wrap">
     <div class="cabeca">
-      <h2>Repúblicas em Alfenas</h2>
+      <h2>Repúblicas em <span id="nomeCidade">Alfenas</span></h2>
       <p>Ordenadas por quanto combinam com o perfil que você respondeu.</p>
     </div>
 
@@ -336,7 +370,7 @@
          cima reordenando e recalculando as notas. -->
     <div class="vitrine" id="vitrine">
 
-      <article class="anuncio" data-uni="UNIFAL" data-cursos="Medicina,Enfermagem"
+      <article class="anuncio" data-cidade="alfenas" data-uni="UNIFAL" data-cursos="Medicina,Enfermagem"
                data-preco="650" data-min="8" data-modo="pe" data-perfil="silencioso,pet,mista">
         <div class="anuncio-foto">
           <small>Foto em breve</small>
@@ -354,7 +388,7 @@
         </div>
       </article>
 
-      <article class="anuncio" data-uni="UNIFAL" data-cursos="Enfermagem,Nutrição"
+      <article class="anuncio" data-cidade="alfenas" data-uni="UNIFAL" data-cursos="Enfermagem,Nutrição"
                data-preco="580" data-min="12" data-modo="bike" data-perfil="silencioso,feminina">
         <div class="anuncio-foto">
           <small>Foto em breve</small>
@@ -372,7 +406,7 @@
         </div>
       </article>
 
-      <article class="anuncio" data-uni="UNIFAL" data-cursos="Medicina,Odontologia"
+      <article class="anuncio" data-cidade="alfenas" data-uni="UNIFAL" data-cursos="Medicina,Odontologia"
                data-preco="720" data-min="5" data-modo="pe" data-perfil="silencioso,individual">
         <div class="anuncio-foto">
           <small>Foto em breve</small>
@@ -390,7 +424,7 @@
         </div>
       </article>
 
-      <article class="anuncio" data-uni="UNIFENAS" data-cursos="Agronomia,Veterinária"
+      <article class="anuncio" data-cidade="alfenas" data-uni="UNIFENAS" data-cursos="Agronomia,Veterinária"
                data-preco="590" data-min="10" data-modo="pe" data-perfil="pet,festas,masculina">
         <div class="anuncio-foto">
           <small>Foto em breve</small>
@@ -408,7 +442,7 @@
         </div>
       </article>
 
-      <article class="anuncio" data-uni="UNIFAL" data-cursos="Direito,Letras"
+      <article class="anuncio" data-cidade="alfenas" data-uni="UNIFAL" data-cursos="Direito,Letras"
                data-preco="610" data-min="6" data-modo="pe" data-perfil="silencioso,pet,mista">
         <div class="anuncio-foto">
           <small>Foto em breve</small>
@@ -426,7 +460,7 @@
         </div>
       </article>
 
-      <article class="anuncio" data-uni="IFSULDEMINAS" data-cursos="Administração,Informática"
+      <article class="anuncio" data-cidade="alfenas" data-uni="IFSULDEMINAS" data-cursos="Administração,Informática"
                data-preco="780" data-min="15" data-modo="bike" data-perfil="individual,silencioso">
         <div class="anuncio-foto">
           <small>Foto em breve</small>
@@ -444,6 +478,19 @@
         </div>
       </article>
 
+    </div>
+
+    <!-- Cidade sem república cadastrada. Não é erro: é a hora exata de
+         pedir o cadastro para quem mora lá. -->
+    <div class="vazio" id="vitrineVazia" hidden>
+      <div class="vazio-icone" aria-hidden="true">🏠</div>
+      <h3>Ainda não tem república em <span id="nomeCidadeVazia">Lavras</span></h3>
+      <p>
+        Esta cidade entra no ar assim que receber o primeiro anúncio. Se você
+        tem vaga aí, cadastre agora — quem chega primeiro fica no topo quando
+        a cidade abrir.
+      </p>
+      <a href="#anunciar" class="btn btn-azul">Cadastrar a primeira</a>
     </div>
   </div>
 </section>
@@ -475,13 +522,10 @@
         <img src="img/cidade-machado.webp" alt="Machado, MG" width="800" height="564" loading="lazy" />
         <figcaption><b>Machado</b><span class="estado">Em breve</span></figcaption>
       </figure>
-      <figure class="cidade">
-        <img src="img/cidade-tres-pontas.webp" alt="Três Pontas, MG" width="640" height="480" loading="lazy" />
-        <figcaption><b>Três Pontas</b><span class="estado">Em breve</span></figcaption>
-      </figure>
     </div>
 
     <div class="proximas">
+      <span class="proxima">Campos Gerais</span>
       <span class="proxima">Lavras</span>
       <span class="proxima">Itajubá</span>
       <span class="proxima">Passos</span>

@@ -716,3 +716,93 @@ h1, h2, h3 { font-family: var(--display); line-height: 1.14; letter-spacing: -0.
     margin-left: auto; font-size: .88rem; font-weight: 700;
     color: var(--azul-forte); text-decoration: underline;
 }
+
+/* ---------- Seletor de cidade ---------- */
+/* Um cartão que cavalga a borda entre a primeira dobra e o resto: a
+   escolha de cidade separa fisicamente "o que é o produto" de "o que
+   tem perto de você". */
+.barra-cidade { position: relative; z-index: 2; margin-top: -34px; }
+
+.barra-caixa {
+    background: #fff;
+    border: 1px solid var(--linha);
+    border-radius: var(--raio-g);
+    box-shadow: var(--sombra);
+    padding: 18px 24px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.barra-campo { display: flex; align-items: center; gap: 14px; flex: 1; min-width: 260px; }
+
+.barra-campo label {
+    font-size: .74rem; font-weight: 800;
+    letter-spacing: .1em; text-transform: uppercase;
+    color: var(--tinta-fraca);
+    white-space: nowrap;
+}
+
+/* Continua sendo um <select> de verdade: no celular ele abre a roda
+   nativa do sistema, que é mais fácil de acertar do que qualquer lista
+   que eu desenhasse. */
+.barra-campo select {
+    flex: 1;
+    min-width: 0;
+    font-family: var(--display);
+    font-size: 1.12rem;
+    font-weight: 700;
+    color: var(--tinta);
+    padding: 10px 40px 10px 14px;
+    border: 1.5px solid var(--linha);
+    border-radius: 13px;
+    background: #fff url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23007dec'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E") no-repeat right 12px center;
+    background-size: 20px;
+    appearance: none;
+    cursor: pointer;
+}
+.barra-campo select:hover { border-color: var(--azul-linha); }
+.barra-campo select:focus { outline: 2px solid var(--azul); outline-offset: -1px; }
+
+.barra-conta {
+    font-size: .92rem;
+    color: var(--tinta-suave);
+    display: flex; align-items: center; gap: 8px;
+    white-space: nowrap;
+}
+.barra-conta b { color: var(--tinta); font-weight: 800; }
+.barra-conta .bolinha {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--verde);
+    box-shadow: 0 0 0 3px rgba(18,183,106,.18);
+}
+.barra-conta.vazia .bolinha { background: var(--tinta-fraca); box-shadow: 0 0 0 3px rgba(147,161,174,.2); }
+
+@media (max-width: 640px) {
+    .barra-campo { flex-direction: column; align-items: stretch; gap: 8px; }
+    .barra-campo label { white-space: normal; }
+    .barra-conta { white-space: normal; }
+}
+
+/* ---------- Cidade sem anúncio ---------- */
+/* Não é tela de erro: é o pedido de cadastro na hora exata em que a
+   falta de oferta fica evidente para quem está olhando. */
+.vazio {
+    text-align: center;
+    background: var(--nevoa);
+    border: 1px dashed var(--azul-linha);
+    border-radius: var(--raio-g);
+    padding: 54px 28px;
+}
+.vazio[hidden] { display: none; }
+.vazio-icone { font-size: 2.4rem; margin-bottom: 14px; }
+.vazio h3 { font-size: 1.35rem; font-weight: 800; margin-bottom: 10px; }
+.vazio p { color: var(--tinta-suave); max-width: 34em; margin: 0 auto 22px; }
+
+/* O hidden precisa vencer o display da grade, senão o anúncio de outra
+   cidade continuaria aparecendo. */
+.anuncio[hidden], .vitrine[hidden] { display: none; }
+
+/* Estes usam flex, então o hidden precisa ser dito explicitamente. */
+.fichas[hidden], .abrir-filtros[hidden] { display: none; }

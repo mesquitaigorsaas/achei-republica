@@ -12,7 +12,7 @@ insert into cidades (nome, uf, slug, ativa) values
     ('Alfenas',                  'MG', 'alfenas',                  true),
     ('Varginha',                 'MG', 'varginha',                 false),
     ('Machado',                  'MG', 'machado',                  false),
-    ('Três Pontas',              'MG', 'tres-pontas',              false),
+    ('Campos Gerais',            'MG', 'campos-gerais',            false),
     ('Lavras',                   'MG', 'lavras',                   false),
     ('Itajubá',                  'MG', 'itajuba',                  false),
     ('Passos',                   'MG', 'passos',                   false),
