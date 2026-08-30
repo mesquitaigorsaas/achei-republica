@@ -34,8 +34,9 @@
 
       <nav class="menu" id="menu">
         <a href="#como">Como funciona</a>
-        <a href="#republicas">Repúblicas</a>
-        <a href="#cidades">Cidades</a>
+        <a href="#cidade">Busque repúblicas</a>
+        <a href="#quem-somos">Quem somos</a>
+        <a href="#contato">Contato</a>
         <a href="#anunciar" class="btn btn-azul">Tenho uma vaga</a>
       </nav>
     </div>
@@ -73,8 +74,13 @@
       </div>
 
       <div class="palco">
-        <!-- O cartão de compatibilidade: o produto inteiro numa peça só. -->
+        <!-- O cartão de compatibilidade: o produto inteiro numa peça só.
+             Enquanto a pessoa não responde nada, ele é assumidamente um
+             exemplo — mostrar "96%" para quem ainda não disse a cidade
+             nem o curso seria resultado inventado. Depois do
+             questionário o selo some e ele vira o resultado real. -->
         <article class="match" id="cartaoMatch">
+          <span class="match-selo" id="matchSelo">Exemplo de resultado</span>
           <div class="match-topo">
             <div class="match-nota" id="notaMatch" role="img" aria-label="96 por cento de compatibilidade">
               <b>96%</b>
@@ -118,7 +124,8 @@
       <div class="barra-campo">
         <label for="selCidade">Estou procurando em</label>
         <select id="selCidade">
-          <option value="alfenas" selected>Alfenas</option>
+          <option value="" selected>Escolha sua próxima moradia</option>
+          <option value="alfenas">Alfenas</option>
           <option value="campos-gerais">Campos Gerais</option>
           <option value="guaxupe">Guaxupé</option>
           <option value="itajuba">Itajubá</option>
@@ -480,6 +487,19 @@
 
     </div>
 
+    <!-- Ninguém escolheu cidade ainda: em vez de mostrar Alfenas por
+         conta própria, a página pede a escolha. -->
+    <div class="vazio" id="vitrineEscolha">
+      <div class="vazio-icone" aria-hidden="true">📍</div>
+      <h3>Escolha sua cidade primeiro</h3>
+      <p>
+        As repúblicas mudam de cidade para cidade. Diga onde você vai estudar
+        no seletor acima e a lista aparece aqui, ordenada por quanto cada uma
+        combina com você.
+      </p>
+      <a href="#cidade" class="btn btn-azul">Escolher minha cidade</a>
+    </div>
+
     <!-- Cidade sem república cadastrada. Não é erro: é a hora exata de
          pedir o cadastro para quem mora lá. -->
     <div class="vazio" id="vitrineVazia" hidden>
@@ -541,6 +561,49 @@
 </section>
 
 <!-- =====================================================================
+     QUEM SOMOS
+
+     IGOR: escrevi só o que dá para afirmar com honestidade hoje. Se
+     quiser contar sua história — quem construiu, por que Alfenas, o que
+     te levou a isso — o texto fica muito mais forte. Ninguém compete
+     com a sua história.
+     ===================================================================== -->
+<section class="secao" id="quem-somos">
+  <div class="wrap">
+    <div class="quem">
+      <div>
+        <div class="cabeca">
+          <h2>Feito em Alfenas, para quem estuda aqui</h2>
+          <p>
+            O Achei República nasceu de um problema que todo calouro do Sul de
+            Minas conhece: achar onde morar é grupo de WhatsApp, cartaz no mural
+            e indicação de amigo de amigo. Funciona mal para quem procura e pior
+            ainda para quem tem vaga.
+          </p>
+        </div>
+        <p class="quem-texto">
+          A ideia é simples: em vez de mais um mural de anúncios, um sistema que
+          entende o que você precisa e diz quanto cada casa combina com isso.
+          Sem taxa para o estudante, sem corretor no meio e sem cadastro para
+          começar a procurar.
+        </p>
+        <p class="quem-texto">
+          Começamos por Alfenas porque é onde a gente está. Cada cidade nova
+          entra quando recebe as primeiras repúblicas cadastradas — e quem
+          cadastra primeiro fica no topo quando ela abrir.
+        </p>
+      </div>
+
+      <ul class="quem-numeros">
+        <li><b>14</b><span>cidades universitárias no plano</span></li>
+        <li><b>0</b><span>de taxa para o estudante</span></li>
+        <li><b>100%</b><span>do contato direto com a casa</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- =====================================================================
      LADO DO DONO — sem oferta não existe marketplace
      ===================================================================== -->
 <section class="secao" id="anunciar">
@@ -565,6 +628,46 @@
 </section>
 
 <!-- =====================================================================
+     CONTATO
+
+     IGOR: o e-mail veio do seu documento do projeto. Falta o WhatsApp —
+     e num produto para estudante ele importa mais que o e-mail: aluno
+     não manda e-mail, manda mensagem. Me passe o número que eu ligo o
+     botão. Deixei sem link em vez de inventar um.
+     ===================================================================== -->
+<section class="secao nevoa" id="contato">
+  <div class="wrap">
+    <div class="cabeca">
+      <h2>Falar com a gente</h2>
+      <p>
+        Dúvida, problema com um anúncio, ideia de melhoria ou vontade de trazer
+        o Achei República para a sua cidade — é por aqui.
+      </p>
+    </div>
+
+    <div class="contatos">
+      <a class="contato" href="mailto:acheirepublicaalfenas@gmail.com">
+        <span class="contato-icone" aria-hidden="true">✉️</span>
+        <b>E-mail</b>
+        <span>acheirepublicaalfenas@gmail.com</span>
+      </a>
+
+      <div class="contato">
+        <span class="contato-icone" aria-hidden="true">💬</span>
+        <b>WhatsApp</b>
+        <span>Em breve</span>
+      </div>
+
+      <a class="contato" href="#anunciar">
+        <span class="contato-icone" aria-hidden="true">🏠</span>
+        <b>Tenho uma vaga</b>
+        <span>Cadastre sua república de graça</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- =====================================================================
      RODAPÉ
      ===================================================================== -->
 <footer class="rodape">
@@ -573,8 +676,9 @@
       <a href="#topo"><img src="img/logoHorizontal.png" alt="Achei República" width="880" height="191" /></a>
       <nav class="rodape-links">
         <a href="#como">Como funciona</a>
-        <a href="#republicas">Repúblicas</a>
-        <a href="#cidades">Cidades</a>
+        <a href="#cidade">Busque repúblicas</a>
+        <a href="#quem-somos">Quem somos</a>
+        <a href="#contato">Contato</a>
         <a href="#anunciar">Tenho uma vaga</a>
       </nav>
     </div>

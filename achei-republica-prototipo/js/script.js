@@ -70,6 +70,8 @@ const barraConta = document.getElementById('barraConta');
 const vitrineVazia = document.getElementById('vitrineVazia');
 const chapeuDobra = document.querySelector('.heroi .chapeu');
 
+const vitrineEscolha = document.getElementById('vitrineEscolha');
+
 function trocarCidade() {
     const slug = selCidade.value;
     const nome = selCidade.options[selCidade.selectedIndex].textContent.trim();
@@ -79,11 +81,17 @@ function trocarCidade() {
 
     cartoes.forEach(c => { c.hidden = c.dataset.cidade !== slug; });
 
-    nomeCidade.textContent = nome;
+    // Três estados, e não dois: sem cidade escolhida, cidade com anúncio
+    // e cidade sem anúncio. O primeiro existe porque a página não decide
+    // por conta própria onde a pessoa quer morar.
+    const escolheu = slug !== '';
+    const temAnuncio = escolheu && daCidade.length > 0;
+
+    nomeCidade.textContent = escolheu ? nome : 'Alfenas e região';
     nomeCidadeVazia.textContent = nome;
 
-    const temAnuncio = daCidade.length > 0;
-    vitrineVazia.hidden = temAnuncio;
+    vitrineEscolha.hidden = escolheu;
+    vitrineVazia.hidden = !escolheu || temAnuncio;
     document.getElementById('vitrine').hidden = !temAnuncio;
 
     // Sem anúncio não há o que ordenar nem filtrar: os controles somem
@@ -97,13 +105,16 @@ function trocarCidade() {
     }
 
     barraConta.classList.toggle('vazia', !temAnuncio);
-    barraConta.innerHTML = temAnuncio
-        ? `<span class="bolinha"></span><b>${daCidade.length}</b>&nbsp;repúblicas com vaga aberta`
-        : `<span class="bolinha"></span>Nenhuma república cadastrada ainda`;
-
-    chapeuDobra.innerHTML = temAnuncio
-        ? `<span class="pisca"></span>${nome}, MG · no ar`
-        : `<span class="pisca"></span>${nome}, MG · em breve`;
+    if (!escolheu) {
+        barraConta.innerHTML = `<span class="bolinha"></span>14 cidades do Sul de Minas`;
+        chapeuDobra.innerHTML = `<span class="pisca"></span>Sul de Minas · Alfenas no ar`;
+    } else if (temAnuncio) {
+        barraConta.innerHTML = `<span class="bolinha"></span><b>${daCidade.length}</b>&nbsp;repúblicas com vaga aberta`;
+        chapeuDobra.innerHTML = `<span class="pisca"></span>${nome}, MG · no ar`;
+    } else {
+        barraConta.innerHTML = `<span class="bolinha"></span>Nenhuma república cadastrada ainda`;
+        chapeuDobra.innerHTML = `<span class="pisca"></span>${nome}, MG · em breve`;
+    }
 }
 
 selCidade.addEventListener('change', () => {
@@ -398,6 +409,9 @@ function aplicarResultado() {
         nota.querySelector('b').textContent = melhor.pontos + '%';
         nota.setAttribute('aria-label', `${melhor.pontos} por cento de compatibilidade`);
         nota.style.setProperty('--fatia', (melhor.pontos * 3.6) + 'deg');
+
+        // Deixa de ser exemplo: agora é o resultado da pessoa.
+        document.getElementById('matchSelo').hidden = true;
 
         const lista = document.querySelector('.match-lista');
         lista.innerHTML = '';
