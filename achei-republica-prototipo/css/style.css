@@ -99,15 +99,19 @@ h1, h2, h3 { font-family: var(--display); line-height: 1.14; letter-spacing: -0.
     display: flex;
     align-items: center;
     gap: 18px;
-    height: 68px;
+    height: 78px;
 }
 
-/* Altura fixa e largura livre: assim trocar o arquivo da logo por uma
-   versão mais larga ou mais estreita não deforma nada. */
-.marca img { height: 46px; width: auto; }
+/* Largura fixa e altura livre: a logo é horizontal, então o que manda
+   na presença dela é a largura. Assim trocar o arquivo por uma versão
+   mais alta ou mais baixa não deforma nada.
+   255px na proporção 4,607 do arquivo dá 55px de altura — por isso a
+   barra acima subiu para 78px, senão a logo ficaria sufocada. */
+.marca img { width: 255px; height: auto; }
 
+/* No celular ela encolhe para caber ao lado do sanduíche com folga. */
 @media (max-width: 520px) {
-    .marca img { height: 38px; }
+    .marca img { width: 200px; }
 }
 
 .menu {
@@ -818,5 +822,5 @@ h1, h2, h3 { font-family: var(--display); line-height: 1.14; letter-spacing: -0.
    âncora — os do menu e a troca de cidade — para com o título escondido
    atrás da barra. */
 #como, #republicas, #cidades, #anunciar, #cidade {
-    scroll-margin-top: 88px;
+    scroll-margin-top: 98px;
 }
