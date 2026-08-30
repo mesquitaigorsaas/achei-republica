@@ -9,3 +9,19 @@ desktop.ini
 
 # Servidor local só para ver a página antes de publicar
 .claude/
+
+# =====================================================================
+# Fora do repositório público de propósito.
+#
+# O repositório é público porque o GitHub Pages exige isso na conta
+# gratuita. Estes arquivos não podem ir junto:
+#
+#   Dominios.txt guarda os domínios livres que o Igor pesquisou —
+#   publicado, qualquer um registra antes dele.
+#   Os documentos de conceito trazem o plano de expansão e a ideia da
+#   pontuação de compatibilidade.
+#
+# Continuam na máquina dele e no OneDrive.
+# =====================================================================
+ArquivosOutros/
+Como será o Achei República.txt

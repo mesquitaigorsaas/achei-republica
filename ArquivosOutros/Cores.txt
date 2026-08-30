@@ -1,9 +1,0 @@
-Primária: #007DEC (azul logo)
-
-Secundária: #26547C (azul petróleo)
-
-Acento: #FFA45B (laranja suave)
-
-Fundo: #EAF5FF (azul logo clarinho)
-
-Texto: #333333
