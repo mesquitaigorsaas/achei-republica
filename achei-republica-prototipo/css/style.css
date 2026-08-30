@@ -174,7 +174,11 @@ h1, h2, h3 { font-family: var(--display); line-height: 1.14; letter-spacing: -0.
 /* ---------- Primeira dobra ---------- */
 .heroi {
     position: relative;
-    padding: 66px 0 78px;
+    /* Respiro curto de propósito: a dobra inteira mais o seletor de
+       cidade precisam caber numa tela de computador sem rolar, e a
+       janela mais apertada que vale a pena atender tem uns 580px de
+       altura útil. */
+    padding: 30px 0 38px;
     overflow: hidden;
     background:
         radial-gradient(760px 380px at 88% -6%, rgba(0,125,236,.10), transparent 62%),
@@ -183,7 +187,7 @@ h1, h2, h3 { font-family: var(--display); line-height: 1.14; letter-spacing: -0.
 
 /* Largura cheia, sem coluna ao lado. A primeira dobra passou a ter uma
    ação só — dizer a cidade — e coluna dividida competiria com ela. */
-.heroi-corpo { max-width: 46rem; }
+.heroi-corpo { max-width: 54rem; }
 
 .chapeu {
     display: inline-flex;
@@ -198,7 +202,7 @@ h1, h2, h3 { font-family: var(--display); line-height: 1.14; letter-spacing: -0.
     border: 1px solid var(--azul-linha);
     padding: 7px 14px;
     border-radius: 999px;
-    margin-bottom: 22px;
+    margin-bottom: 16px;
 }
 .chapeu .pisca {
     width: 7px; height: 7px; border-radius: 50%;
@@ -207,17 +211,17 @@ h1, h2, h3 { font-family: var(--display); line-height: 1.14; letter-spacing: -0.
 }
 
 .heroi h1 {
-    font-size: clamp(2.15rem, 5.6vw, 3.55rem);
+    font-size: clamp(1.95rem, 4.4vw, 2.9rem);
     font-weight: 800;
-    margin-bottom: 20px;
+    margin-bottom: 16px;
 }
 .heroi h1 em { font-style: normal; color: var(--azul); }
 
 .heroi-linha {
-    font-size: 1.08rem;
+    font-size: 1rem;
     color: var(--tinta-suave);
-    max-width: 40em;
-    margin-bottom: 34px;
+    max-width: 46em;
+    margin-bottom: 24px;
 }
 
 .heroi-acoes { display: flex; gap: 12px; flex-wrap: wrap; }
@@ -226,8 +230,8 @@ h1, h2, h3 { font-family: var(--display); line-height: 1.14; letter-spacing: -0.
     display: flex;
     gap: 30px;
     flex-wrap: wrap;
-    margin-top: 36px;
-    padding-top: 26px;
+    margin-top: 24px;
+    padding-top: 20px;
     border-top: 1px solid var(--linha);
     font-size: .88rem;
     color: var(--tinta-suave);
@@ -236,7 +240,7 @@ h1, h2, h3 { font-family: var(--display); line-height: 1.14; letter-spacing: -0.
     display: block;
     font-family: var(--display);
     font-weight: 800;
-    font-size: 1.32rem;
+    font-size: 1.18rem;
     color: var(--tinta);
     line-height: 1.2;
 }
@@ -797,6 +801,14 @@ h1, h2, h3 { font-family: var(--display); line-height: 1.14; letter-spacing: -0.
     .barra-campo { flex-direction: column; align-items: stretch; gap: 8px; }
     .barra-campo label { white-space: normal; }
     .barra-conta { white-space: normal; }
+
+    /* A fonte de título é larga: em tela estreita ela cortava o
+       "Escolha sua próxima moradia" no meio. */
+    .barra-campo select {
+        font-family: var(--texto);
+        font-size: 1rem;
+        padding-right: 34px;
+    }
 }
 
 /* ---------- Cidade sem anúncio ---------- */
