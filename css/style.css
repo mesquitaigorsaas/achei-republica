@@ -149,7 +149,11 @@ h1, h2, h3 { font-family: var(--display); line-height: 1.14; letter-spacing: -0.
 .menu-botao.aberto span:nth-child(2) { opacity: 0; }
 .menu-botao.aberto span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
-@media (max-width: 880px) {
+/* 1030px, e não um valor redondo escolhido no olho: a logo tem 255px, o
+   menu inteiro tem 677 e a página reserva 48 de respiro lateral. Isso dá
+   980 para caber espremido; com 48 de folga entre logo e menu, 1028.
+   Abaixo disso o sanduíche resolve melhor. */
+@media (max-width: 1030px) {
     .menu-botao { display: flex; }
     .menu {
         display: none;
@@ -530,8 +534,13 @@ h1, h2, h3 { font-family: var(--display); line-height: 1.14; letter-spacing: -0.
 
 /* ---------- Cidades ---------- */
 .cidades { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-bottom: 30px; }
-@media (max-width: 900px) { .cidades { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 520px) { .cidades { grid-template-columns: 1fr; } }
+
+/* Quatro degraus, e não dois. Pulando de 4 direto para 2, as fotos
+   dobravam de tamanho de uma vez e um cartão de cidade virava um
+   painel de 400px. */
+@media (max-width: 1000px) { .cidades { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 700px)  { .cidades { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 460px)  { .cidades { grid-template-columns: 1fr; } }
 
 .cidade {
     position: relative;
