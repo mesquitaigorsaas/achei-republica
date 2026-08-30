@@ -552,6 +552,10 @@ h1, h2, h3 { font-family: var(--display); line-height: 1.14; letter-spacing: -0.
 .cidade .estado {
     font-size: .7rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em;
     background: rgba(255,255,255,.2); padding: 3px 9px; border-radius: 999px;
+    /* Nome de cidade longo empurrava a etiqueta e ela quebrava em duas
+       linhas — "Poços de Caldas" era o caso. */
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 .cidade.viva .estado { background: var(--verde); }
 
