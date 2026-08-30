@@ -546,9 +546,13 @@ h1, h2, h3 { font-family: var(--display); line-height: 1.14; letter-spacing: -0.
     padding: 30px 16px 14px;
     background: linear-gradient(transparent, rgba(10,22,32,.82));
     color: #fff;
-    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    /* Ancoradas no pé, e não centralizadas: nome de duas linhas como
+       "Poços de Caldas" empurrava a etiqueta para o meio, e ela
+       desalinhava das etiquetas dos cartões de nome curto. Pelo pé,
+       todas as catorze ficam na mesma altura. */
+    display: flex; align-items: flex-end; justify-content: space-between; gap: 10px;
 }
-.cidade b { font-family: var(--display); font-weight: 700; font-size: .98rem; }
+.cidade b { font-family: var(--display); font-weight: 700; font-size: .98rem; line-height: 1.25; }
 .cidade .estado {
     font-size: .7rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em;
     background: rgba(255,255,255,.2); padding: 3px 9px; border-radius: 999px;
@@ -979,3 +983,17 @@ a.contato:hover { border-color: var(--azul-linha); transform: translateY(-3px); 
     cursor: pointer;
 }
 .ficha-faculdade select:focus { outline: 2px solid var(--azul); outline-offset: -1px; }
+
+
+/* ---------- Contato centralizado ---------- */
+/* A seção tem um caminho só. Centralizada, o olho cai direto no botão
+   em vez de varrer da esquerda. */
+#contato .cabeca {
+    max-width: 34em;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+}
+
+#contato .wrap { text-align: center; }
+#contato .zap { text-align: left; }
