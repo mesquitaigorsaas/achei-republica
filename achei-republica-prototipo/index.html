@@ -44,69 +44,31 @@
 </header>
 
 <!-- =====================================================================
-     PRIMEIRA DOBRA — o match, não a busca
+     PRIMEIRA DOBRA
+
+     Largura cheia e uma ação só: dizer a cidade, no seletor logo abaixo.
+     O cartão de match saiu daqui e foi para junto dos anúncios — lá ele
+     é resultado, aqui era promessa antes de a pessoa dizer qualquer
+     coisa.
      ===================================================================== -->
 <section class="heroi">
   <div class="wrap">
-    <div class="heroi-grade">
+    <div class="heroi-corpo">
+      <span class="chapeu"><span class="pisca"></span>Alfenas, MG · no ar</span>
 
-      <div>
-        <span class="chapeu"><span class="pisca"></span>Alfenas, MG · no ar</span>
+      <h1>Sua república não se acha rolando.<br /><em>Ela combina com você.</em></h1>
 
-        <h1>Sua república não se acha rolando.<br /><em>Ela combina com você.</em></h1>
+      <p class="heroi-linha">
+        Cinco perguntas — curso, orçamento, quanto você aguenta andar e o
+        jeito que gosta de morar. A gente calcula quanto cada república
+        combina com você e mostra as melhores primeiro.
+      </p>
 
-        <p class="heroi-linha">
-          Cinco perguntas — curso, orçamento, quanto você aguenta andar e o
-          jeito que gosta de morar. A gente calcula quanto cada república
-          combina com você e mostra as melhores primeiro.
-        </p>
-
-        <div class="heroi-acoes">
-          <button type="button" class="btn btn-azul" data-abre-quiz>Achar minha república</button>
-          <a href="#como" class="btn btn-linha">Ver como funciona</a>
-        </div>
-
-        <div class="heroi-prova">
-          <div><b>30s</b>é o que leva</div>
-          <div><b>14</b>cidades no plano</div>
-          <div><b>0</b>taxa para quem procura</div>
-        </div>
+      <div class="heroi-prova">
+        <div><b>30s</b>é o que leva</div>
+        <div><b>14</b>cidades no plano</div>
+        <div><b>0</b>taxa para quem procura</div>
       </div>
-
-      <div class="palco">
-        <!-- O cartão de compatibilidade: o produto inteiro numa peça só.
-             Enquanto a pessoa não responde nada, ele é assumidamente um
-             exemplo — mostrar "96%" para quem ainda não disse a cidade
-             nem o curso seria resultado inventado. Depois do
-             questionário o selo some e ele vira o resultado real. -->
-        <article class="match" id="cartaoMatch">
-          <span class="match-selo" id="matchSelo">Exemplo de resultado</span>
-          <div class="match-topo">
-            <div class="match-nota" id="notaMatch" role="img" aria-label="96 por cento de compatibilidade">
-              <b>96%</b>
-            </div>
-            <div class="match-quem">
-              <h3>República da Serra</h3>
-              <p>Centro · 8 min a pé da UNIFAL</p>
-            </div>
-          </div>
-
-          <ul class="match-lista">
-            <li><span class="ok">✓</span>Tem gente do seu curso morando lá</li>
-            <li><span class="ok">✓</span>A 8 minutos a pé da sua faculdade</li>
-            <li><span class="ok">✓</span>R$ 650 — dentro do que você informou</li>
-            <li><span class="ok">✓</span>Aceita pet e é ambiente silencioso</li>
-            <li><span class="ok">✓</span>Internet e água já inclusas</li>
-          </ul>
-
-          <div class="match-pe">
-            <div class="match-preco">R$ 650<span> /mês</span></div>
-            <button type="button" class="btn btn-azul" data-abre-quiz>É a minha?</button>
-          </div>
-        </article>
-
-      </div>
-
     </div>
   </div>
 </section>
@@ -205,6 +167,38 @@
       <h2>Repúblicas em <span id="nomeCidade">Alfenas</span></h2>
       <p>Ordenadas por quanto combinam com o perfil que você respondeu.</p>
     </div>
+
+    <!-- O cartão de compatibilidade: o produto inteiro numa peça só.
+         Enquanto a pessoa não responde nada, ele é assumidamente um
+         exemplo — mostrar "96%" para quem ainda não disse a cidade
+         nem o curso seria resultado inventado. Depois do
+         questionário o selo some e ele vira o resultado real. -->
+    <article class="match" id="cartaoMatch">
+      <span class="match-selo" id="matchSelo">Exemplo de resultado</span>
+      <div class="match-topo">
+        <div class="match-nota" id="notaMatch" role="img" aria-label="96 por cento de compatibilidade">
+          <b>96%</b>
+        </div>
+        <div class="match-quem">
+          <h3>República da Serra</h3>
+          <p>Centro · 8 min a pé da UNIFAL</p>
+        </div>
+      </div>
+
+      <ul class="match-lista">
+        <li><span class="ok">✓</span>Tem gente do seu curso morando lá</li>
+        <li><span class="ok">✓</span>A 8 minutos a pé da sua faculdade</li>
+        <li><span class="ok">✓</span>R$ 650 — dentro do que você informou</li>
+        <li><span class="ok">✓</span>Aceita pet e é ambiente silencioso</li>
+        <li><span class="ok">✓</span>Internet e água já inclusas</li>
+      </ul>
+
+      <div class="match-pe">
+        <div class="match-preco">R$ 650<span> /mês</span></div>
+        <button type="button" class="btn btn-azul" data-abre-quiz>Achar minha república</button>
+      </div>
+    </article>
+
 
     <!-- Aparece depois que a pessoa responde: diz que a lista mudou por
          causa dela, senão a reordenação passa despercebida. -->

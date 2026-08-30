@@ -427,8 +427,15 @@ document.addEventListener('keydown', e => {
     if (e.key === 'Escape' && !quiz.hidden) fecharQuiz();
 });
 
-document.querySelectorAll('[data-abre-quiz]').forEach(botao => {
-    botao.addEventListener('click', e => { e.preventDefault(); abrirQuiz(); });
+// Delegação, e não um ouvinte por botão: o cartão do match deixa de
+// abrir o questionário depois que ele é respondido, e para isso basta
+// perder o atributo. Com ouvinte preso no elemento, removê-lo não
+// desligaria nada e o botão faria as duas coisas.
+document.addEventListener('click', e => {
+    const botao = e.target.closest('[data-abre-quiz]');
+    if (!botao) return;
+    e.preventDefault();
+    abrirQuiz();
 });
 
 /* ---------------------------------------------------------------------
@@ -548,6 +555,17 @@ function aplicarResultado() {
     }
 
     ordemOriginal = pontuados.map(p => p.cartao);
+
+    // O botão do cartão deixa de abrir o questionário: quem já
+    // respondeu não quer "achar minha república" de novo, quer ver a
+    // que apareceu. Passa a levar até ela na lista.
+    const botaoCartao = document.querySelector('.match-pe .btn');
+    botaoCartao.textContent = 'Ver esta vaga';
+    botaoCartao.removeAttribute('data-abre-quiz');
+    botaoCartao.onclick = () => {
+        const primeiro = vitrine.querySelector('.anuncio:not([hidden])');
+        if (primeiro) primeiro.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    };
 
     // Esquece a faculdade que estava selecionada: a pessoa acabou de
     // dizer onde estuda, e essa resposta vale mais que a lembrança do
