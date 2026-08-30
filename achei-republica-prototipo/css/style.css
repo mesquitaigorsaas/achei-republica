@@ -591,3 +591,128 @@ h1, h2, h3 { font-family: var(--display); line-height: 1.14; letter-spacing: -0.
 .subir.aparece { opacity: 1; visibility: visible; }
 .subir:hover { background: var(--azul-forte); }
 .subir svg { width: 20px; height: 20px; fill: #fff; }
+
+/* ---------- Questionário ---------- */
+/* Tela cheia e uma pergunta de cada vez. Formulário longo é onde o
+   aluno desiste; aqui cada tela pede uma decisão só, em alvo grande o
+   bastante para o polegar. */
+.quiz {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    background: rgba(10, 22, 32, .55);
+    backdrop-filter: blur(6px);
+    display: grid;
+    place-items: center;
+    padding: 20px;
+}
+.quiz[hidden] { display: none; }
+
+.quiz-caixa {
+    width: min(560px, 100%);
+    max-height: 92vh;
+    overflow: auto;
+    background: #fff;
+    border-radius: 26px;
+    box-shadow: 0 40px 90px -30px rgba(0,0,0,.6);
+    display: flex;
+    flex-direction: column;
+    animation: sobe .28s ease;
+}
+@keyframes sobe { from { opacity: 0; transform: translateY(14px); } }
+@media (prefers-reduced-motion: reduce) { .quiz-caixa { animation: none; } }
+
+.quiz-topo {
+    display: flex; align-items: center; gap: 16px;
+    padding: 20px 22px 0;
+}
+
+.quiz-progresso {
+    flex: 1;
+    height: 6px;
+    background: var(--azul-fraco);
+    border-radius: 999px;
+    overflow: hidden;
+}
+.quiz-progresso span {
+    display: block; height: 100%; width: 20%;
+    background: var(--azul);
+    border-radius: 999px;
+    transition: width .32s ease;
+}
+
+.quiz-fechar {
+    width: 34px; height: 34px; border-radius: 50%;
+    color: var(--tinta-fraca); font-size: .9rem;
+    display: grid; place-items: center;
+    flex-shrink: 0;
+}
+.quiz-fechar:hover { background: var(--nevoa); color: var(--tinta); }
+
+.quiz-corpo { padding: 22px 26px 8px; }
+.quiz-conta {
+    font-size: .74rem; font-weight: 800;
+    letter-spacing: .1em; text-transform: uppercase;
+    color: var(--azul-forte);
+}
+.quiz-corpo h2 { font-size: 1.6rem; font-weight: 800; margin: 10px 0 6px; }
+.quiz-dica { color: var(--tinta-suave); font-size: .94rem; margin-bottom: 22px; }
+
+.quiz-opcoes { display: grid; gap: 10px; }
+
+/* Alvo de 56px: dá para acertar com o polegar andando na rua, que é
+   onde o aluno vai mexer nisto. */
+.opcao {
+    display: flex; align-items: center; gap: 13px;
+    min-height: 56px;
+    padding: 12px 18px;
+    border: 1.5px solid var(--linha);
+    border-radius: 15px;
+    background: #fff;
+    font-size: .98rem; font-weight: 600;
+    text-align: left;
+    transition: border-color .16s, background-color .16s;
+}
+.opcao:hover { border-color: var(--azul-linha); background: var(--azul-fraco); }
+
+.opcao .marca {
+    width: 22px; height: 22px; flex-shrink: 0;
+    border: 2px solid var(--linha);
+    border-radius: 50%;
+    display: grid; place-items: center;
+    font-size: .62rem; color: transparent;
+    transition: all .16s;
+}
+.opcao.escolhida { border-color: var(--azul); background: var(--azul-fraco); }
+.opcao.escolhida .marca { background: var(--azul); border-color: var(--azul); color: #fff; }
+
+.quiz-opcoes.multi { grid-template-columns: 1fr 1fr; }
+@media (max-width: 480px) { .quiz-opcoes.multi { grid-template-columns: 1fr; } }
+.quiz-opcoes.multi .marca { border-radius: 7px; }
+
+.quiz-pe {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; padding: 18px 26px 24px;
+}
+.quiz-voltar { font-size: .92rem; font-weight: 700; color: var(--tinta-suave); padding: 10px 2px; }
+.quiz-voltar:hover { color: var(--tinta); }
+.quiz-voltar[hidden] { visibility: hidden; display: block; }
+.quiz-pe .btn:disabled { opacity: .4; cursor: not-allowed; box-shadow: none; }
+
+/* Aviso que aparece na vitrine depois de responder. */
+.resultado-aviso {
+    display: none;
+    align-items: center; gap: 12px; flex-wrap: wrap;
+    background: var(--azul-fraco);
+    border: 1px solid var(--azul-linha);
+    border-radius: var(--raio);
+    padding: 14px 18px;
+    margin-bottom: 22px;
+    font-size: .93rem;
+}
+.resultado-aviso.aparece { display: flex; }
+.resultado-aviso b { font-weight: 800; }
+.resultado-aviso button {
+    margin-left: auto; font-size: .88rem; font-weight: 700;
+    color: var(--azul-forte); text-decoration: underline;
+}

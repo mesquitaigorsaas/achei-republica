@@ -61,7 +61,7 @@
         </p>
 
         <div class="heroi-acoes">
-          <a href="#republicas" class="btn btn-azul">Achar minha república</a>
+          <button type="button" class="btn btn-azul" data-abre-quiz>Achar minha república</button>
           <a href="#como" class="btn btn-linha">Ver como funciona</a>
         </div>
 
@@ -95,7 +95,7 @@
 
           <div class="match-pe">
             <div class="match-preco">R$ 650<span> /mês</span></div>
-            <a href="#republicas" class="btn btn-azul">Ver a vaga</a>
+            <button type="button" class="btn btn-azul" data-abre-quiz>É a minha?</button>
           </div>
         </article>
 
@@ -163,6 +163,13 @@
     <div class="cabeca">
       <h2>Repúblicas em Alfenas</h2>
       <p>Ordenadas por quanto combinam com o perfil que você respondeu.</p>
+    </div>
+
+    <!-- Aparece depois que a pessoa responde: diz que a lista mudou por
+         causa dela, senão a reordenação passa despercebida. -->
+    <div class="resultado-aviso" id="resultadoAviso" role="status">
+      <span>✨ <b>Ordenado para você.</b> As notas abaixo são o quanto cada república combina com o que você respondeu.</span>
+      <button type="button" id="refazerQuiz">Refazer as perguntas</button>
     </div>
 
     <div class="fichas" role="group" aria-label="Ordenar por">
@@ -324,13 +331,17 @@
       </div>
     </div>
 
-    <div class="vitrine">
+    <!-- Os dados de cada república ficam no próprio cartão. Assim a
+         página funciona sem script nenhum, e o questionário só entra por
+         cima reordenando e recalculando as notas. -->
+    <div class="vitrine" id="vitrine">
 
-      <article class="anuncio">
+      <article class="anuncio" data-uni="UNIFAL" data-cursos="Medicina,Enfermagem"
+               data-preco="650" data-min="8" data-modo="pe" data-perfil="silencioso,pet,mista">
         <div class="anuncio-foto">
           <small>Foto em breve</small>
           <span class="selo-tipo">Mista</span>
-          <span class="selo-match">96%</span>
+          <span class="selo-match">—</span>
         </div>
         <div class="anuncio-corpo">
           <h3>República da Serra</h3>
@@ -343,11 +354,12 @@
         </div>
       </article>
 
-      <article class="anuncio">
+      <article class="anuncio" data-uni="UNIFAL" data-cursos="Enfermagem,Nutrição"
+               data-preco="580" data-min="12" data-modo="bike" data-perfil="silencioso,feminina">
         <div class="anuncio-foto">
           <small>Foto em breve</small>
           <span class="selo-tipo">Feminina</span>
-          <span class="selo-match">91%</span>
+          <span class="selo-match">—</span>
         </div>
         <div class="anuncio-corpo">
           <h3>Casa das Meninas</h3>
@@ -360,11 +372,12 @@
         </div>
       </article>
 
-      <article class="anuncio">
+      <article class="anuncio" data-uni="UNIFAL" data-cursos="Medicina,Odontologia"
+               data-preco="720" data-min="5" data-modo="pe" data-perfil="silencioso,individual">
         <div class="anuncio-foto">
           <small>Foto em breve</small>
           <span class="selo-tipo">Kitnet</span>
-          <span class="selo-match">88%</span>
+          <span class="selo-match">—</span>
         </div>
         <div class="anuncio-corpo">
           <h3>Kitnet Vila Rica</h3>
@@ -377,11 +390,12 @@
         </div>
       </article>
 
-      <article class="anuncio">
+      <article class="anuncio" data-uni="UNIFENAS" data-cursos="Agronomia,Veterinária"
+               data-preco="590" data-min="10" data-modo="pe" data-perfil="pet,festas,masculina">
         <div class="anuncio-foto">
           <small>Foto em breve</small>
           <span class="selo-tipo">Masculina</span>
-          <span class="selo-match">84%</span>
+          <span class="selo-match">—</span>
         </div>
         <div class="anuncio-corpo">
           <h3>República União</h3>
@@ -394,11 +408,12 @@
         </div>
       </article>
 
-      <article class="anuncio">
+      <article class="anuncio" data-uni="UNIFAL" data-cursos="Direito,Letras"
+               data-preco="610" data-min="6" data-modo="pe" data-perfil="silencioso,pet,mista">
         <div class="anuncio-foto">
           <small>Foto em breve</small>
           <span class="selo-tipo">LGBTQIAPN+</span>
-          <span class="selo-match">80%</span>
+          <span class="selo-match">—</span>
         </div>
         <div class="anuncio-corpo">
           <h3>Espaço Girassol</h3>
@@ -411,11 +426,12 @@
         </div>
       </article>
 
-      <article class="anuncio">
+      <article class="anuncio" data-uni="IFSULDEMINAS" data-cursos="Administração,Informática"
+               data-preco="780" data-min="15" data-modo="bike" data-perfil="individual,silencioso">
         <div class="anuncio-foto">
           <small>Foto em breve</small>
           <span class="selo-tipo">Apartamento</span>
-          <span class="selo-match">75%</span>
+          <span class="selo-match">—</span>
         </div>
         <div class="anuncio-corpo">
           <h3>Apê do João</h3>
@@ -521,6 +537,36 @@
     <p class="direitos">© 2026 Achei República — nascido em Alfenas, MG.</p>
   </div>
 </footer>
+
+<!-- =====================================================================
+     QUESTIONÁRIO
+
+     Uma pergunta por tela, resposta num toque. É o que a página promete
+     na primeira linha; sem ele o botão principal só rolava para uma
+     lista parada.
+     ===================================================================== -->
+<div class="quiz" id="quiz" role="dialog" aria-modal="true" aria-labelledby="quizPergunta" hidden>
+  <div class="quiz-caixa">
+
+    <div class="quiz-topo">
+      <div class="quiz-progresso"><span id="quizBarra"></span></div>
+      <button class="quiz-fechar" id="quizFechar" type="button" aria-label="Fechar">✕</button>
+    </div>
+
+    <div class="quiz-corpo">
+      <span class="quiz-conta" id="quizConta">Pergunta 1 de 5</span>
+      <h2 id="quizPergunta">Onde você estuda?</h2>
+      <p class="quiz-dica" id="quizDica">Assim a gente calcula o trajeto de verdade.</p>
+      <div class="quiz-opcoes" id="quizOpcoes"></div>
+    </div>
+
+    <div class="quiz-pe">
+      <button class="quiz-voltar" id="quizVoltar" type="button">← Voltar</button>
+      <button class="btn btn-azul" id="quizSeguir" type="button">Continuar</button>
+    </div>
+
+  </div>
+</div>
 
 <a class="subir" href="#topo" aria-label="Voltar ao início">
   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4.6 4.9 11.7a1 1 0 0 0 1.4 1.4L11 8.4V19a1 1 0 1 0 2 0V8.4l4.7 4.7a1 1 0 0 0 1.4-1.4z"/></svg>
