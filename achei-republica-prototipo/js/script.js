@@ -30,13 +30,115 @@ document.addEventListener('click', e => {
 /* ---------------------------------------------------------------------
    Fichas de ordenação e painel de filtros
    --------------------------------------------------------------------- */
+/* As fichas ordenam e filtram de verdade.
+ *
+ * Antes elas só acendiam e apagavam: "Menor preço" não ordenava nada e
+ * "Aceita pet" não filtrava. Ficha que promete e não entrega é pior do
+ * que ficha nenhuma, porque a pessoa acredita que a lista mudou.
+ *
+ * "Perto da faculdade" é o caso que o Igor apontou: sozinho não quer
+ * dizer nada — perto de qual? Por isso ele abre um seletor com as
+ * faculdades daquela cidade. */
 const fichas = document.querySelectorAll('.ficha');
+const fichaFaculdade = document.getElementById('fichaFaculdade');
+const selFaculdade = document.getElementById('selFaculdade');
+
+let fichaAtiva = 'combinam';
+// A ordem de partida da vitrine. Vira a ordem do questionário depois
+// que ele roda, para "Mais combinam" ter ao que voltar.
+let ordemOriginal = [];
+
+function montarFaculdades() {
+    // Todas as faculdades da cidade, e não só as dos cartões visíveis:
+    // se a ficha anterior tivesse filtrado, faculdade sumiria da lista
+    // sem motivo nenhum.
+    const daCidade = [...document.querySelectorAll('.anuncio')]
+        .filter(c => c.dataset.cidade === selCidade.value);
+    const siglas = [...new Set(daCidade.map(c => c.dataset.uni))].sort();
+
+    const escolhida = selFaculdade.value;
+    selFaculdade.innerHTML = '';
+    siglas.forEach(sigla => {
+        const o = document.createElement('option');
+        o.value = sigla;
+        o.textContent = sigla;
+        selFaculdade.appendChild(o);
+    });
+    // Qual vem escolhida de largada, em ordem de preferência:
+    // a que a pessoa já estava vendo, a que ela respondeu no
+    // questionário, ou a que tem mais repúblicas. Ordem alfabética não
+    // diz nada — deixaria o IFSULDEMINAS, com uma casa só, na frente da
+    // UNIFAL, com quatro.
+    const maisCasas = siglas.slice().sort((a, b) =>
+        daCidade.filter(c => c.dataset.uni === b).length -
+        daCidade.filter(c => c.dataset.uni === a).length)[0];
+
+    selFaculdade.value =
+        siglas.includes(escolhida) ? escolhida :
+        siglas.includes(resposta.uni) ? resposta.uni :
+        maisCasas;
+
+    return siglas.length;
+}
+
+function aplicarFicha() {
+    const vitrineEl = document.getElementById('vitrine');
+    const daCidade = [...vitrineEl.querySelectorAll('.anuncio')]
+        .filter(c => c.dataset.cidade === selCidade.value);
+
+    // Toda ficha parte da lista inteira da cidade: nada de filtro que se
+    // acumula sem a pessoa perceber.
+    daCidade.forEach(c => { c.hidden = false; });
+
+    // Toda ficha parte da mesma base: a ordem de referência da cidade.
+    // Sem isto, filtrar depois de ordenar herdava a ordenação anterior —
+    // "Aceita pet" saía em ordem de preço, sem a pessoa ter pedido.
+    const base = ordemOriginal.filter(c => daCidade.includes(c));
+    let lista = base;
+
+    if (fichaAtiva === 'faculdade') {
+        const alvo = selFaculdade.value;
+        lista = base.filter(c => c.dataset.uni === alvo)
+                    .sort((a, b) => Number(a.dataset.min) - Number(b.dataset.min));
+    } else if (fichaAtiva === 'preco') {
+        lista = [...base].sort((a, b) => Number(a.dataset.preco) - Number(b.dataset.preco));
+    } else if (fichaAtiva === 'pet') {
+        lista = base.filter(c => (c.dataset.perfil || '').split(',').includes('pet'));
+    } else if (fichaAtiva === 'caucao') {
+        lista = base.filter(c => Number(c.dataset.caucao) === 0);
+    }
+
+    daCidade.forEach(c => { c.hidden = !lista.includes(c); });
+    lista.forEach(c => vitrineEl.appendChild(c));
+
+    // Filtro que não sobra nada é o mesmo caso de cidade sem anúncio.
+    const vazia = lista.length === 0;
+    document.getElementById('vitrine').hidden = vazia;
+    vitrineVazia.hidden = !vazia;
+    if (vazia) {
+        vitrineVazia.querySelector('h3').innerHTML =
+            'Nenhuma república com esse filtro';
+        vitrineVazia.querySelector('p').textContent =
+            'Tente outra ficha acima, ou veja todas as repúblicas da cidade.';
+    }
+
+    atualizarContagem(lista.length);
+}
+
 fichas.forEach(ficha => {
     ficha.addEventListener('click', () => {
         fichas.forEach(f => f.classList.remove('ativa'));
         ficha.classList.add('ativa');
+        fichaAtiva = ficha.dataset.ficha;
+
+        const ehFaculdade = fichaAtiva === 'faculdade';
+        fichaFaculdade.hidden = !ehFaculdade || montarFaculdades() === 0;
+
+        aplicarFicha();
     });
 });
+
+selFaculdade.addEventListener('change', aplicarFicha);
 
 const abrirFiltros = document.getElementById('abrirFiltros');
 const painelFiltros = document.getElementById('painelFiltros');
@@ -70,8 +172,6 @@ const barraConta = document.getElementById('barraConta');
 const vitrineVazia = document.getElementById('vitrineVazia');
 const chapeuDobra = document.querySelector('.heroi .chapeu');
 
-const vitrineEscolha = document.getElementById('vitrineEscolha');
-
 function trocarCidade() {
     const slug = selCidade.value;
     const nome = selCidade.options[selCidade.selectedIndex].textContent.trim();
@@ -90,7 +190,10 @@ function trocarCidade() {
     nomeCidade.textContent = escolheu ? nome : 'Alfenas e região';
     nomeCidadeVazia.textContent = nome;
 
-    vitrineEscolha.hidden = escolheu;
+    // A seção inteira só existe depois da escolha. Um cartão pedindo
+    // "escolha sua cidade" logo abaixo de um seletor que pede a mesma
+    // coisa era repetição ocupando uma tela inteira.
+    document.getElementById('republicas').hidden = !escolheu;
     vitrineVazia.hidden = !escolheu || temAnuncio;
     document.getElementById('vitrine').hidden = !temAnuncio;
 
@@ -104,17 +207,37 @@ function trocarCidade() {
         abrirFiltros.setAttribute('aria-expanded', 'false');
     }
 
-    barraConta.classList.toggle('vazia', !temAnuncio);
+    // Trocar de cidade volta as fichas ao começo. Manter "Aceita pet"
+    // aceso de uma cidade para outra faria a pessoa achar que a nova
+    // cidade tem menos república do que realmente tem.
+    fichas.forEach(f => f.classList.toggle('ativa', f.dataset.ficha === 'combinam'));
+    fichaAtiva = 'combinam';
+    fichaFaculdade.hidden = true;
+
+    vitrineVazia.querySelector('h3').innerHTML =
+        'Ainda não tem república em <span id="nomeCidadeVazia">' + nome + '</span>';
+    vitrineVazia.querySelector('p').textContent =
+        'Esta cidade entra no ar assim que receber o primeiro anúncio. Se você tem vaga aí, cadastre agora — quem chega primeiro fica no topo quando a cidade abrir.';
+
     if (!escolheu) {
+        barraConta.classList.add('vazia');
         barraConta.innerHTML = `<span class="bolinha"></span>14 cidades do Sul de Minas`;
         chapeuDobra.innerHTML = `<span class="pisca"></span>Sul de Minas · Alfenas no ar`;
     } else if (temAnuncio) {
-        barraConta.innerHTML = `<span class="bolinha"></span><b>${daCidade.length}</b>&nbsp;repúblicas com vaga aberta`;
+        atualizarContagem(daCidade.length);
         chapeuDobra.innerHTML = `<span class="pisca"></span>${nome}, MG · no ar`;
     } else {
+        barraConta.classList.add('vazia');
         barraConta.innerHTML = `<span class="bolinha"></span>Nenhuma república cadastrada ainda`;
         chapeuDobra.innerHTML = `<span class="pisca"></span>${nome}, MG · em breve`;
     }
+}
+
+function atualizarContagem(quantas) {
+    barraConta.classList.toggle('vazia', quantas === 0);
+    barraConta.innerHTML = quantas === 0
+        ? `<span class="bolinha"></span>Nenhuma república com esse filtro`
+        : `<span class="bolinha"></span><b>${quantas}</b>&nbsp;${quantas === 1 ? 'república' : 'repúblicas'} com vaga aberta`;
 }
 
 selCidade.addEventListener('change', () => {
@@ -123,6 +246,8 @@ selCidade.addEventListener('change', () => {
     // deixá-lo parado no seletor obriga a rolar na mão para descobrir.
     document.getElementById('republicas').scrollIntoView({ behavior: 'smooth', block: 'start' });
 });
+
+ordemOriginal = [...document.querySelectorAll('.anuncio')];
 
 // Na carga a página só se ajusta, sem rolar — senão o visitante cairia
 // no meio do site antes de ler a primeira linha.
@@ -421,6 +546,13 @@ function aplicarResultado() {
             lista.appendChild(item);
         });
     }
+
+    ordemOriginal = pontuados.map(p => p.cartao);
+
+    // Esquece a faculdade que estava selecionada: a pessoa acabou de
+    // dizer onde estuda, e essa resposta vale mais que a lembrança do
+    // que ela estava olhando antes.
+    selFaculdade.value = '';
 
     aviso.classList.add('aparece');
     document.getElementById('republicas').scrollIntoView({ behavior: 'smooth', block: 'start' });

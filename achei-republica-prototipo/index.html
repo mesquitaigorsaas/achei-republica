@@ -213,12 +213,21 @@
       <button type="button" id="refazerQuiz">Refazer as perguntas</button>
     </div>
 
-    <div class="fichas" role="group" aria-label="Ordenar por">
-      <button class="ficha ativa" type="button">Mais combinam</button>
-      <button class="ficha" type="button">Perto da faculdade</button>
-      <button class="ficha" type="button">Menor preço</button>
-      <button class="ficha" type="button">Aceita pet</button>
-      <button class="ficha" type="button">Sem caução</button>
+    <div class="fichas" role="group" aria-label="Ordenar e filtrar">
+      <button class="ficha ativa" type="button" data-ficha="combinam">Mais combinam</button>
+      <button class="ficha" type="button" data-ficha="faculdade">Perto da faculdade</button>
+      <button class="ficha" type="button" data-ficha="preco">Menor preço</button>
+      <button class="ficha" type="button" data-ficha="pet">Aceita pet</button>
+      <button class="ficha" type="button" data-ficha="caucao">Sem caução</button>
+    </div>
+
+    <!-- "Perto da faculdade" não quer dizer nada sozinho: perto de qual?
+         Escolhida a ficha, aparece o seletor com as faculdades que
+         existem na cidade — montado a partir dos próprios anúncios, para
+         nunca oferecer uma faculdade que não tem república nenhuma. -->
+    <div class="ficha-faculdade" id="fichaFaculdade" hidden>
+      <label for="selFaculdade">Perto de qual faculdade?</label>
+      <select id="selFaculdade"></select>
     </div>
 
     <button class="abrir-filtros" id="abrirFiltros" type="button"
@@ -378,7 +387,7 @@
     <div class="vitrine" id="vitrine">
 
       <article class="anuncio" data-cidade="alfenas" data-uni="UNIFAL" data-cursos="Medicina,Enfermagem"
-               data-preco="650" data-min="8" data-modo="pe" data-perfil="silencioso,pet,mista">
+               data-preco="650" data-caucao="0" data-min="8" data-modo="pe" data-perfil="silencioso,pet,mista">
         <div class="anuncio-foto">
           <small>Foto em breve</small>
           <span class="selo-tipo">Mista</span>
@@ -396,7 +405,7 @@
       </article>
 
       <article class="anuncio" data-cidade="alfenas" data-uni="UNIFAL" data-cursos="Enfermagem,Nutrição"
-               data-preco="580" data-min="12" data-modo="bike" data-perfil="silencioso,feminina">
+               data-preco="580" data-caucao="580" data-min="12" data-modo="bike" data-perfil="silencioso,feminina">
         <div class="anuncio-foto">
           <small>Foto em breve</small>
           <span class="selo-tipo">Feminina</span>
@@ -414,7 +423,7 @@
       </article>
 
       <article class="anuncio" data-cidade="alfenas" data-uni="UNIFAL" data-cursos="Medicina,Odontologia"
-               data-preco="720" data-min="5" data-modo="pe" data-perfil="silencioso,individual">
+               data-preco="720" data-caucao="720" data-min="5" data-modo="pe" data-perfil="silencioso,individual">
         <div class="anuncio-foto">
           <small>Foto em breve</small>
           <span class="selo-tipo">Kitnet</span>
@@ -432,7 +441,7 @@
       </article>
 
       <article class="anuncio" data-cidade="alfenas" data-uni="UNIFENAS" data-cursos="Agronomia,Veterinária"
-               data-preco="590" data-min="10" data-modo="pe" data-perfil="pet,festas,masculina">
+               data-preco="590" data-caucao="0" data-min="10" data-modo="pe" data-perfil="pet,festas,masculina">
         <div class="anuncio-foto">
           <small>Foto em breve</small>
           <span class="selo-tipo">Masculina</span>
@@ -450,7 +459,7 @@
       </article>
 
       <article class="anuncio" data-cidade="alfenas" data-uni="UNIFAL" data-cursos="Direito,Letras"
-               data-preco="610" data-min="6" data-modo="pe" data-perfil="silencioso,pet,mista">
+               data-preco="610" data-caucao="300" data-min="6" data-modo="pe" data-perfil="silencioso,pet,mista">
         <div class="anuncio-foto">
           <small>Foto em breve</small>
           <span class="selo-tipo">LGBTQIAPN+</span>
@@ -468,7 +477,7 @@
       </article>
 
       <article class="anuncio" data-cidade="alfenas" data-uni="IFSULDEMINAS" data-cursos="Administração,Informática"
-               data-preco="780" data-min="15" data-modo="bike" data-perfil="individual,silencioso">
+               data-preco="780" data-caucao="780" data-min="15" data-modo="bike" data-perfil="individual,silencioso">
         <div class="anuncio-foto">
           <small>Foto em breve</small>
           <span class="selo-tipo">Apartamento</span>
@@ -485,19 +494,6 @@
         </div>
       </article>
 
-    </div>
-
-    <!-- Ninguém escolheu cidade ainda: em vez de mostrar Alfenas por
-         conta própria, a página pede a escolha. -->
-    <div class="vazio" id="vitrineEscolha">
-      <div class="vazio-icone" aria-hidden="true">📍</div>
-      <h3>Escolha sua cidade primeiro</h3>
-      <p>
-        As repúblicas mudam de cidade para cidade. Diga onde você vai estudar
-        no seletor acima e a lista aparece aqui, ordenada por quanto cada uma
-        combina com você.
-      </p>
-      <a href="#cidade" class="btn btn-azul">Escolher minha cidade</a>
     </div>
 
     <!-- Cidade sem república cadastrada. Não é erro: é a hora exata de

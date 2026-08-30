@@ -926,3 +926,42 @@ a.contato:hover { border-color: var(--azul-linha); transform: translateY(-3px); 
 @media (max-width: 480px) {
     .zap { width: 100%; justify-content: center; padding: 18px 22px; }
 }
+
+/* A seção de repúblicas some inteira enquanto ninguém escolheu cidade. */
+.secao[hidden] { display: none; }
+
+/* ---------- Seletor de faculdade ---------- */
+/* Aparece só quando a ficha "Perto da faculdade" está acesa. Sem ele a
+   ficha não quer dizer nada: perto de qual? */
+.ficha-faculdade {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    background: var(--azul-fraco);
+    border: 1px solid var(--azul-linha);
+    border-radius: var(--raio);
+    padding: 14px 18px;
+    margin-bottom: 22px;
+}
+.ficha-faculdade[hidden] { display: none; }
+
+.ficha-faculdade label {
+    font-size: .74rem; font-weight: 800;
+    letter-spacing: .1em; text-transform: uppercase;
+    color: var(--azul-forte);
+}
+
+.ficha-faculdade select {
+    font-family: var(--display);
+    font-size: 1rem; font-weight: 700;
+    color: var(--tinta);
+    padding: 9px 38px 9px 14px;
+    border: 1.5px solid var(--azul-linha);
+    border-radius: 11px;
+    background: #fff url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23007dec'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E") no-repeat right 10px center;
+    background-size: 18px;
+    appearance: none;
+    cursor: pointer;
+}
+.ficha-faculdade select:focus { outline: 2px solid var(--azul); outline-offset: -1px; }
