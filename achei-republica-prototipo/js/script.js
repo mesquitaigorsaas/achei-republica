@@ -106,7 +106,15 @@ function trocarCidade() {
         : `<span class="pisca"></span>${nome}, MG · em breve`;
 }
 
-selCidade.addEventListener('change', trocarCidade);
+selCidade.addEventListener('change', () => {
+    trocarCidade();
+    // Desce até a vitrine: quem troca a cidade quer ver o que tem lá, e
+    // deixá-lo parado no seletor obriga a rolar na mão para descobrir.
+    document.getElementById('republicas').scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+
+// Na carga a página só se ajusta, sem rolar — senão o visitante cairia
+// no meio do site antes de ler a primeira linha.
 trocarCidade();
 
 /* ---------------------------------------------------------------------

@@ -102,7 +102,13 @@ h1, h2, h3 { font-family: var(--display); line-height: 1.14; letter-spacing: -0.
     height: 68px;
 }
 
-.marca img { height: 34px; width: auto; }
+/* Altura fixa e largura livre: assim trocar o arquivo da logo por uma
+   versão mais larga ou mais estreita não deforma nada. */
+.marca img { height: 46px; width: auto; }
+
+@media (max-width: 520px) {
+    .marca img { height: 38px; }
+}
 
 .menu {
     display: flex;
@@ -806,3 +812,11 @@ h1, h2, h3 { font-family: var(--display); line-height: 1.14; letter-spacing: -0.
 
 /* Estes usam flex, então o hidden precisa ser dito explicitamente. */
 .fichas[hidden], .abrir-filtros[hidden] { display: none; }
+
+/* ---------- Folga para o cabeçalho grudado ---------- */
+/* O cabeçalho tem 68px e fica fixo no alto. Sem esta folga, todo link de
+   âncora — os do menu e a troca de cidade — para com o título escondido
+   atrás da barra. */
+#como, #republicas, #cidades, #anunciar, #cidade {
+    scroll-margin-top: 88px;
+}
