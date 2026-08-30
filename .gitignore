@@ -1,0 +1,11 @@
+# Lixo que o Windows e o macOS deixam nas pastas
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Configurações de editor
+.vscode/
+.idea/
+
+# Servidor local só para ver a página antes de publicar
+.claude/

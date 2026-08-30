@@ -1,0 +1,122 @@
+IDEIA PRINCIPAL E DADOS DO PROJETO:
+
+Gmail: acheirepublicaalfenas@gmail.com
+----------------------------------------------------------------------
+Área de atuação inicial
+
+O Achei República será lançado inicialmente em Alfenas (MG), cidade reconhecida por sua forte presença universitária e grande quantidade de repúblicas estudantis.
+
+Após a validação do modelo de negócio, a plataforma será expandida para as principais cidades universitárias do Sul de Minas, incluindo:
+
+Alfenas
+Lavras
+Itajubá
+Varginha
+Passos
+Pouso Alegre
+Poços de Caldas
+Três Corações
+Santa Rita do Sapucaí
+São Sebastião do Paraíso
+Guaxupé
+Machado
+Muzambinho
+
+Essas cidades concentram universidades, institutos federais e milhares de estudantes que movimentam o mercado de aluguel estudantil, tornando-se uma excelente oportunidade de expansão regional.
+
+Também acrescentaria estes filtros (alguns você ainda não havia citado)
+Localização
+Cidade
+Bairro
+Universidade
+Campus
+Distância da universidade
+Tempo a pé
+Tempo de bicicleta
+Tempo de carro
+Tipo de acomodação
+Cama
+Quarto compartilhado
+Quarto individual
+Kitnet
+Apartamento
+Casa
+República
+Valor
+Faixa de preço
+Caução
+Taxa de condomínio
+Taxa de limpeza
+Contas inclusas
+Despesas inclusas
+Água
+Energia
+Internet
+Gás
+IPTU
+Condomínio
+Estrutura
+Garagem
+Área de lazer
+Piscina
+Churrasqueira
+Academia
+Lavanderia
+Máquina de lavar
+Cozinha equipada
+Geladeira
+Micro-ondas
+Fogão
+Ar-condicionado
+Ventilador
+Mobiliado
+Escrivaninha para estudos
+Guarda-roupa
+Sacada
+Elevador
+Portaria 24h
+Câmeras de segurança
+Portão eletrônico
+Acessibilidade (PCD)
+Perfil da moradia
+Somente masculina
+Somente feminina
+Mista
+LGBTQIAPN+
+Ambiente familiar
+Ambiente silencioso
+Aceita calouros
+Aceita intercambistas
+Regras
+Aceita pet
+Aceita fumantes
+Aceita visitas
+Permite pernoite de visitas
+Horário de silêncio
+Possui festas frequentes
+Não possui festas
+Disponibilidade
+Disponível imediatamente
+Data de entrada
+Número de vagas disponíveis
+Um diferencial que pode tornar o Achei República único
+
+Em vez de apenas mostrar anúncios, o sistema pode calcular uma Pontuação de Compatibilidade para cada estudante.
+
+Exemplo:
+
+Compatibilidade: 96%
+
+Motivos:
+
+✔️ Mesmo curso (Medicina)
+✔️ Mesmo sexo (conforme preferência)
+✔️ A apenas 8 minutos da universidade
+✔️ Dentro do orçamento informado
+✔️ Aceita pet
+✔️ Ambiente silencioso
+✔️ Internet inclusa
+
+Esse tipo de recomendação, apoiada por IA, transforma a plataforma em um verdadeiro assistente para encontrar a moradia ideal, indo além de um simples classificados.
+
+Na minha opinião, esse recurso seria o grande diferencial competitivo do Achei República e poderia ser destacado como uma das principais funcionalidades da plataforma.

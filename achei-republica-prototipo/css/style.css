@@ -1,0 +1,593 @@
+/* =====================================================================
+   Achei República — protótipo.
+
+   Branco dominante, azul da logo como única cor de ação. O laranja da
+   logo antiga e o roxo do protótipo anterior saíram: três cores de
+   marca no mesmo produto confundem, e a versão azul da logo é a que
+   combina com um produto de tecnologia.
+
+   Regra que guia tudo aqui: o aluno decide em segundos, no celular,
+   com uma mão. Então pouco texto, alvo grande e uma ação clara por
+   tela. Nada de parede de caixinha.
+   ===================================================================== */
+
+:root {
+    --azul: #007dec;
+    --azul-forte: #0062ba;
+    --azul-fraco: #eaf5ff;
+    --azul-linha: #cfe6fb;
+    --petroleo: #26547c;
+
+    --papel: #ffffff;
+    --nevoa: #f7fafd;
+    --tinta: #14202b;
+    --tinta-suave: #5a6b7b;
+    --tinta-fraca: #93a1ae;
+    --linha: #e4ecf3;
+
+    --verde: #12b76a;
+
+    --raio: 14px;
+    --raio-g: 24px;
+    --sombra: 0 1px 2px rgba(20,32,43,.04), 0 16px 34px -18px rgba(20,32,43,.2);
+    --sombra-alta: 0 30px 70px -26px rgba(0,98,186,.42);
+
+    --display: 'Unbounded', system-ui, sans-serif;
+    --texto: 'Plus Jakarta Sans', system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+body {
+    background: var(--papel);
+    color: var(--tinta);
+    font-family: var(--texto);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; text-decoration: none; }
+img { max-width: 100%; display: block; }
+button, select, input { font-family: inherit; font-size: inherit; }
+button { cursor: pointer; border: none; background: none; color: inherit; }
+h1, h2, h3 { font-family: var(--display); line-height: 1.14; letter-spacing: -0.02em; }
+
+.wrap { max-width: 1140px; margin: 0 auto; padding: 0 24px; }
+
+/* ---------- Botões ---------- */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: .95rem;
+    padding: 15px 26px;
+    border-radius: 999px;
+    transition: transform .14s, background-color .2s, box-shadow .2s;
+    white-space: nowrap;
+}
+.btn:active { transform: translateY(1px); }
+
+.btn-azul { background: var(--azul); color: #fff; box-shadow: 0 10px 24px -10px rgba(0,125,236,.8); }
+.btn-azul:hover { background: var(--azul-forte); }
+
+.btn-linha { border: 1.5px solid var(--linha); color: var(--tinta); background: #fff; }
+.btn-linha:hover { border-color: var(--azul); color: var(--azul-forte); }
+
+.btn-branco { background: #fff; color: var(--azul-forte); }
+.btn-branco:hover { background: var(--azul-fraco); }
+
+/* ---------- Topo ---------- */
+/* Grudado no alto porque a página é de busca e se rola muito: trocar de
+   cidade ou anunciar não pode exigir voltar lá em cima. */
+.topo {
+    position: sticky;
+    top: 0;
+    z-index: 80;
+    background: rgba(255,255,255,.86);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--linha);
+}
+
+.topo-barra {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    height: 68px;
+}
+
+.marca img { height: 34px; width: auto; }
+
+.menu {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    margin-left: auto;
+}
+.menu a { font-size: .93rem; font-weight: 600; color: var(--tinta-suave); transition: color .18s; }
+.menu a:hover { color: var(--azul-forte); }
+
+.menu-botao {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    width: 42px; height: 38px;
+    margin-left: auto;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--linha);
+    border-radius: 10px;
+}
+.menu-botao span {
+    display: block; width: 17px; height: 2px;
+    border-radius: 2px; background: var(--tinta);
+    transition: transform .2s, opacity .2s;
+}
+.menu-botao.aberto span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.menu-botao.aberto span:nth-child(2) { opacity: 0; }
+.menu-botao.aberto span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+@media (max-width: 880px) {
+    .menu-botao { display: flex; }
+    .menu {
+        display: none;
+        position: absolute;
+        top: calc(100% + 10px);
+        left: 0; right: 0;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 2px;
+        padding: 10px;
+        background: #fff;
+        border: 1px solid var(--linha);
+        border-radius: 18px;
+        box-shadow: var(--sombra);
+    }
+    .menu.aberto { display: flex; }
+    .menu a { padding: 13px 14px; border-radius: 11px; }
+    .menu a:hover { background: var(--azul-fraco); }
+    .menu .btn { margin-top: 6px; }
+}
+
+/* ---------- Primeira dobra ---------- */
+.heroi {
+    position: relative;
+    padding: 66px 0 78px;
+    overflow: hidden;
+    background:
+        radial-gradient(760px 380px at 88% -6%, rgba(0,125,236,.10), transparent 62%),
+        radial-gradient(560px 320px at 4% 108%, rgba(38,84,124,.07), transparent 60%);
+}
+
+.heroi-grade {
+    display: grid;
+    grid-template-columns: 1.02fr .98fr;
+    gap: 54px;
+    align-items: center;
+}
+@media (max-width: 980px) { .heroi-grade { grid-template-columns: 1fr; gap: 44px; } }
+
+.chapeu {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: .74rem;
+    font-weight: 800;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--azul-forte);
+    background: var(--azul-fraco);
+    border: 1px solid var(--azul-linha);
+    padding: 7px 14px;
+    border-radius: 999px;
+    margin-bottom: 22px;
+}
+.chapeu .pisca {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--verde);
+    box-shadow: 0 0 0 3px rgba(18,183,106,.2);
+}
+
+.heroi h1 {
+    font-size: clamp(2.15rem, 5.6vw, 3.55rem);
+    font-weight: 800;
+    margin-bottom: 20px;
+}
+.heroi h1 em { font-style: normal; color: var(--azul); }
+
+.heroi-linha {
+    font-size: 1.08rem;
+    color: var(--tinta-suave);
+    max-width: 29em;
+    margin-bottom: 30px;
+}
+
+.heroi-acoes { display: flex; gap: 12px; flex-wrap: wrap; }
+
+.heroi-prova {
+    display: flex;
+    gap: 30px;
+    flex-wrap: wrap;
+    margin-top: 36px;
+    padding-top: 26px;
+    border-top: 1px solid var(--linha);
+    font-size: .88rem;
+    color: var(--tinta-suave);
+}
+.heroi-prova b {
+    display: block;
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: 1.32rem;
+    color: var(--tinta);
+    line-height: 1.2;
+}
+
+/* ---------- Cartão de compatibilidade ---------- */
+/* É o produto inteiro num cartão. Vem antes de qualquer anúncio de
+   propósito: mostra na primeira olhada que aqui não é lista de
+   classificados, é recomendação — e é o que o aluno manda no grupo. */
+.palco { position: relative; }
+
+.match {
+    background: #fff;
+    border: 1px solid var(--linha);
+    border-radius: var(--raio-g);
+    padding: 24px;
+    box-shadow: var(--sombra-alta);
+    position: relative;
+    z-index: 1;
+}
+
+.match-topo {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--linha);
+}
+
+.match-nota {
+    position: relative;
+    width: 78px; height: 78px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    display: grid; place-items: center;
+    background: conic-gradient(var(--azul) var(--fatia, 0deg), var(--azul-fraco) 0);
+    transition: background .9s ease;
+}
+.match-nota::after {
+    content: '';
+    position: absolute; inset: 7px;
+    background: #fff; border-radius: 50%;
+}
+.match-nota b {
+    position: relative; z-index: 1;
+    font-family: var(--display); font-weight: 800; font-size: 1.24rem;
+    color: var(--azul-forte);
+}
+
+.match-quem h3 { font-size: 1.14rem; font-weight: 700; margin-bottom: 3px; }
+.match-quem p { font-size: .88rem; color: var(--tinta-suave); }
+
+.match-lista { padding-top: 16px; display: grid; gap: 9px; list-style: none; }
+
+.match-lista li {
+    display: flex; align-items: flex-start; gap: 10px;
+    font-size: .93rem;
+    opacity: 0; transform: translateY(6px);
+    animation: entra .5s ease forwards;
+}
+.match-lista li:nth-child(1) { animation-delay: .15s; }
+.match-lista li:nth-child(2) { animation-delay: .30s; }
+.match-lista li:nth-child(3) { animation-delay: .45s; }
+.match-lista li:nth-child(4) { animation-delay: .60s; }
+.match-lista li:nth-child(5) { animation-delay: .75s; }
+
+@keyframes entra { to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+    .match-lista li { opacity: 1; transform: none; animation: none; }
+    .match-nota { transition: none; }
+}
+
+.match-lista .ok {
+    width: 20px; height: 20px; flex-shrink: 0; margin-top: 2px;
+    border-radius: 50%;
+    background: rgba(18,183,106,.13);
+    color: var(--verde);
+    display: grid; place-items: center;
+    font-size: .66rem; font-weight: 900;
+}
+
+.match-pe {
+    margin-top: 18px; padding-top: 16px;
+    border-top: 1px solid var(--linha);
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+}
+.match-preco { font-family: var(--display); font-weight: 700; font-size: 1.28rem; }
+.match-preco span { font-family: var(--texto); font-size: .8rem; font-weight: 500; color: var(--tinta-suave); }
+
+/* ---------- Como funciona ---------- */
+/* A foto ao lado dos passos, e não atrás do cartão do match: encoberta
+   pelo cartão ela aparecia pela metade e não valia o peso que custa. */
+.como-grade {
+    display: grid;
+    grid-template-columns: .78fr 1.22fr;
+    gap: 34px;
+    align-items: stretch;
+}
+@media (max-width: 900px) { .como-grade { grid-template-columns: 1fr; } }
+
+.como-foto {
+    border-radius: var(--raio-g);
+    overflow: hidden;
+    border: 1px solid var(--linha);
+    min-height: 100%;
+}
+/* width/height do <img> valem como altura fixa: sem o height:auto eles
+   engolem o object-fit e a foto sai com a altura original do arquivo. */
+.como-foto img { width: 100%; height: 100%; min-height: 320px; object-fit: cover; }
+@media (max-width: 900px) { .como-foto img { min-height: 240px; max-height: 320px; } }
+
+/* ---------- Seções ---------- */
+.secao { padding: 86px 0; }
+.secao.nevoa { background: var(--nevoa); }
+
+.cabeca { max-width: 40em; margin-bottom: 44px; }
+.cabeca h2 { font-size: clamp(1.7rem, 3.9vw, 2.45rem); font-weight: 800; margin-bottom: 12px; }
+.cabeca p { color: var(--tinta-suave); font-size: 1.02rem; }
+
+/* ---------- Como funciona ---------- */
+/* Os três passos empilhados ao lado da foto: lidos de cima para baixo,
+   na ordem em que acontecem. Lado a lado em três colunas eles perdem a
+   noção de sequência. */
+.passos { display: grid; gap: 16px; }
+
+.passo {
+    background: #fff;
+    border: 1px solid var(--linha);
+    border-radius: var(--raio-g);
+    padding: 24px 26px;
+    display: grid;
+    grid-template-columns: 40px 1fr;
+    grid-template-rows: auto auto;
+    column-gap: 18px;
+    row-gap: 0;
+    /* Os passos esticam para acompanhar a altura da foto ao lado; o
+       conteúdo centralizado evita que sobre um vazio no pé de cada um. */
+    align-content: center;
+}
+/* O número ocupa as duas linhas da coluna da esquerda; título e texto
+   ficam empilhados na direita. Sem isto o texto cairia embaixo do
+   número em vez de ao lado. */
+.passo-num {
+    grid-row: 1 / span 2;
+    width: 40px; height: 40px; border-radius: 13px;
+    background: var(--azul-fraco); color: var(--azul-forte);
+    display: grid; place-items: center;
+    font-family: var(--display); font-weight: 800;
+}
+.passo h3 { grid-column: 2; font-size: 1.08rem; font-weight: 700; margin-bottom: 6px; }
+.passo p { grid-column: 2; color: var(--tinta-suave); font-size: .94rem; }
+
+/* ---------- Vitrine ---------- */
+.fichas { display: flex; gap: 9px; flex-wrap: wrap; margin-bottom: 20px; }
+
+.ficha {
+    font-size: .87rem; font-weight: 600;
+    padding: 10px 17px; border-radius: 999px;
+    border: 1px solid var(--linha); background: #fff;
+    color: var(--tinta-suave);
+    transition: all .16s;
+}
+.ficha:hover { border-color: var(--azul-linha); color: var(--azul-forte); }
+.ficha.ativa { background: var(--azul); border-color: var(--azul); color: #fff; }
+
+.abrir-filtros {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: .88rem; font-weight: 700; color: var(--tinta-suave);
+    padding: 8px 2px; margin-bottom: 26px;
+}
+.abrir-filtros:hover { color: var(--azul-forte); }
+.abrir-filtros .seta { transition: transform .2s; }
+.abrir-filtros.aberto .seta { transform: rotate(180deg); }
+
+/* Os oitenta filtros continuam existindo, mas fechados por padrão.
+   Abertos de largada viram um paredão de caixinha e o aluno desiste
+   antes de ver o primeiro anúncio. */
+.painel { display: none; margin-bottom: 30px; }
+.painel.aberto { display: block; }
+
+.painel-caixa {
+    background: #fff; border: 1px solid var(--linha);
+    border-radius: var(--raio-g); padding: 28px;
+    display: grid; gap: 26px;
+}
+
+.grupo h4 {
+    font-family: var(--texto);
+    font-size: .73rem; font-weight: 800;
+    letter-spacing: .1em; text-transform: uppercase;
+    color: var(--tinta-fraca); margin-bottom: 12px;
+}
+
+.marcas { display: flex; gap: 8px; flex-wrap: wrap; }
+.marca-item input { position: absolute; opacity: 0; width: 0; height: 0; }
+.marca-item span {
+    display: inline-block;
+    font-size: .86rem; padding: 8px 14px;
+    border-radius: 999px; border: 1px solid var(--linha);
+    color: var(--tinta-suave); cursor: pointer;
+    transition: all .16s;
+}
+.marca-item input:checked + span {
+    background: var(--azul-fraco); border-color: var(--azul);
+    color: var(--azul-forte); font-weight: 700;
+}
+.marca-item input:focus-visible + span { outline: 2px solid var(--azul); outline-offset: 2px; }
+
+.campos { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+@media (max-width: 840px) { .campos { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 520px) { .campos { grid-template-columns: 1fr; } }
+
+.campo label { display: block; font-size: .73rem; font-weight: 800; color: var(--tinta-fraca); margin-bottom: 6px; }
+.campo select, .campo input {
+    width: 100%; padding: 12px 13px;
+    border: 1px solid var(--linha); border-radius: 12px;
+    background: #fff; color: var(--tinta);
+}
+.campo select:focus, .campo input:focus { outline: 2px solid var(--azul); outline-offset: -1px; }
+
+.painel-pe { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+.limpar { font-size: .88rem; font-weight: 700; color: var(--tinta-suave); }
+.limpar:hover { color: var(--azul-forte); }
+
+/* ---------- Cartões de anúncio ---------- */
+.vitrine { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; align-items: start; }
+@media (max-width: 940px) { .vitrine { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 620px) { .vitrine { grid-template-columns: 1fr; } }
+
+.anuncio {
+    background: #fff;
+    border: 1px solid var(--linha);
+    border-radius: var(--raio-g);
+    overflow: hidden;
+    transition: transform .18s, box-shadow .18s, border-color .18s;
+}
+.anuncio:hover { transform: translateY(-3px); border-color: var(--azul-linha); box-shadow: var(--sombra); }
+
+.anuncio-foto {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    background: linear-gradient(150deg, var(--azul-fraco), #dbeeff);
+    display: grid; place-items: center;
+}
+/* Marcador honesto: ainda não há foto real de república nenhuma, e
+   maquete não pode passar por anúncio de verdade. */
+.anuncio-foto small {
+    font-size: .7rem; font-weight: 800;
+    letter-spacing: .1em; text-transform: uppercase;
+    color: #8fb8d8;
+}
+
+.selo-tipo {
+    position: absolute; top: 12px; left: 12px;
+    font-size: .72rem; font-weight: 700;
+    background: rgba(255,255,255,.95); color: var(--tinta);
+    padding: 5px 11px; border-radius: 999px;
+}
+.selo-match {
+    position: absolute; top: 12px; right: 12px;
+    font-family: var(--display); font-size: .78rem; font-weight: 800;
+    background: var(--azul); color: #fff;
+    padding: 6px 11px; border-radius: 999px;
+}
+
+.anuncio-corpo { padding: 18px; }
+.anuncio-corpo h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 5px; }
+.anuncio-onde { font-size: .87rem; color: var(--tinta-suave); margin-bottom: 13px; }
+
+.mimos { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 15px; }
+.mimo {
+    font-size: .76rem;
+    background: var(--nevoa); border: 1px solid var(--linha);
+    color: var(--tinta-suave);
+    padding: 4px 10px; border-radius: 999px;
+}
+
+.anuncio-pe {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 10px; padding-top: 14px; border-top: 1px solid var(--linha);
+}
+.preco { font-family: var(--display); font-weight: 700; font-size: 1.12rem; }
+.preco span { font-family: var(--texto); font-size: .78rem; font-weight: 500; color: var(--tinta-suave); }
+.ver { font-size: .88rem; font-weight: 700; color: var(--azul); }
+.ver:hover { color: var(--azul-forte); text-decoration: underline; }
+
+/* ---------- Cidades ---------- */
+.cidades { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-bottom: 30px; }
+@media (max-width: 900px) { .cidades { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 520px) { .cidades { grid-template-columns: 1fr; } }
+
+.cidade {
+    position: relative;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid var(--linha);
+    background: #fff;
+}
+.cidade img { width: 100%; height: auto; aspect-ratio: 4/3; object-fit: cover; }
+.cidade figcaption {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    padding: 30px 16px 14px;
+    background: linear-gradient(transparent, rgba(10,22,32,.82));
+    color: #fff;
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+}
+.cidade b { font-family: var(--display); font-weight: 700; font-size: .98rem; }
+.cidade .estado {
+    font-size: .7rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em;
+    background: rgba(255,255,255,.2); padding: 3px 9px; border-radius: 999px;
+}
+.cidade.viva .estado { background: var(--verde); }
+
+.proximas { display: flex; gap: 8px; flex-wrap: wrap; }
+.proxima {
+    font-size: .85rem; font-weight: 600;
+    padding: 8px 14px; border-radius: 999px;
+    border: 1px dashed var(--linha); color: var(--tinta-fraca);
+}
+
+/* ---------- Chamada do dono ---------- */
+/* Marketplace morre por falta de oferta, não de procura. Esta seção é
+   para o outro lado: quem tem vaga vazia e paga aluguel do mesmo jeito. */
+.dono {
+    background: var(--azul);
+    color: #fff;
+    border-radius: 28px;
+    padding: 54px 46px;
+    display: grid; grid-template-columns: 1.15fr .85fr; gap: 40px; align-items: center;
+    position: relative; overflow: hidden;
+}
+.dono::before {
+    content: ''; position: absolute;
+    width: 420px; height: 420px; border-radius: 50%;
+    background: rgba(255,255,255,.12); filter: blur(70px);
+    top: -160px; right: -70px; pointer-events: none;
+}
+@media (max-width: 840px) { .dono { grid-template-columns: 1fr; padding: 38px 26px; } }
+
+.dono > * { position: relative; }
+.dono h2 { font-size: clamp(1.55rem, 3.5vw, 2.1rem); font-weight: 800; margin-bottom: 12px; }
+.dono p { color: rgba(255,255,255,.86); margin-bottom: 24px; }
+.dono ul { display: grid; gap: 11px; list-style: none; }
+.dono li { display: flex; gap: 10px; align-items: flex-start; font-size: .95rem; color: rgba(255,255,255,.94); }
+.dono li .ok { font-weight: 900; }
+
+/* ---------- Rodapé ---------- */
+.rodape { background: var(--tinta); color: #92a3b2; padding: 44px 0; font-size: .89rem; }
+.rodape-inner { display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+.rodape img { height: 30px; width: auto; filter: brightness(0) invert(1); opacity: .92; }
+.rodape-links { display: flex; gap: 22px; flex-wrap: wrap; }
+.rodape a:hover { color: #fff; }
+.direitos { margin-top: 24px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,.1); font-size: .82rem; }
+
+/* ---------- Voltar ao topo ---------- */
+.subir {
+    position: fixed; right: 20px; bottom: 20px; z-index: 90;
+    width: 46px; height: 46px; border-radius: 50%;
+    background: var(--azul);
+    box-shadow: 0 10px 26px -8px rgba(0,125,236,.8);
+    display: grid; place-items: center;
+    opacity: 0; visibility: hidden;
+    transition: opacity .25s, visibility .25s, background-color .2s;
+}
+.subir.aparece { opacity: 1; visibility: visible; }
+.subir:hover { background: var(--azul-forte); }
+.subir svg { width: 20px; height: 20px; fill: #fff; }
