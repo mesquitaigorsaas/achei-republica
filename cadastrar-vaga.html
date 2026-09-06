@@ -63,6 +63,23 @@
 
         <div class="recado" id="recado" role="alert" hidden></div>
 
+        <!-- O teto da conta, avisado ANTES e não depois.
+
+             Deixar a pessoa preencher trinta campos, subir cinco fotos e
+             só então dizer que ela não pode publicar seria a mesma coisa
+             que um botão que falha no clique: ela não lê "cheguei ao
+             limite", lê "o site está quebrado". -->
+        <div class="aviso-limite" id="avisoLimite" hidden>
+          <span>
+            <b>Você já tem anúncio no ar.</b>
+            Cada conta anuncia uma república por vez. Se você tem mais de
+            uma de verdade, me chame que eu libero a sua conta — ou tire a
+            atual do ar ali embaixo para pôr outra no lugar.
+          </span>
+          <a class="btn btn-azul" id="pedirLiberacao" target="_blank" rel="noopener"
+             href="https://wa.me/5531999347032">Pedir liberação</a>
+        </div>
+
         <form id="formVaga" novalidate>
 
           <!-- O TIPO PRIMEIRO.

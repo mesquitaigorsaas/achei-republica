@@ -585,3 +585,33 @@
     border-color: var(--azul);
     background: var(--azul-fraco);
 }
+
+
+/* O aviso do teto da conta. Amarelo e não vermelho: não é erro nem
+   castigo, é uma regra do site com um caminho de saída ao lado — e o
+   caminho está ali, no botão, para não virar beco. */
+.aviso-limite {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+    padding: 16px 18px;
+    margin-bottom: 22px;
+    border: 1px solid #f0d9a0;
+    border-radius: 14px;
+    background: #fdf6e6;
+    color: #6b5426;
+    font-size: 14.5px;
+    line-height: 1.5;
+}
+.aviso-limite b { color: #4a3a17; }
+.aviso-limite .btn { flex: 0 0 auto; }
+
+/* Botão desligado com o motivo no title: a pessoa vê que existe, vê
+   que não dá, e o aviso logo acima diz por quê. */
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+
+@media (max-width: 560px) {
+    .aviso-limite .btn { width: 100%; justify-content: center; }
+}

@@ -47,6 +47,12 @@ let jaNoAr = [];           // fotos que já estão no banco: { id, caminho }
 let paraApagar = [];       // ids de foto que a pessoa tirou durante a edição
 let cidades = [];
 
+/* Quantos anúncios no ar esta conta pode ter. Um, salvo liberação
+   feita à mão por você no banco. Quem faz valer é o gatilho do
+   10-um-anuncio-por-conta.sql; aqui o número serve só para avisar
+   antes, em vez de deixar a pessoa descobrir no botão. */
+let limiteDaConta = 1;
+
 /* Quando isto tem valor, a página está editando um anúncio que já
    existe em vez de criar um novo. Muda o texto do botão, o que o envio
    faz e o que a página carrega na abertura. */
@@ -81,6 +87,11 @@ function traduzirErro(erro) {
     if (m.includes('password')) return 'A senha precisa de pelo menos 6 caracteres.';
     if (m.includes('no_ar_tem_endereco')) return 'Anúncio no ar precisa de rua e número.';
     if (m.includes('moradores_plausivel')) return 'Quantos moram tem que ser entre 0 e 30.';
+    // A etiqueta vem do gatilho do 10-um-anuncio-por-conta.sql.
+    if (m.includes('limite_de_anuncios')) {
+        return 'Sua conta já tem anúncio no ar. Tire o atual do ar, ou me chame '
+             + 'no WhatsApp para liberar a conta se você tem mais de uma república.';
+    }
     return erro && erro.message ? erro.message : 'Não deu certo. Tente de novo.';
 }
 
@@ -672,6 +683,8 @@ async function carregarMinhas() {
         return;
     }
 
+    conferirLimite(data.filter(v => v.ativa).length);
+
     listaMinhas.replaceChildren(...data.map(vaga => {
         const linha = document.createElement('div');
         linha.className = 'meu-item';
@@ -898,6 +911,7 @@ async function entrar() {
 
     await carregarCidades();
     await preencherDoPerfil();
+    await carregarLimite();
 
     if (editandoId) await carregarParaEditar(editandoId);
 
@@ -927,4 +941,47 @@ if (!banco) {
         'O site ainda não está ligado ao banco. Confira o js/supabase-config.js.';
 } else {
     entrar();
+}
+
+
+/* ---------------------------------------------------------------------
+   O teto da conta
+
+   Um anúncio no ar por conta. Quem tem duas repúblicas de verdade fala
+   com o administrador e ganha o teto maior — é a mesma ideia do
+   Comércio Alfenas: não dá para detectar um corretor, mas dá para
+   encarecer o volume. Dono de uma casa nunca esbarra nisto.
+
+   Editar não conta: mexer no anúncio que já está no ar continua livre,
+   senão a pessoa no limite ficaria sem poder corrigir o próprio preço.
+   --------------------------------------------------------------------- */
+const avisoLimite = document.getElementById('avisoLimite');
+
+function conferirLimite(ativos) {
+    const estourou = !editandoId && ativos >= limiteDaConta;
+
+    avisoLimite.hidden = !estourou;
+    botaoPublicar.disabled = estourou;
+    botaoPublicar.title = estourou
+        ? 'Sua conta já tem anúncio no ar. Tire um do ar ou peça liberação.'
+        : '';
+
+    // O pedido já vai escrito: quem está pedindo liberação não deve ter
+    // que explicar do zero quem é nem o que quer.
+    const pedido = document.getElementById('pedirLiberacao');
+    if (estourou && usuario) {
+        const texto = 'Olá! Sou anunciante no Achei República (' + usuario.email
+            + ') e tenho mais de uma república. Posso anunciar a segunda?';
+        pedido.href = 'https://wa.me/5531999347032?text=' + encodeURIComponent(texto);
+    }
+}
+
+/* O teto vem do perfil. Se a leitura falhar, fica em 1 — errar para o
+   lado apertado só faz a pessoa falar com você; errar para o lado
+   frouxo deixa passar o que a regra existe para barrar. */
+async function carregarLimite() {
+    const { data } = await banco.from('perfis')
+        .select('limite_anuncios').eq('id', usuario.id).maybeSingle();
+
+    limiteDaConta = (data && data.limite_anuncios) ? data.limite_anuncios : 1;
 }
