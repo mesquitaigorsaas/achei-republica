@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Entrar — Achei República</title>
+<meta name="description" content="Entre na sua conta do Achei República para cuidar da sua vaga anunciada." />
+<meta name="robots" content="noindex" />
+
+<link rel="icon" type="image/png" sizes="32x32" href="../img/favicon-32.png" />
+<link rel="apple-touch-icon" sizes="180x180" href="../img/favicon-180.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../css/style.css" />
+<link rel="stylesheet" href="../css/conta.css" />
+</head>
+<body>
+
+<header class="topo" id="topo">
+  <div class="wrap">
+    <div class="topo-barra">
+      <a href="../index.html" class="marca" aria-label="Achei República">
+        <img src="../img/logoHorizontal.png" alt="Achei República" width="880" height="191" />
+      </a>
+
+      <button class="menu-botao" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="menu">
+        <span></span><span></span><span></span>
+      </button>
+
+      <nav class="menu" id="menu">
+        <a href="../index.html#cidade">Busque repúblicas</a>
+        <a href="../index.html#como">Como funciona</a>
+        <a href="cadastro.html" class="btn btn-azul">Criar conta</a>
+      </nav>
+    </div>
+  </div>
+</header>
+
+<main class="conta">
+  <div class="wrap">
+    <div class="conta-caixa">
+
+      <h1 class="conta-titulo">Entrar na sua conta</h1>
+      <p class="conta-linha-fina">
+        Para cuidar da vaga que você anunciou: mudar o preço, trocar as fotos
+        ou tirar do ar quando alugar.
+      </p>
+
+      <div class="recado" id="recado" role="alert" hidden></div>
+
+      <form id="formLogin" novalidate>
+
+        <div class="campo">
+          <label for="email">E-mail <span class="obrigatorio">*</span></label>
+          <input type="email" id="email" name="email" autocomplete="email"
+                 placeholder="seuemail@exemplo.com" required />
+        </div>
+
+        <div class="campo">
+          <label for="senha">Senha <span class="obrigatorio">*</span></label>
+          <div class="com-olho">
+            <input type="password" id="senha" name="senha" autocomplete="current-password"
+                   placeholder="Sua senha" required />
+            <button type="button" class="olho" data-campo="senha" aria-label="Mostrar a senha">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                   stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12Z" />
+                <circle cx="12" cy="12" r="3" />
+                <line class="risco" x1="3" y1="21" x2="21" y2="3" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <p class="conta-esqueci"><a href="recuperar-senha.html">Esqueci minha senha</a></p>
+
+        <button type="submit" class="btn btn-azul" id="botaoEntrar">Entrar</button>
+      </form>
+
+      <p class="conta-pe">
+        Ainda não tem conta? <a href="cadastro.html">Criar conta de graça</a>
+      </p>
+
+    </div>
+  </div>
+</main>
+
+<footer class="rodape">
+  <div class="wrap">
+    <p class="direitos">© 2026 Achei República — Por Mesquita SaaS</p>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/supabase-config.js"></script>
+<script src="../js/conta.js"></script>
+<script>
+/* =====================================================================
+   Entrar
+   ===================================================================== */
+const formLogin = document.getElementById('formLogin');
+const botaoEntrar = document.getElementById('botaoEntrar');
+
+formLogin.addEventListener('submit', async evento => {
+    evento.preventDefault();
+    limparRecado();
+
+    if (!banco) {
+        recado('O site ainda não está ligado ao banco de dados. Preencha js/supabase-config.js.');
+        return;
+    }
+
+    const email = document.getElementById('email').value.trim();
+    const senha = document.getElementById('senha').value;
+
+    if (!email || !senha) {
+        recado('Preencha o e-mail e a senha.');
+        return;
+    }
+
+    ocupado(botaoEntrar, true, 'Entrando...');
+
+    const { error } = await banco.auth.signInWithPassword({ email, password: senha });
+
+    if (error) {
+        ocupado(botaoEntrar, false);
+        recado(traduzir(error));
+        return;
+    }
+
+    location.href = destinoDepoisDoLogin();
+});
+
+/* Quem já está logado não tem o que fazer nesta tela. */
+(async () => {
+    if (!banco) return;
+    const { data } = await banco.auth.getSession();
+    if (data.session) location.href = destinoDepoisDoLogin();
+})();
+</script>
+
+</body>
+</html>

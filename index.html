@@ -209,12 +209,47 @@
       <button type="button" id="refazerQuiz">Refazer as perguntas</button>
     </div>
 
-    <div class="fichas" role="group" aria-label="Ordenar e filtrar">
+    <!-- Filtros à esquerda, porta dos classificados à direita. As duas
+         coisas que a pessoa pode fazer nesta cidade, lado a lado. -->
+    <div class="linha-vitrine">
+      <div class="fichas" role="group" aria-label="Ordenar e filtrar">
       <button class="ficha ativa" type="button" data-ficha="combinam">Mais combinam</button>
       <button class="ficha" type="button" data-ficha="faculdade">Perto da faculdade</button>
       <button class="ficha" type="button" data-ficha="preco">Menor preço</button>
       <button class="ficha" type="button" data-ficha="pet">Aceita pet</button>
       <button class="ficha" type="button" data-ficha="caucao">Sem caução</button>
+      </div>
+
+      <!-- A porta dos classificados.
+
+           Quem sai da cidade tem geladeira, ventilador e escrivaninha
+           que não cabem na mudança. Quem chega precisa exatamente
+           disso e não quer comprar novo. Hoje os dois se encontram por
+           acaso, num grupo de WhatsApp onde o anúncio some na rolagem
+           em duas horas.
+
+           Fica aqui, ao lado dos filtros, porque é a segunda coisa que
+           se faz numa cidade depois de procurar vaga — e não numa aba
+           escondida que ninguém abriria. Os cômodos são as opções
+           porque é assim que o aluno pensa quando está montando o
+           lugar: não "eletrodoméstico", e sim "falta coisa na minha
+           cozinha". -->
+      <div class="classificados-porta">
+        <div class="classificados-campo">
+          <label for="selPrecisando">Estou precisando de</label>
+          <select id="selPrecisando">
+            <option value="" selected>Escolha o cômodo</option>
+            <option value="quarto">Para meu quarto</option>
+            <option value="cozinha">Para minha cozinha</option>
+            <option value="banheiro">Para meu banheiro</option>
+            <option value="area-de-servico">Para área de serviço</option>
+            <option value="quintal">Para o quintal</option>
+          </select>
+        </div>
+        <a class="classificados-desfazendo" id="linkDesfazendo" href="classificados.html?modo=desfazendo">
+          Estou desfazendo de
+        </a>
+      </div>
     </div>
 
     <!-- "Perto da faculdade" não quer dizer nada sozinho: perto de qual?
@@ -388,6 +423,14 @@
           <small>Foto em breve</small>
           <span class="selo-tipo">Mista</span>
           <span class="selo-match">—</span>
+          <button class="denunciar" type="button" title="Denunciar anúncio"
+                  aria-label="Denunciar este anúncio">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4.5 21V4" />
+              <path d="M4.5 5.2s1.9-1.4 4.8-1.4 3.9 1.4 6.7 1.4c1.4 0 2.2-.3 2.9-.6v8.7c-.7.3-1.5.6-2.9.6-2.8 0-3.8-1.4-6.7-1.4s-4.8 1.4-4.8 1.4" />
+            </svg>
+          </button>
         </div>
         <div class="anuncio-corpo">
           <h3>República da Serra</h3>
@@ -406,6 +449,14 @@
           <small>Foto em breve</small>
           <span class="selo-tipo">Feminina</span>
           <span class="selo-match">—</span>
+          <button class="denunciar" type="button" title="Denunciar anúncio"
+                  aria-label="Denunciar este anúncio">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4.5 21V4" />
+              <path d="M4.5 5.2s1.9-1.4 4.8-1.4 3.9 1.4 6.7 1.4c1.4 0 2.2-.3 2.9-.6v8.7c-.7.3-1.5.6-2.9.6-2.8 0-3.8-1.4-6.7-1.4s-4.8 1.4-4.8 1.4" />
+            </svg>
+          </button>
         </div>
         <div class="anuncio-corpo">
           <h3>Casa das Meninas</h3>
@@ -424,6 +475,14 @@
           <small>Foto em breve</small>
           <span class="selo-tipo">Kitnet</span>
           <span class="selo-match">—</span>
+          <button class="denunciar" type="button" title="Denunciar anúncio"
+                  aria-label="Denunciar este anúncio">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4.5 21V4" />
+              <path d="M4.5 5.2s1.9-1.4 4.8-1.4 3.9 1.4 6.7 1.4c1.4 0 2.2-.3 2.9-.6v8.7c-.7.3-1.5.6-2.9.6-2.8 0-3.8-1.4-6.7-1.4s-4.8 1.4-4.8 1.4" />
+            </svg>
+          </button>
         </div>
         <div class="anuncio-corpo">
           <h3>Kitnet Vila Rica</h3>
@@ -442,6 +501,14 @@
           <small>Foto em breve</small>
           <span class="selo-tipo">Masculina</span>
           <span class="selo-match">—</span>
+          <button class="denunciar" type="button" title="Denunciar anúncio"
+                  aria-label="Denunciar este anúncio">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4.5 21V4" />
+              <path d="M4.5 5.2s1.9-1.4 4.8-1.4 3.9 1.4 6.7 1.4c1.4 0 2.2-.3 2.9-.6v8.7c-.7.3-1.5.6-2.9.6-2.8 0-3.8-1.4-6.7-1.4s-4.8 1.4-4.8 1.4" />
+            </svg>
+          </button>
         </div>
         <div class="anuncio-corpo">
           <h3>República União</h3>
@@ -460,6 +527,14 @@
           <small>Foto em breve</small>
           <span class="selo-tipo">LGBTQIAPN+</span>
           <span class="selo-match">—</span>
+          <button class="denunciar" type="button" title="Denunciar anúncio"
+                  aria-label="Denunciar este anúncio">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4.5 21V4" />
+              <path d="M4.5 5.2s1.9-1.4 4.8-1.4 3.9 1.4 6.7 1.4c1.4 0 2.2-.3 2.9-.6v8.7c-.7.3-1.5.6-2.9.6-2.8 0-3.8-1.4-6.7-1.4s-4.8 1.4-4.8 1.4" />
+            </svg>
+          </button>
         </div>
         <div class="anuncio-corpo">
           <h3>Espaço Girassol</h3>
@@ -478,6 +553,14 @@
           <small>Foto em breve</small>
           <span class="selo-tipo">Apartamento</span>
           <span class="selo-match">—</span>
+          <button class="denunciar" type="button" title="Denunciar anúncio"
+                  aria-label="Denunciar este anúncio">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4.5 21V4" />
+              <path d="M4.5 5.2s1.9-1.4 4.8-1.4 3.9 1.4 6.7 1.4c1.4 0 2.2-.3 2.9-.6v8.7c-.7.3-1.5.6-2.9.6-2.8 0-3.8-1.4-6.7-1.4s-4.8 1.4-4.8 1.4" />
+            </svg>
+          </button>
         </div>
         <div class="anuncio-corpo">
           <h3>Apê do João</h3>
@@ -732,7 +815,71 @@
   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4.6 4.9 11.7a1 1 0 0 0 1.4 1.4L11 8.4V19a1 1 0 1 0 2 0V8.4l4.7 4.7a1 1 0 0 0 1.4-1.4z"/></svg>
 </a>
 
+
+<!-- =====================================================================
+     DENUNCIAR ANÚNCIO
+
+     O estudante é quem reconhece imobiliária: ele já viu o mesmo texto
+     e a mesma foto em três sites. Não pede conta de propósito — exigir
+     login para denunciar é o mesmo que não ter denúncia.
+     ===================================================================== -->
+<div class="denuncia" id="denuncia" role="dialog" aria-modal="true"
+     aria-labelledby="denunciaTitulo" hidden>
+  <div class="denuncia-caixa">
+
+    <button class="denuncia-fechar" id="denunciaFechar" type="button" aria-label="Fechar">✕</button>
+
+    <h2 id="denunciaTitulo">Denunciar anúncio</h2>
+    <p class="denuncia-alvo" id="denunciaAlvo"></p>
+    <p class="denuncia-dica">
+      A gente olha uma por uma. O anunciante não fica sabendo quem denunciou,
+      e você não precisa ter conta.
+    </p>
+
+    <p class="denuncia-erro" id="denunciaErro" role="alert" hidden></p>
+    <p class="denuncia-obrigado" id="denunciaObrigado" hidden></p>
+
+    <form id="denunciaForm">
+      <fieldset class="denuncia-motivos">
+        <legend>O que há de errado?</legend>
+
+        <label><input type="radio" name="motivo" value="imobiliaria" />
+          <span><b>É de imobiliária ou corretor</b>
+          <span>Anúncio de intermediário, não de quem mora ou tem a casa.</span></span></label>
+
+        <label><input type="radio" name="motivo" value="anuncio_falso" />
+          <span><b>O anúncio é falso</b>
+          <span>Foto de outra casa, preço que não existe, república inventada.</span></span></label>
+
+        <label><input type="radio" name="motivo" value="golpe" />
+          <span><b>Parece golpe</b>
+          <span>Pediram depósito antes de visitar, ou sumiram depois do PIX.</span></span></label>
+
+        <label><input type="radio" name="motivo" value="ja_alugada" />
+          <span><b>A vaga já foi alugada</b>
+          <span>Continua no ar, mas não existe mais vaga.</span></span></label>
+
+        <label><input type="radio" name="motivo" value="outro" />
+          <span><b>Outro motivo</b>
+          <span>Conte abaixo o que aconteceu.</span></span></label>
+      </fieldset>
+
+      <label class="denuncia-detalhe" for="denunciaDetalhe">
+        Quer contar mais? <span>(opcional)</span>
+      </label>
+      <textarea id="denunciaDetalhe" rows="3"
+                placeholder="O que você viu que não bateu"></textarea>
+
+      <button type="submit" class="btn btn-azul" id="denunciaEnviar">Enviar denúncia</button>
+    </form>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js"></script>
 <script src="js/script.js" defer></script>
+<script src="js/denuncia.js" defer></script>
 
 </body>
 </html>

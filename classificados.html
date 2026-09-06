@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Classificados — Achei República</title>
+<meta name="description" content="Móvel, geladeira, ventilador e escrivaninha de quem está saindo da cidade, para quem está chegando. Por cômodo e por cidade, no Sul de Minas." />
+
+<meta property="og:title" content="Classificados — Achei República" />
+<meta property="og:description" content="Quem sai vende, quem chega compra. Organizado por cômodo, na sua cidade." />
+<meta property="og:type" content="website" />
+
+<!-- Página de listagem: o que interessa ao Google é o site, não cada
+     combinação de cidade e cômodo, que muda o dia inteiro e geraria
+     dezenas de endereços com o mesmo conteúdo. -->
+<meta name="robots" content="noindex, follow" />
+
+<link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png" />
+<link rel="apple-touch-icon" sizes="180x180" href="img/favicon-180.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="img/favicon-512.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<header class="topo" id="topo">
+  <div class="wrap">
+    <div class="topo-barra">
+      <a href="index.html" class="marca" aria-label="Achei República">
+        <img src="img/logoHorizontal.png" alt="Achei República" width="880" height="191" />
+      </a>
+
+      <button class="menu-botao" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="menu">
+        <span></span><span></span><span></span>
+      </button>
+
+      <nav class="menu" id="menu">
+        <a href="index.html#cidade">Busque repúblicas</a>
+        <a href="index.html#como">Como funciona</a>
+        <a href="index.html#quem-somos">Quem somos</a>
+        <a href="index.html#contato">Contato</a>
+        <a href="index.html#anunciar" class="btn btn-azul">Tenho uma vaga</a>
+      </nav>
+    </div>
+  </div>
+</header>
+
+<main class="secao" id="classificados">
+  <div class="wrap">
+
+    <!-- Volta para a busca de repúblicas mantendo a cidade: quem veio
+         de Alfenas não deve voltar para uma página sem cidade
+         escolhida. O endereço é montado pelo js/classificados.js. -->
+    <a class="voltar-busca" id="voltarBusca" href="index.html">← Voltar para as repúblicas</a>
+
+    <div class="cabeca">
+      <h2>Classificados em <span id="nomeCidade">Alfenas</span></h2>
+      <p id="linhaFina">
+        Quem está saindo da cidade vende. Quem está chegando monta a casa
+        sem comprar tudo novo.
+      </p>
+    </div>
+
+    <!-- Os cômodos. Repetem exatamente a ordem da porta na página
+         inicial: quem clicou "Para minha cozinha" lá chega aqui e vê a
+         cozinha acesa no mesmo lugar da lista. -->
+    <div class="fichas" role="group" aria-label="Filtrar por cômodo">
+      <button class="ficha ativa" type="button" data-comodo="">Tudo</button>
+      <button class="ficha" type="button" data-comodo="quarto">Quarto</button>
+      <button class="ficha" type="button" data-comodo="cozinha">Cozinha</button>
+      <button class="ficha" type="button" data-comodo="banheiro">Banheiro</button>
+      <button class="ficha" type="button" data-comodo="area-de-servico">Área de serviço</button>
+      <button class="ficha" type="button" data-comodo="quintal">Quintal</button>
+    </div>
+
+    <div class="itens" id="itens" hidden></div>
+
+    <!-- Nenhum anúncio ainda. Não é defeito: é o estado real de uma
+         seção que acabou de nascer, e a hora exata de pedir o primeiro.
+         Uma página em branco faria a pessoa achar que quebrou. -->
+    <div class="vazio" id="itensVazio">
+      <div class="vazio-icone" aria-hidden="true">📦</div>
+      <h3 id="vazioTitulo">Ainda não tem nada anunciado em <span id="nomeCidadeVazio">Alfenas</span></h3>
+      <p id="vazioTexto">
+        Esta parte do site acabou de abrir. Se você está de mudança e tem
+        móvel, geladeira ou ventilador para passar adiante, anuncie agora —
+        quem chega em janeiro procura exatamente isso.
+      </p>
+      <!-- Sem "?destino=" de propósito. O conta.js só aceita destino
+           que comece com barra, e o site mora numa subpasta no GitHub
+           Pages — uma barra no começo mandaria a pessoa para fora do
+           projeto. Enquanto a volta não funcionar de verdade, o botão
+           leva ao login e para por aí, sem prometer o retorno. -->
+      <a href="auth/login.html" class="btn btn-azul" id="botaoAnunciar">Quero anunciar</a>
+    </div>
+
+  </div>
+</main>
+
+<footer class="rodape">
+  <div class="wrap">
+    <div class="rodape-inner">
+      <a href="index.html"><img src="img/logoHorizontal.png" alt="Achei República" width="880" height="191" /></a>
+      <nav class="rodape-links">
+        <a href="index.html#cidade">Busque repúblicas</a>
+        <a href="index.html#como">Como funciona</a>
+        <a href="index.html#quem-somos">Quem somos</a>
+        <a href="index.html#contato">Contato</a>
+        <a href="index.html#anunciar">Tenho uma vaga</a>
+      </nav>
+    </div>
+    <p class="direitos">© 2026 Achei República — Por Mesquita SaaS</p>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/classificados.js" defer></script>
+
+</body>
+</html>

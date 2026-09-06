@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Criar conta — Achei República</title>
+<meta name="description" content="Crie sua conta de graça para anunciar a vaga da sua república no Achei República." />
+<meta name="robots" content="noindex" />
+
+<link rel="icon" type="image/png" sizes="32x32" href="../img/favicon-32.png" />
+<link rel="apple-touch-icon" sizes="180x180" href="../img/favicon-180.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../css/style.css" />
+<link rel="stylesheet" href="../css/conta.css" />
+</head>
+<body>
+
+<header class="topo" id="topo">
+  <div class="wrap">
+    <div class="topo-barra">
+      <a href="../index.html" class="marca" aria-label="Achei República">
+        <img src="../img/logoHorizontal.png" alt="Achei República" width="880" height="191" />
+      </a>
+
+      <button class="menu-botao" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="menu">
+        <span></span><span></span><span></span>
+      </button>
+
+      <nav class="menu" id="menu">
+        <a href="../index.html#cidade">Busque repúblicas</a>
+        <a href="../index.html#como">Como funciona</a>
+        <a href="login.html" class="btn btn-azul">Entrar</a>
+      </nav>
+    </div>
+  </div>
+</header>
+
+<main class="conta">
+  <div class="wrap">
+    <div class="conta-caixa larga">
+
+      <h1 class="conta-titulo">Criar conta para anunciar</h1>
+      <p class="conta-linha-fina">
+        É de graça e leva dois minutos. Depois da conta criada, você cadastra
+        a vaga: fotos, preço, o que está incluso e a que distância fica da
+        faculdade.
+      </p>
+
+      <div class="recado" id="recado" role="alert" hidden></div>
+
+      <form id="formCadastro" novalidate>
+
+        <!-- ---------------------------------------------------------------
+             QUEM É VOCÊ
+             --------------------------------------------------------------- -->
+        <h2 class="bloco-titulo">Seus dados</h2>
+
+        <div class="campo">
+          <label for="nome">Nome completo <span class="obrigatorio">*</span></label>
+          <input type="text" id="nome" autocomplete="name" placeholder="Como você assina" required />
+        </div>
+
+        <div class="dupla">
+          <div class="campo">
+            <label for="telefone">WhatsApp <span class="obrigatorio">*</span></label>
+            <input type="tel" id="telefone" autocomplete="tel" inputmode="numeric"
+                   data-mascara="telefone" placeholder="(35) 99999-9999" required />
+            <span class="ajuda">É por aqui que o estudante fala com você. Um número, uma conta.</span>
+          </div>
+
+          <div class="campo">
+            <label for="email">E-mail <span class="obrigatorio">*</span></label>
+            <input type="email" id="email" autocomplete="email"
+                   placeholder="seuemail@exemplo.com" required />
+          </div>
+        </div>
+
+        <!-- ---------------------------------------------------------------
+             RELAÇÃO COM A CASA
+
+             A pergunta que separa quem tem uma vaga de quem vive de
+             anunciar. Não existe opção de corretor de propósito.
+             --------------------------------------------------------------- -->
+        <h2 class="bloco-titulo">Sua relação com a casa</h2>
+
+        <div class="relacao">
+          <label class="relacao-opcao">
+            <input type="radio" name="relacao" value="moro" required />
+            <span>
+              <b>Moro na república</b>
+              <span>Sou morador e estou procurando alguém para a vaga que sobrou.</span>
+            </span>
+          </label>
+
+          <label class="relacao-opcao">
+            <input type="radio" name="relacao" value="dono" />
+            <span>
+              <b>Sou dono do imóvel</b>
+              <span>A casa é minha e eu alugo direto para os estudantes.</span>
+            </span>
+          </label>
+
+          <label class="relacao-opcao">
+            <input type="radio" name="relacao" value="responsavel" />
+            <span>
+              <b>Cuido da república</b>
+              <span>Administro a casa para a família ou para o dono, sem ser imobiliária.</span>
+            </span>
+          </label>
+        </div>
+
+        <!-- ---------------------------------------------------------------
+             ENDEREÇO DA PESSOA
+
+             O endereço da república vem depois, no anúncio: quem é dono
+             quase nunca mora na casa que aluga.
+             --------------------------------------------------------------- -->
+        <h2 class="bloco-titulo">Seu endereço</h2>
+
+        <div class="dupla dupla-estreita">
+          <div class="campo">
+            <label for="cep">CEP <span class="obrigatorio">*</span></label>
+            <input type="text" id="cep" autocomplete="postal-code" inputmode="numeric"
+                   data-mascara="cep" placeholder="37130-000" required />
+            <span class="ajuda">O resto do endereço aparece sozinho.</span>
+          </div>
+
+          <div class="campo">
+            <label for="numero">Número <span class="obrigatorio">*</span></label>
+            <input type="text" id="numero" autocomplete="address-line2" placeholder="62" required />
+          </div>
+        </div>
+
+        <div class="campo">
+          <label for="logradouro">Endereço <span class="obrigatorio">*</span></label>
+          <input type="text" id="logradouro" autocomplete="address-line1"
+                 placeholder="Rua, avenida ou praça" required />
+        </div>
+
+        <div class="dupla">
+          <div class="campo">
+            <label for="complemento">Complemento</label>
+            <input type="text" id="complemento" placeholder="Apto, bloco, fundos (opcional)" />
+          </div>
+
+          <div class="campo">
+            <label for="bairro">Bairro <span class="obrigatorio">*</span></label>
+            <input type="text" id="bairro" placeholder="Centro" required />
+          </div>
+        </div>
+
+        <div class="dupla dupla-estreita">
+          <div class="campo">
+            <label for="cidade">Cidade <span class="obrigatorio">*</span></label>
+            <input type="text" id="cidade" placeholder="Alfenas" required />
+          </div>
+
+          <div class="campo">
+            <label for="uf">Estado <span class="obrigatorio">*</span></label>
+            <input type="text" id="uf" maxlength="2" placeholder="MG" required
+                   style="text-transform: uppercase;" />
+          </div>
+        </div>
+
+        <!-- ---------------------------------------------------------------
+             SENHA
+             --------------------------------------------------------------- -->
+        <h2 class="bloco-titulo">Sua senha</h2>
+
+        <div class="dupla">
+          <div class="campo">
+            <label for="senha">Crie uma senha <span class="obrigatorio">*</span></label>
+            <div class="com-olho">
+              <input type="password" id="senha" autocomplete="new-password"
+                     placeholder="Mínimo de 6 caracteres" required minlength="6" />
+              <button type="button" class="olho" data-campo="senha" aria-label="Mostrar a senha">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12Z" />
+                  <circle cx="12" cy="12" r="3" />
+                  <line class="risco" x1="3" y1="21" x2="21" y2="3" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="campo">
+            <label for="senha2">Repita a senha <span class="obrigatorio">*</span></label>
+            <div class="com-olho">
+              <input type="password" id="senha2" autocomplete="new-password"
+                     placeholder="A mesma senha" required minlength="6" />
+              <button type="button" class="olho" data-campo="senha2" aria-label="Mostrar a senha">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12Z" />
+                  <circle cx="12" cy="12" r="3" />
+                  <line class="risco" x1="3" y1="21" x2="21" y2="3" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ---------------------------------------------------------------
+             A REGRA DA CASA
+
+             Não impede ninguém de mentir — nada impede. Serve para que
+             tirar o anúncio depois seja cumprir uma regra que a pessoa
+             leu e marcou, com data e hora guardadas, e não perseguição.
+
+             Por isso está escrita por extenso, com destaque, e não como
+             uma linha de letra miúda ao lado de uma caixinha. Ninguém
+             pode dizer que não viu.
+             --------------------------------------------------------------- -->
+        <section class="regra" aria-labelledby="tituloRegra">
+          <h2 class="regra-titulo" id="tituloRegra">A regra da casa</h2>
+
+          <p class="regra-frase">
+            O Achei República é de quem mora e de quem tem a casa.
+            <b>Imobiliária e corretor de imóveis não anunciam aqui.</b>
+          </p>
+
+          <ul class="regra-lista">
+            <li>Você só anuncia vaga em casa com a qual tem relação direta: mora nela,
+              é dono dela ou cuida dela.</li>
+            <li>Anúncio de intermediário é retirado assim que a gente identifica,
+              sem devolução e sem aviso.</li>
+            <li>Uma pessoa, uma conta. Abrir vários cadastros para fugir do limite
+              de anúncios derruba todos eles.</li>
+            <li>Estudante pode denunciar qualquer anúncio que pareça de imobiliária.
+              A gente olha um por um.</li>
+          </ul>
+
+          <label class="regra-aceite">
+            <input type="checkbox" id="aceite" required />
+            <span>Li a regra e confirmo: <b>não sou imobiliária nem corretor de
+              imóveis</b>, e a vaga que vou anunciar é de uma casa com a qual tenho
+              relação direta.</span>
+          </label>
+        </section>
+
+        <button type="submit" class="btn btn-azul" id="botaoCriar">Criar minha conta</button>
+      </form>
+
+      <p class="conta-pe">
+        Já tem conta? <a href="login.html">Entrar</a>
+      </p>
+
+    </div>
+  </div>
+</main>
+
+<footer class="rodape">
+  <div class="wrap">
+    <p class="direitos">© 2026 Achei República — Por Mesquita SaaS</p>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/supabase-config.js"></script>
+<script src="../js/conta.js"></script>
+<script>
+/* =====================================================================
+   Criar conta
+   ===================================================================== */
+const formCadastro = document.getElementById('formCadastro');
+const botaoCriar = document.getElementById('botaoCriar');
+
+const campoCep = document.getElementById('cep');
+const camposEndereco = {
+    logradouro: document.getElementById('logradouro'),
+    bairro:     document.getElementById('bairro'),
+    cidade:     document.getElementById('cidade'),
+    uf:         document.getElementById('uf'),
+    numero:     document.getElementById('numero')
+};
+
+campoCep.addEventListener('blur', () => buscarCep(campoCep.value, camposEndereco));
+campoCep.addEventListener('input', () => {
+    if (campoCep.value.replace(/\D/g, '').length === 8) buscarCep(campoCep.value, camposEndereco);
+});
+
+function valor(id) { return document.getElementById(id).value.trim(); }
+
+formCadastro.addEventListener('submit', async evento => {
+    evento.preventDefault();
+    limparRecado();
+
+    if (!banco) {
+        recado('O site ainda não está ligado ao banco de dados. Preencha js/supabase-config.js.');
+        return;
+    }
+
+    const dados = {
+        nome:        valor('nome'),
+        telefone:    valor('telefone'),
+        email:       valor('email'),
+        cep:         valor('cep'),
+        logradouro:  valor('logradouro'),
+        numero:      valor('numero'),
+        complemento: valor('complemento'),
+        bairro:      valor('bairro'),
+        cidade:      valor('cidade'),
+        uf:          valor('uf').toUpperCase()
+    };
+
+    const senha = document.getElementById('senha').value;
+    const senha2 = document.getElementById('senha2').value;
+    const relacaoEscolhida = formCadastro.querySelector('input[name="relacao"]:checked');
+    const aceitou = document.getElementById('aceite').checked;
+
+    /* Conferências na ordem em que a pessoa preencheu, para o recado
+     * apontar para o primeiro campo errado e não para o último. */
+    if (!dados.nome || dados.nome.split(' ').length < 2) {
+        recado('Escreva seu nome completo, com sobrenome.');
+        return;
+    }
+    if (dados.telefone.replace(/\D/g, '').length < 10) {
+        recado('O WhatsApp está incompleto. Inclua o DDD.');
+        return;
+    }
+    if (!relacaoEscolhida) {
+        recado('Diga qual é a sua relação com a casa.');
+        return;
+    }
+    if (dados.cep.replace(/\D/g, '').length !== 8) {
+        recado('O CEP precisa ter oito dígitos.');
+        return;
+    }
+    if (senha.length < 6) {
+        recado('A senha precisa de pelo menos 6 caracteres.');
+        return;
+    }
+    if (senha !== senha2) {
+        recado('As duas senhas não são iguais.');
+        return;
+    }
+    if (!aceitou) {
+        recado('Marque a confirmação no fim do formulário para continuar.');
+        return;
+    }
+
+    ocupado(botaoCriar, true, 'Criando sua conta...');
+
+    /* Pergunta antes de enviar: telefone repetido faria o cadastro
+     * morrer com um erro que ninguém entende. */
+    const { data: jaTem, error: erroTelefone } =
+        await banco.rpc('telefone_ja_cadastrado', { p_telefone: dados.telefone });
+
+    if (!erroTelefone && jaTem) {
+        ocupado(botaoCriar, false);
+        recado('Esse WhatsApp já está em uma conta. Se ela é sua, é só entrar.');
+        return;
+    }
+
+    const { error } = await banco.auth.signUp({
+        email: dados.email,
+        password: senha,
+        options: {
+            data: {
+                nome:            dados.nome,
+                telefone:        dados.telefone,
+                relacao:         relacaoEscolhida.value,
+                aceitou_regras:  'true',
+                cep:             dados.cep,
+                logradouro:      dados.logradouro,
+                numero:          dados.numero,
+                complemento:     dados.complemento,
+                bairro:          dados.bairro,
+                cidade:          dados.cidade,
+                uf:              dados.uf
+            },
+            emailRedirectTo: location.origin +
+                location.pathname.replace('cadastro.html', 'login.html')
+        }
+    });
+
+    ocupado(botaoCriar, false);
+
+    if (error) {
+        recado(traduzir(error));
+        return;
+    }
+
+    /* Com confirmação de e-mail ligada, o cadastro termina sem sessão:
+     * a pessoa precisa saber que falta um clique na caixa de entrada. */
+    const { data: sessao } = await banco.auth.getSession();
+
+    if (sessao.session) {
+        location.href = '../painel/anuncios.html';
+        return;
+    }
+
+    formCadastro.hidden = true;
+    recado('Conta criada. Enviamos um e-mail para ' + dados.email +
+           ' — clique no link de confirmação e depois entre por aqui.', 'certo');
+});
+</script>
+
+</body>
+</html>

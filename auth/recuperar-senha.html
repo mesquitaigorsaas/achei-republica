@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Recuperar senha — Achei República</title>
+<meta name="robots" content="noindex" />
+
+<link rel="icon" type="image/png" sizes="32x32" href="../img/favicon-32.png" />
+<link rel="apple-touch-icon" sizes="180x180" href="../img/favicon-180.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../css/style.css" />
+<link rel="stylesheet" href="../css/conta.css" />
+</head>
+<body>
+
+<header class="topo" id="topo">
+  <div class="wrap">
+    <div class="topo-barra">
+      <a href="../index.html" class="marca" aria-label="Achei República">
+        <img src="../img/logoHorizontal.png" alt="Achei República" width="880" height="191" />
+      </a>
+      <button class="menu-botao" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="menu">
+        <span></span><span></span><span></span>
+      </button>
+
+      <nav class="menu" id="menu">
+        <a href="login.html" class="btn btn-azul">Entrar</a>
+      </nav>
+    </div>
+  </div>
+</header>
+
+<main class="conta">
+  <div class="wrap">
+    <div class="conta-caixa">
+
+      <h1 class="conta-titulo">Recuperar a senha</h1>
+      <p class="conta-linha-fina">
+        Diga o e-mail da sua conta. Mandamos um link para você criar uma senha nova.
+      </p>
+
+      <div class="recado" id="recado" role="alert" hidden></div>
+
+      <form id="formRecuperar" novalidate>
+        <div class="campo">
+          <label for="email">E-mail da conta <span class="obrigatorio">*</span></label>
+          <input type="email" id="email" autocomplete="email"
+                 placeholder="seuemail@exemplo.com" required />
+        </div>
+
+        <button type="submit" class="btn btn-azul" id="botaoEnviar">Enviar o link</button>
+      </form>
+
+      <p class="conta-pe">Lembrou? <a href="login.html">Voltar para entrar</a></p>
+
+    </div>
+  </div>
+</main>
+
+<footer class="rodape">
+  <div class="wrap">
+    <p class="direitos">© 2026 Achei República — Por Mesquita SaaS</p>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/supabase-config.js"></script>
+<script src="../js/conta.js"></script>
+<script>
+const formRecuperar = document.getElementById('formRecuperar');
+const botaoEnviar = document.getElementById('botaoEnviar');
+
+formRecuperar.addEventListener('submit', async evento => {
+    evento.preventDefault();
+    limparRecado();
+
+    if (!banco) {
+        recado('O site ainda não está ligado ao banco de dados. Preencha js/supabase-config.js.');
+        return;
+    }
+
+    const email = document.getElementById('email').value.trim();
+    if (!email) { recado('Escreva o e-mail da sua conta.'); return; }
+
+    ocupado(botaoEnviar, true, 'Enviando...');
+
+    const { error } = await banco.auth.resetPasswordForEmail(email, {
+        redirectTo: location.origin + location.pathname.replace('recuperar-senha.html', 'login.html')
+    });
+
+    ocupado(botaoEnviar, false);
+
+    /* Damos a mesma resposta com e-mail cadastrado ou não. Dizer "esse
+     * e-mail não existe" entrega para qualquer um a lista de quem tem
+     * conta no site. */
+    if (error && !String(error.message).toLowerCase().includes('rate')) {
+        recado(traduzir(error));
+        return;
+    }
+
+    formRecuperar.hidden = true;
+    recado('Se existir uma conta com esse e-mail, o link já está a caminho. ' +
+           'Confira também a caixa de spam.', 'certo');
+});
+</script>
+
+</body>
+</html>

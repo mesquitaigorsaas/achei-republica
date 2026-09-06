@@ -399,6 +399,75 @@ h1, h2, h3 { font-family: var(--display); line-height: 1.14; letter-spacing: -0.
 .passo p { grid-column: 2; color: var(--tinta-suave); font-size: .94rem; }
 
 /* ---------- Vitrine ---------- */
+/* A linha que segura os filtros à esquerda e a porta dos classificados
+   à direita. Em tela estreita ela vira duas linhas, e a porta desce
+   inteira em vez de espremer o seletor até o texto não caber. */
+.linha-vitrine {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.linha-vitrine .fichas { margin-bottom: 0; flex: 1 1 auto; }
+
+/* A porta dos classificados.
+
+   Repete a moldura da barra de cidade de propósito: são as duas
+   perguntas do site — onde você quer morar, e o que está faltando na
+   casa. Parecidas na tela porque são irmãs. */
+.classificados-porta {
+    flex: 0 1 300px;
+    border: 1.5px solid var(--linha);
+    border-radius: 13px;
+    padding: 10px 14px;
+    background: #fff;
+}
+
+.classificados-campo { display: flex; flex-direction: column; gap: 3px; }
+
+.classificados-campo label {
+    font-size: .68rem;
+    font-weight: 800;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--tinta-fraca);
+}
+
+.classificados-campo select {
+    width: 100%;
+    font-family: var(--display);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--tinta);
+    padding: 4px 26px 4px 0;
+    border: 0;
+    background: transparent url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23007dec'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E") no-repeat right center;
+    background-size: 20px;
+    appearance: none;
+    cursor: pointer;
+}
+.classificados-campo select:focus { outline: 2px solid var(--azul); outline-offset: 3px; }
+
+/* O outro lado da mesma moeda, e menor de propósito: numa cidade
+   universitária chega muito mais gente precisando do que saindo, e o
+   caminho mais usado é o que fica maior. */
+.classificados-desfazendo {
+    display: inline-block;
+    margin-top: 4px;
+    font-size: .82rem;
+    font-weight: 600;
+    color: var(--azul);
+    text-decoration: none;
+}
+.classificados-desfazendo:hover { text-decoration: underline; }
+
+@media (max-width: 720px) {
+    .classificados-porta { flex: 1 1 100%; }
+}
+
 .fichas { display: flex; gap: 9px; flex-wrap: wrap; margin-bottom: 20px; }
 
 .ficha {
@@ -1006,3 +1075,151 @@ a.contato:hover { border-color: var(--azul-linha); transform: translateY(-3px); 
 
 #contato .wrap { text-align: center; }
 #contato .zap { text-align: left; }
+
+/* =====================================================================
+   DENUNCIAR ANÚNCIO
+
+   O botão fica no pé da foto porque os dois cantos de cima já são dos
+   selos, e porque denúncia não pode competir com o preço na leitura.
+   Discreto de propósito: quem precisa dele procura, e quem não precisa
+   não tropeça.
+   ===================================================================== */
+.denunciar {
+    position: absolute;
+    right: 10px; bottom: 10px;
+    width: 32px; height: 32px;
+    display: grid; place-items: center;
+    background: rgba(255, 255, 255, .9);
+    border: 1px solid rgba(20, 32, 43, .08);
+    border-radius: 999px;
+    color: var(--tinta-fraca);
+    cursor: pointer;
+    opacity: .75;
+    transition: opacity .18s, color .18s, background .18s;
+}
+.denunciar svg { width: 16px; height: 16px; }
+.denunciar:hover { opacity: 1; color: #c0392b; background: #fff; }
+.denunciar:focus-visible { opacity: 1; outline: 2px solid var(--azul); outline-offset: 2px; }
+
+.denuncia {
+    position: fixed;
+    inset: 0;
+    z-index: 210;
+    background: rgba(10, 22, 32, .55);
+    backdrop-filter: blur(6px);
+    display: grid;
+    place-items: center;
+    padding: 20px;
+}
+.denuncia[hidden] { display: none; }
+
+.denuncia-caixa {
+    position: relative;
+    width: min(520px, 100%);
+    max-height: 92vh;
+    overflow: auto;
+    background: #fff;
+    border-radius: 26px;
+    box-shadow: 0 40px 90px -30px rgba(0, 0, 0, .6);
+    padding: 30px 30px 26px;
+    animation: sobe .28s ease;
+}
+
+.denuncia-fechar {
+    position: absolute;
+    top: 16px; right: 16px;
+    width: 34px; height: 34px;
+    display: grid; place-items: center;
+    background: var(--nevoa);
+    border: 0; border-radius: 999px;
+    font-size: 15px; color: var(--tinta-suave);
+    cursor: pointer;
+}
+.denuncia-fechar:hover { background: var(--linha); color: var(--tinta); }
+.denuncia-fechar:focus-visible { outline: 2px solid var(--azul); outline-offset: 2px; }
+
+.denuncia-caixa h2 {
+    font-family: var(--display);
+    font-size: 1.32rem; font-weight: 700;
+    letter-spacing: -.02em;
+    margin: 0 40px 4px 0;
+}
+
+.denuncia-alvo {
+    font-weight: 700; font-size: .98rem;
+    color: var(--azul-forte);
+    margin: 0 0 8px;
+}
+
+.denuncia-dica {
+    font-size: .88rem; line-height: 1.5;
+    color: var(--tinta-suave);
+    margin: 0 0 20px;
+}
+
+.denuncia-erro,
+.denuncia-obrigado {
+    font-size: .9rem; line-height: 1.5;
+    border-radius: var(--raio);
+    padding: 13px 15px;
+    margin: 0 0 16px;
+}
+.denuncia-erro     { background: #fdf0ee; color: #8f2c19; border: 1px solid #f3c9c1; }
+.denuncia-obrigado { background: #eafaf1; color: #0b6b41; border: 1px solid #b7e7cd; }
+
+.denuncia-motivos { border: 0; padding: 0; margin: 0 0 18px; }
+
+.denuncia-motivos legend {
+    font-size: .82rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .08em;
+    color: var(--tinta-suave);
+    padding: 0; margin-bottom: 10px;
+}
+
+.denuncia-motivos label {
+    display: flex; align-items: flex-start; gap: 11px;
+    border: 1.5px solid var(--linha);
+    border-radius: var(--raio);
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+}
+.denuncia-motivos label:hover { border-color: var(--azul-linha); background: var(--nevoa); }
+.denuncia-motivos label:has(input:checked) { border-color: var(--azul); background: var(--azul-fraco); }
+.denuncia-motivos label:has(input:focus-visible) { outline: 2px solid var(--azul); outline-offset: 2px; }
+
+.denuncia-motivos input { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--azul); flex: none; }
+.denuncia-motivos b { display: block; font-size: .95rem; color: var(--tinta); }
+.denuncia-motivos span span { display: block; font-size: .81rem; line-height: 1.45; color: var(--tinta-suave); margin-top: 2px; }
+
+.denuncia-detalhe {
+    display: block;
+    font-size: .84rem; font-weight: 700;
+    color: var(--tinta);
+    margin-bottom: 7px;
+}
+.denuncia-detalhe span { font-weight: 500; color: var(--tinta-fraca); }
+
+.denuncia-caixa textarea {
+    width: 100%;
+    font-family: var(--texto); font-size: .95rem;
+    color: var(--tinta);
+    border: 1.5px solid var(--linha);
+    border-radius: var(--raio);
+    padding: 12px 14px;
+    resize: vertical;
+    margin-bottom: 18px;
+}
+.denuncia-caixa textarea:focus {
+    outline: none;
+    border-color: var(--azul);
+    box-shadow: 0 0 0 4px var(--azul-fraco);
+}
+
+.denuncia-caixa .btn { width: 100%; justify-content: center; }
+.denuncia-caixa .btn:disabled { opacity: .6; cursor: progress; }
+
+@media (max-width: 520px) {
+    .denuncia-caixa { padding: 26px 20px 22px; border-radius: 20px; }
+}

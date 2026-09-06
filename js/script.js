@@ -172,6 +172,11 @@ const barraConta = document.getElementById('barraConta');
 const vitrineVazia = document.getElementById('vitrineVazia');
 const chapeuDobra = document.querySelector('.heroi .chapeu');
 
+/* Se o questionário já foi respondido. Separa o que a página pode
+   afirmar do que ela ainda não sabe: antes disso não há perfil, e tudo
+   que fala em compatibilidade é exemplo. */
+let respondeu = false;
+
 function trocarCidade() {
     const slug = selCidade.value;
     const nome = selCidade.options[selCidade.selectedIndex].textContent.trim();
@@ -194,6 +199,22 @@ function trocarCidade() {
     // "escolha sua cidade" logo abaixo de um seletor que pede a mesma
     // coisa era repetição ocupando uma tela inteira.
     document.getElementById('republicas').hidden = !escolheu;
+
+    /* O cartão de compatibilidade e a linha "ordenadas por quanto
+       combinam" só valem depois do questionário.
+
+       Antes dele os dois mentem: o cartão mostra 96% para uma
+       república que ninguém escolheu, e a linha diz "com o perfil que
+       você respondeu" sem ninguém ter respondido nada. Quem acabou de
+       escolher a cidade quer ver o que tem lá — e encontrava, entre o
+       nome da cidade e a lista, uma tela inteira de resultado
+       inventado.
+
+       Escondidos, a seção abre no que ela promete: o nome da cidade, os
+       filtros e as vagas. O questionario traz os dois de volta, aí com
+       o resultado de verdade. */
+    document.getElementById('cartaoMatch').hidden = !respondeu;
+    document.querySelector('#republicas .cabeca p').hidden = !respondeu;
     vitrineVazia.hidden = !escolheu || temAnuncio;
     document.getElementById('vitrine').hidden = !temAnuncio;
 
@@ -240,8 +261,53 @@ function atualizarContagem(quantas) {
         : `<span class="bolinha"></span><b>${quantas}</b>&nbsp;${quantas === 1 ? 'república' : 'repúblicas'} com vaga aberta`;
 }
 
+/* ---------------------------------------------------------------------
+   A porta dos classificados
+
+   O seletor não filtra nada aqui: ele abre a página dos classificados
+   já na cidade e no cômodo escolhidos. Levar as duas coisas na URL
+   evita a tela do meio — "escolha a cidade" logo depois de ela ter
+   escolhido a cidade.
+   --------------------------------------------------------------------- */
+const selPrecisando = document.getElementById('selPrecisando');
+const linkDesfazendo = document.getElementById('linkDesfazendo');
+
+function enderecoDosClassificados(parametros) {
+    const query = new URLSearchParams(parametros);
+    if (selCidade.value) query.set('cidade', selCidade.value);
+    return 'classificados.html?' + query.toString();
+}
+
+selPrecisando.addEventListener('change', () => {
+    if (!selPrecisando.value) return;
+    window.location.href = enderecoDosClassificados({
+        modo: 'precisando',
+        comodo: selPrecisando.value
+    });
+});
+
+// O link de quem está saindo leva a cidade junto do mesmo jeito. Como
+// ele é um <a> de verdade, o endereço é refeito a cada troca de cidade
+// em vez de ser montado no clique — assim abrir em nova aba, que não
+// dispara clique nenhum, continua indo para o lugar certo.
+function atualizarLinkDesfazendo() {
+    linkDesfazendo.href = enderecoDosClassificados({ modo: 'desfazendo' });
+}
+atualizarLinkDesfazendo();
+
 selCidade.addEventListener('change', () => {
     trocarCidade();
+    atualizarLinkDesfazendo();
+
+    // O cômodo volta ao começo: ele é a porta de uma cidade, e deixá-lo
+    // aceso na cidade nova diria que a escolha anterior ainda vale.
+    selPrecisando.value = '';
+
+    // Quem já respondeu leva o perfil junto para a cidade nova. Sem
+    // isto o cartão continuaria mostrando a melhor república da cidade
+    // anterior, com o nome e o preço de lá, embaixo do título da nova.
+    if (respondeu) aplicarResultado();
+
     // Desce até a vitrine: quem troca a cidade quer ver o que tem lá, e
     // deixá-lo parado no seletor obriga a rolar na mão para descobrir.
     document.getElementById('republicas').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -249,9 +315,20 @@ selCidade.addEventListener('change', () => {
 
 ordemOriginal = [...document.querySelectorAll('.anuncio')];
 
+/* Quem volta dos classificados traz a cidade na URL. Sem ler isso, o
+   "voltar para as repúblicas" devolveria a pessoa a uma página sem
+   cidade escolhida, pedindo de novo o que ela já disse duas telas
+   atrás. */
+const cidadeNaURL = new URLSearchParams(location.search).get('cidade');
+if (cidadeNaURL && [...selCidade.options].some(o => o.value === cidadeNaURL)) {
+    selCidade.value = cidadeNaURL;
+}
+
 // Na carga a página só se ajusta, sem rolar — senão o visitante cairia
-// no meio do site antes de ler a primeira linha.
+// no meio do site antes de ler a primeira linha. Quem veio com cidade
+// na URL trouxe uma âncora junto, e o navegador rola por conta.
 trocarCidade();
+atualizarLinkDesfazendo();
 
 /* ---------------------------------------------------------------------
    Questionário e cálculo de compatibilidade
@@ -571,6 +648,12 @@ function aplicarResultado() {
     // dizer onde estuda, e essa resposta vale mais que a lembrança do
     // que ela estava olhando antes.
     selFaculdade.value = '';
+
+    // A partir daqui a página tem um perfil para comparar, e o cartão
+    // e a linha do cabeçalho deixam de ser promessa vazia.
+    respondeu = true;
+    document.getElementById('cartaoMatch').hidden = false;
+    document.querySelector('#republicas .cabeca p').hidden = false;
 
     aviso.classList.add('aparece');
     document.getElementById('republicas').scrollIntoView({ behavior: 'smooth', block: 'start' });
