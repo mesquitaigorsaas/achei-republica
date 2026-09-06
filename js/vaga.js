@@ -76,6 +76,7 @@ async function carregar() {
         .select(`
             id, nome, bairro, descricao, tipo, perfil, preco, caucao,
             minutos, modo, vagas, disponivel_em, whatsapp, ativa, status,
+            composicao, moradores, cep, logradouro, numero, complemento,
             cidades ( nome, slug ),
             faculdades ( sigla, nome ),
             republica_fotos ( caminho, ordem ),
@@ -116,6 +117,11 @@ function desenhar(vaga) {
     document.getElementById('voltarBusca').href =
         cidade.slug ? `index.html?cidade=${cidade.slug}#republicas` : 'index.html#cidade';
 
+    // O js/denuncia.js procura o alvo pelo [data-id] mais proximo. Sem
+    // isto o botao de denunciar abriria a janela sem saber que anuncio
+    // esta sendo denunciado.
+    conteudo.dataset.id = vaga.id;
+
     const partes = [];
 
     partes.push(galeria(vaga));
@@ -123,13 +129,8 @@ function desenhar(vaga) {
 
     if (vaga.descricao) partes.push(bloco('Como é morar aí', paragrafos(vaga.descricao)));
 
-    const cursos = (vaga.republica_cursos || []).map(c => c.curso).filter(Boolean);
-    if (cursos.length) {
-        partes.push(bloco('Quem mora aí estuda',
-            pilulas(cursos.map(c => [c, c])),
-            'É o motivo de match mais forte da lista: quem estuda o mesmo '
-            + 'que você já sabe o horário da prova e a fila do RU.'));
-    }
+    const quem = quemMora(vaga);
+    if (quem) partes.push(quem);
 
     const marcas = (vaga.republica_marcas || [])
         .map(m => m.marca)
@@ -142,7 +143,11 @@ function desenhar(vaga) {
             pilulas(marcas.map(m => [m, NOME_DA_MARCA[m]]))));
     }
 
+    const onde = ondeFica(vaga, cidade);
+    if (onde) partes.push(onde);
+
     partes.push(contato(vaga));
+    partes.push(linkDenunciar());
 
     conteudo.replaceChildren(...partes);
     carregando.hidden = true;
@@ -342,12 +347,16 @@ function contato(vaga) {
     }
 
     const h = document.createElement('h2');
-    h.textContent = 'Falar com quem mora lá';
+    h.textContent = 'Falar com o anunciante';
 
     const p = document.createElement('p');
     p.className = 'vaga-dica';
     p.textContent = 'A mensagem já vai escrita. Combine a visita antes de ir: '
         + 'casa de estudante raramente tem alguém em casa de manhã.';
+
+    // Quem anuncia pode ser o dono, quem mora ou o responsável pela
+    // casa — é o que a pessoa declara ao criar a conta. Prometer "quem
+    // mora lá" seria errado em dois dos três casos.
 
     const texto = `Olá! Vi a vaga "${vaga.nome}" no Achei República. Ainda está disponível?`;
     const zap = document.createElement('a');
@@ -373,3 +382,124 @@ function dataCurta(iso) {
 
 
 carregar();
+
+
+/* ---------------------------------------------------------------------
+   Quem mora na casa
+
+   As duas perguntas que o estudante manda na primeira mensagem, agora
+   respondidas antes dela: quem mora, e quantos. "Quero um quarto, mas
+   não numa casa cheia de estudante" é um pedido real — e tem quem
+   procure exatamente o contrário.
+
+   Uma sem a outra não resolve: "só estudantes" pode ser dois ou nove, e
+   a diferença entre dois e nove é a fila do banheiro de manhã.
+   --------------------------------------------------------------------- */
+function quemMora(vaga) {
+    const cursos = (vaga.republica_cursos || []).map(c => c.curso).filter(Boolean);
+    const temAlgo = vaga.composicao || vaga.moradores !== null || cursos.length;
+    if (!temAlgo) return null;
+
+    const corpo = document.createElement('div');
+
+    const frases = [];
+
+    if (vaga.composicao) frases.push(NOME_DA_MARCA[vaga.composicao]);
+
+    if (vaga.moradores !== null && vaga.moradores !== undefined) {
+        frases.push(vaga.moradores === 0
+            ? 'A casa está vazia hoje'
+            : `${vaga.moradores} morador${vaga.moradores > 1 ? 'es' : ''} hoje`);
+    }
+
+    if (frases.length) {
+        const linha = document.createElement('p');
+        linha.className = 'vaga-quem';
+        linha.textContent = frases.join(' · ');
+        corpo.appendChild(linha);
+    }
+
+    if (cursos.length) {
+        const dica = document.createElement('p');
+        dica.className = 'vaga-dica';
+        dica.textContent = 'Cursos de quem mora aí. É o motivo de match mais forte '
+            + 'da lista: quem estuda o mesmo que você já sabe o horário da prova.';
+        corpo.append(dica, pilulas(cursos.map(c => [c, c])));
+    }
+
+    return bloco('Quem mora na casa', corpo);
+}
+
+
+/* ---------------------------------------------------------------------
+   Onde fica
+
+   "Centro" numa cidade pequena é meia cidade. Quem está escolhendo
+   entre três casas precisa saber qual fica no caminho da faculdade.
+
+   O mapa é o embed do Google montado pelo endereço escrito. Não usa
+   chave de API de propósito: chave nenhuma cabe num site que é HTML
+   servido pelo GitHub Pages — ela ficaria no código-fonte, à vista, e
+   qualquer um poderia gastar a cota.
+   --------------------------------------------------------------------- */
+function ondeFica(vaga, cidade) {
+    if (!vaga.logradouro && !vaga.bairro) return null;
+
+    const rua = [vaga.logradouro, vaga.numero].filter(Boolean).join(', ');
+    const busca = [rua, vaga.bairro, cidade.nome, 'MG', vaga.cep]
+        .filter(Boolean).join(', ');
+
+    const corpo = document.createElement('div');
+
+    const linha = document.createElement('p');
+    linha.className = 'vaga-endereco';
+    linha.textContent = [rua, vaga.complemento, vaga.bairro, cidade.nome]
+        .filter(Boolean).join(' · ');
+    corpo.appendChild(linha);
+
+    if (vaga.logradouro) {
+        const mapa = document.createElement('iframe');
+        mapa.className = 'vaga-mapa';
+        mapa.src = 'https://www.google.com/maps?q=' + encodeURIComponent(busca) + '&output=embed';
+        mapa.loading = 'lazy';
+        mapa.title = 'Mapa de ' + busca;
+        mapa.setAttribute('referrerpolicy', 'no-referrer-when-downgrade');
+        mapa.setAttribute('allowfullscreen', '');
+        corpo.appendChild(mapa);
+
+        /* O link além do mapa embutido: quem está no celular quer abrir
+           no aplicativo do Google Maps para traçar a rota, e o quadro
+           embutido não faz isso. */
+        const abrir = document.createElement('a');
+        abrir.className = 'btn btn-linha vaga-mapa-link';
+        abrir.href = 'https://www.google.com/maps/search/?api=1&query='
+            + encodeURIComponent(busca);
+        abrir.target = '_blank';
+        abrir.rel = 'noopener';
+        abrir.textContent = 'Abrir no Google Maps';
+        corpo.appendChild(abrir);
+    }
+
+    return bloco('Onde fica', corpo);
+}
+
+
+/* O caminho da denúncia, em palavras e no fim da página — depois de a
+   pessoa ter visto as fotos, o preço e o texto, que é quando ela
+   reconhece o anúncio que já viu em outros três sites.
+
+   A classe "denunciar" é o que o js/denuncia.js escuta; a segunda
+   desfaz o desenho de bandeirinha flutuante que ele tem no cartão da
+   vitrine, onde não há espaço para uma frase. */
+function linkDenunciar() {
+    const caixa = document.createElement('p');
+    caixa.className = 'vaga-denuncia';
+
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'denunciar denunciar-linha';
+    b.textContent = 'Esse anúncio parece de imobiliária ou corretor? Denunciar';
+
+    caixa.appendChild(b);
+    return caixa;
+}

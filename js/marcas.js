@@ -40,6 +40,18 @@ const PERFIS = [
     ['lgbtqiapn',  'LGBTQIAPN+'],
 ];
 
+/* Quem mora na casa. Coluna "composicao".
+
+   "Quero um quarto, mas não numa casa cheia de estudante" é um pedido
+   real, e tem quem procure exatamente o contrário — casa só de
+   estudante, pela companhia de quem está na mesma rotina de prova.
+   Sem esta pergunta o site não sabia responder nenhum dos dois. */
+const COMPOSICOES = [
+    ['donos',              'Só os donos'],
+    ['estudantes',         'Só estudantes'],
+    ['donos_e_estudantes', 'Os donos e estudantes'],
+];
+
 /* Como a pessoa vai até a faculdade. Coluna "modo". */
 const MODOS = [
     ['pe',    'a pé'],
@@ -136,6 +148,7 @@ MARCAS.forEach(g => g.itens.forEach(([apelido, nome]) => {
 
 TIPOS.forEach(([apelido, nome])  => { NOME_DA_MARCA[apelido] = nome; });
 PERFIS.forEach(([apelido, nome]) => { NOME_DA_MARCA[apelido] = nome; });
+COMPOSICOES.forEach(([apelido, nome]) => { NOME_DA_MARCA[apelido] = nome; });
 
 const NOME_DO_MODO = Object.fromEntries(MODOS);
 

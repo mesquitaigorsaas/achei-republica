@@ -92,21 +92,101 @@
               </small>
             </div>
 
-            <div class="dupla">
-              <div class="campo">
-                <label for="cidade">Cidade <span class="obrigatorio">*</span></label>
-                <select id="cidade" required></select>
+            <!-- O ENDERECO.
+
+                 "Centro" numa cidade pequena e meia cidade. Quem esta
+                 escolhendo entre tres casas precisa saber qual fica no
+                 caminho da faculdade, e a pagina da vaga desenha um
+                 mapa a partir do que for escrito aqui.
+
+                 Fica publico: qualquer visitante ve a rua e o numero.
+                 E o contrario do endereco do seu cadastro, que nunca
+                 sai do banco. -->
+            <fieldset class="bloco-caixa">
+              <legend class="bloco-titulo">Onde fica a casa</legend>
+
+              <div class="dupla">
+                <div class="campo">
+                  <label for="cidade">Cidade <span class="obrigatorio">*</span></label>
+                  <select id="cidade" required></select>
+                </div>
+
+                <div class="campo">
+                  <label for="cep">CEP</label>
+                  <input type="text" id="cep" data-mascara="cep" inputmode="numeric"
+                         placeholder="37130-000" />
+                  <small class="conta-linha-fina">Preenche a rua e o bairro sozinho.</small>
+                </div>
               </div>
 
-              <div class="campo">
-                <label for="bairro">Bairro <span class="obrigatorio">*</span></label>
-                <input type="text" id="bairro" maxlength="60" placeholder="Centro" required />
+              <div class="dupla">
+                <div class="campo">
+                  <label for="logradouro">Rua <span class="obrigatorio">*</span></label>
+                  <input type="text" id="logradouro" maxlength="120"
+                         placeholder="Rua Gabriel Monteiro da Silva" required />
+                </div>
+
+                <div class="campo">
+                  <label for="numero">Numero <span class="obrigatorio">*</span></label>
+                  <input type="text" id="numero" maxlength="12" placeholder="700" required />
+                </div>
               </div>
-            </div>
+
+              <div class="dupla">
+                <div class="campo">
+                  <label for="bairro">Bairro <span class="obrigatorio">*</span></label>
+                  <input type="text" id="bairro" maxlength="60" placeholder="Centro" required />
+                </div>
+
+                <div class="campo">
+                  <label for="complemento">Complemento</label>
+                  <input type="text" id="complemento" maxlength="60" placeholder="Fundos, casa 2" />
+                </div>
+              </div>
+
+              <input type="hidden" id="endCidadeTexto" />
+              <input type="hidden" id="endUf" />
+            </fieldset>
 
             <fieldset class="bloco-escolha">
               <legend class="bloco-titulo">Jeito da casa</legend>
               <div class="escolhas" id="escolhaPerfil"></div>
+            </fieldset>
+
+            <!-- QUEM MORA.
+
+                 As duas perguntas que o estudante faz na primeira
+                 mensagem. "Quero um quarto, mas nao numa casa cheia de
+                 estudante" e um pedido real -- e tem quem procure
+                 exatamente o contrario. Uma sem a outra nao resolve:
+                 "so estudantes" pode ser dois ou nove, e a diferenca
+                 entre dois e nove e a fila do banheiro de manha. -->
+            <fieldset class="bloco-caixa">
+              <legend class="bloco-titulo">Quem mora na casa</legend>
+
+              <div class="escolhas" id="escolhaComposicao"></div>
+
+              <div class="dupla" style="margin-top: 16px;">
+                <div class="campo">
+                  <label for="moradores">Quantos moram hoje <span class="obrigatorio">*</span></label>
+                  <input type="number" id="moradores" min="0" max="30" step="1"
+                         placeholder="4" required />
+                  <small class="conta-linha-fina">
+                    Sem contar a vaga que voce esta anunciando. Zero se a
+                    casa esta vazia.
+                  </small>
+                </div>
+
+                <div class="campo">
+                  <label for="cursos">Cursos de quem mora</label>
+                  <input type="text" id="cursos" maxlength="200"
+                         placeholder="Medicina, Enfermagem, Direito" />
+                  <small class="conta-linha-fina">
+                    Separe por virgula. E o motivo de match mais forte da
+                    lista: quem estuda o mesmo ja sabe o horario da prova.
+                  </small>
+                </div>
+              </div>
             </fieldset>
 
             <div class="dupla">
@@ -183,17 +263,6 @@
               <small class="conta-linha-fina">
                 Conte a rotina, não os adjetivos. "Ninguém faz festa em
                 semana de prova" diz mais que "ambiente tranquilo".
-              </small>
-            </div>
-
-            <div class="campo">
-              <label for="cursos">Cursos de quem já mora aí</label>
-              <input type="text" id="cursos" maxlength="200"
-                     placeholder="Medicina, Enfermagem, Direito" />
-              <small class="conta-linha-fina">
-                Separe por vírgula. É o motivo de match mais forte da
-                lista: quem estuda o mesmo que você já sabe o horário da
-                prova e a fila do RU.
               </small>
             </div>
 
@@ -281,7 +350,12 @@
         <input type="password" id="jSenha" autocomplete="current-password" placeholder="Sua senha" required />
       </div>
 
-      <button type="submit" class="btn btn-azul" id="botaoEntrar">Entrar</button>
+      <!-- Cancelar do lado do Entrar, e não só o X no canto: quem
+           abriu o pop-up por engano procura a palavra, não o símbolo. -->
+      <div class="janela-acoes">
+        <button type="submit" class="btn btn-azul" id="botaoEntrar">Entrar</button>
+        <button type="button" class="btn btn-linha" data-fecha-janela>Cancelar</button>
+      </div>
       <p class="conta-esqueci"><a href="auth/recuperar-senha.html">Esqueci minha senha</a></p>
     </form>
 
@@ -366,7 +440,10 @@
         cidade, o bairro e o que você escrever. Rua e número, não.
       </p>
 
-      <button type="submit" class="btn btn-azul" id="botaoCriar">Criar conta e anunciar</button>
+      <div class="janela-acoes">
+        <button type="submit" class="btn btn-azul" id="botaoCriar">Criar conta e anunciar</button>
+        <button type="button" class="btn btn-linha" data-fecha-janela>Cancelar</button>
+      </div>
     </form>
 
   </div>

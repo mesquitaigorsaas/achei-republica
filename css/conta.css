@@ -558,3 +558,30 @@
     text-transform: uppercase;
     line-height: 1.6;
 }
+
+
+/* Entrar e Cancelar lado a lado, com um respiro acima.
+
+   Colado no campo de senha, o Entrar parecia parte do campo — e quem
+   abriu o pop-up por engano só tinha o X do canto para desistir. Um X
+   é um símbolo que a pessoa precisa reconhecer; "Cancelar" é uma
+   palavra que ela lê. */
+.janela-acoes {
+    display: flex;
+    gap: 10px;
+    margin-top: 22px;
+}
+.janela-acoes .btn { flex: 1; justify-content: center; }
+
+@media (max-width: 380px) {
+    .janela-acoes { flex-direction: column; }
+}
+
+
+/* A vaga que está aberta no formulário acima, marcada na lista. Sem
+   isto, quem clica "Editar" na terceira vaga rola para cima e não tem
+   como saber qual das três está no formulário. */
+.meu-item.editando {
+    border-color: var(--azul);
+    background: var(--azul-fraco);
+}

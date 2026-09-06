@@ -200,7 +200,12 @@
         <input type="password" id="jSenha" autocomplete="current-password" placeholder="Sua senha" required />
       </div>
 
-      <button type="submit" class="btn btn-azul" id="botaoEntrar">Entrar</button>
+      <!-- Cancelar do lado do Entrar, e não só o X no canto: quem
+           abriu o pop-up por engano procura a palavra, não o símbolo. -->
+      <div class="janela-acoes">
+        <button type="submit" class="btn btn-azul" id="botaoEntrar">Entrar</button>
+        <button type="button" class="btn btn-linha" data-fecha-janela>Cancelar</button>
+      </div>
       <p class="conta-esqueci"><a href="auth/recuperar-senha.html">Esqueci minha senha</a></p>
     </form>
 
@@ -272,7 +277,10 @@
         cidade e o que você escrever no comentário — nada mais.
       </p>
 
-      <button type="submit" class="btn btn-azul" id="botaoCriar">Criar conta e anunciar</button>
+      <div class="janela-acoes">
+        <button type="submit" class="btn btn-azul" id="botaoCriar">Criar conta e anunciar</button>
+        <button type="button" class="btn btn-linha" data-fecha-janela>Cancelar</button>
+      </div>
     </form>
 
   </div>

@@ -1,5 +1,5 @@
 /* =====================================================================
-   Achei República — cadastrar a vaga
+   Achei República — cadastrar e editar a vaga
 
    A ponta que faltava. Quem tem quarto vago publica aqui, e o anúncio
    aparece na vitrine da home da cidade dele.
@@ -7,16 +7,16 @@
    É uma página diferente do anunciar.html de propósito. Quem está se
    desfazendo de uma geladeira e quem está oferecendo um lugar para
    morar não respondem às mesmas perguntas: a geladeira quer foto e
-   preço; a casa quer quantos minutos até a faculdade, o jeito da casa,
-   os cursos de quem mora e cinquenta características que viram filtro.
-   Um formulário só para as duas coisas seria longo demais para a
-   geladeira e raso demais para a casa.
+   preço; a casa quer quantos minutos até a faculdade, quem mora nela,
+   o endereço e cinquenta características que viram filtro.
+
+   A mesma página edita: cadastrar-vaga.html?id=<uuid> abre o anúncio
+   preenchido. Sem isso, corrigir um preço exigiria apagar e refazer —
+   e refazer perde as fotos, as marcas e a data em que o anúncio nasceu.
 
    O banco, a máscara de telefone, a busca de CEP e o ocupado() vêm do
    js/conta.js, carregado antes deste. O vocabulário (TIPOS, PERFIS,
-   MODOS, MARCAS) vem do js/marcas.js. Não recriar nada disso aqui: os
-   dois já declaram no escopo global, e um segundo const com o mesmo
-   nome quebra a página inteira.
+   MODOS, COMPOSICOES, MARCAS) vem do js/marcas.js.
    ===================================================================== */
 
 const verificando = document.getElementById('verificando');
@@ -41,8 +41,16 @@ const MAX_FOTOS = 5;
 let usuario = null;
 let tipo = '';
 let perfil = 'mista';
-let escolhidas = [];
+let composicao = '';
+let escolhidas = [];       // arquivos novos, ainda não enviados
+let jaNoAr = [];           // fotos que já estão no banco: { id, caminho }
+let paraApagar = [];       // ids de foto que a pessoa tirou durante a edição
 let cidades = [];
+
+/* Quando isto tem valor, a página está editando um anúncio que já
+   existe em vez de criar um novo. Muda o texto do botão, o que o envio
+   faz e o que a página carrega na abertura. */
+let editandoId = new URLSearchParams(location.search).get('id');
 
 
 /* ---------------------------------------------------------------------
@@ -71,6 +79,8 @@ function traduzirErro(erro) {
     if (m.includes('email not confirmed')) return 'Falta confirmar o e-mail. Veja o link que enviamos.';
     if (m.includes('already registered')) return 'Esse e-mail já tem conta. Entre pela outra aba.';
     if (m.includes('password')) return 'A senha precisa de pelo menos 6 caracteres.';
+    if (m.includes('no_ar_tem_endereco')) return 'Anúncio no ar precisa de rua e número.';
+    if (m.includes('moradores_plausivel')) return 'Quantos moram tem que ser entre 0 e 30.';
     return erro && erro.message ? erro.message : 'Não deu certo. Tente de novo.';
 }
 
@@ -78,9 +88,9 @@ function traduzirErro(erro) {
 /* ---------------------------------------------------------------------
    As escolhas de botão, montadas pelo vocabulário
 
-   Tipo e perfil são colunas com check constraint no banco. Escrever as
-   opções à mão no HTML deixaria dois lugares para errar; saindo daqui,
-   o apelido gravado é sempre um dos que o banco aceita.
+   Tipo, perfil e composição são colunas com check constraint no banco.
+   Escrever as opções à mão no HTML deixaria dois lugares para errar;
+   saindo daqui, o apelido gravado é sempre um dos que o banco aceita.
    --------------------------------------------------------------------- */
 function montarEscolhas(caixa, opcoes, aoEscolher, jaEscolhido) {
     caixa.replaceChildren(...opcoes.map(([apelido, nome]) => {
@@ -98,7 +108,20 @@ function montarEscolhas(caixa, opcoes, aoEscolher, jaEscolhido) {
     }));
 }
 
-montarEscolhas(document.getElementById('escolhaTipo'), TIPOS, valor => {
+/* Acende um botão pelo apelido, sem disparar clique. Usado ao abrir um
+   anúncio para editar: a escolha que estava gravada tem que aparecer
+   acesa, senão a pessoa acha que perdeu a resposta. */
+function acender(caixa, valor) {
+    caixa.querySelectorAll('.escolha').forEach(b => {
+        b.classList.toggle('ativa', b.dataset.valor === valor);
+    });
+}
+
+const caixaTipo = document.getElementById('escolhaTipo');
+const caixaPerfil = document.getElementById('escolhaPerfil');
+const caixaComposicao = document.getElementById('escolhaComposicao');
+
+montarEscolhas(caixaTipo, TIPOS, valor => {
     tipo = valor;
     // O resto do formulário só abre depois da primeira escolha: um
     // formulário deste tamanho aberto de cara é uma parede.
@@ -106,9 +129,8 @@ montarEscolhas(document.getElementById('escolhaTipo'), TIPOS, valor => {
     limparRecados();
 });
 
-montarEscolhas(document.getElementById('escolhaPerfil'), PERFIS, valor => {
-    perfil = valor;
-}, 'mista');
+montarEscolhas(caixaPerfil, PERFIS, valor => { perfil = valor; }, 'mista');
+montarEscolhas(caixaComposicao, COMPOSICOES, valor => { composicao = valor; });
 
 selModo.replaceChildren(...MODOS.map(([apelido, nome]) => {
     const o = document.createElement('option');
@@ -175,9 +197,7 @@ function marcasEscolhidas() {
    Cidades e faculdades, do banco
 
    Aqui não dá para usar a lista fixa que a home usa: o cadastro precisa
-   do id da cidade, e id é coisa que só o banco sabe. É também o único
-   lugar do site que lê a tabela cidades — as duas listas concordarem é
-   responsabilidade do 03-dados-iniciais.sql, que semeou as catorze.
+   do id da cidade, e id é coisa que só o banco sabe.
    --------------------------------------------------------------------- */
 async function carregarCidades() {
     const { data, error } = await banco
@@ -208,7 +228,7 @@ async function carregarCidades() {
     return true;
 }
 
-async function carregarFaculdades() {
+async function carregarFaculdades(manter) {
     const { data } = await banco
         .from('faculdades')
         .select('id, nome, sigla')
@@ -240,25 +260,48 @@ async function carregarFaculdades() {
         selFaculdade.appendChild(o);
     });
 
+    if (manter && data.some(f => f.id === manter)) selFaculdade.value = manter;
+
     dicaFaculdade.textContent =
         'Metade da nota de compatibilidade sai daqui. Quem sabe o caminho é você.';
 }
 
-selCidade.addEventListener('change', carregarFaculdades);
+selCidade.addEventListener('change', () => carregarFaculdades());
+
+/* O CEP preenche rua e bairro. A cidade NÃO é preenchida por ele de
+   propósito: aqui ela é um <select> cujos valores são identificadores
+   do banco, e escrever "Alfenas" dentro dele zeraria a escolha. Os dois
+   campos escondidos existem só para o buscarCep() do conta.js ter onde
+   despejar cidade e UF sem quebrar. */
+const campoCepDaCasa = document.getElementById('cep');
+campoCepDaCasa.addEventListener('blur', () => buscarCep(campoCepDaCasa.value, {
+    logradouro: document.getElementById('logradouro'),
+    bairro: document.getElementById('bairro'),
+    cidade: document.getElementById('endCidadeTexto'),
+    uf: document.getElementById('endUf'),
+    numero: document.getElementById('numero')
+}));
 
 
 /* ---------------------------------------------------------------------
-   As fotos — até cinco
+   As fotos — até cinco, somando as que já estão no ar
    --------------------------------------------------------------------- */
+function totalDeFotos() {
+    return jaNoAr.length + escolhidas.length;
+}
+
 entradaFotos.addEventListener('change', () => {
     limparRecados();
     const novas = [...entradaFotos.files];
+    const cabem = MAX_FOTOS - totalDeFotos();
 
-    if (escolhidas.length + novas.length > MAX_FOTOS) {
-        aviso(`São no máximo ${MAX_FOTOS} fotos. Peguei as primeiras que couberam.`, 'certo');
+    if (novas.length > cabem) {
+        aviso(cabem > 0
+            ? `São no máximo ${MAX_FOTOS} fotos. Peguei as ${cabem} que couberam.`
+            : `Já são ${MAX_FOTOS} fotos. Tire uma antes de pôr outra.`, 'certo');
     }
 
-    escolhidas = [...escolhidas, ...novas].slice(0, MAX_FOTOS);
+    escolhidas = [...escolhidas, ...novas.slice(0, Math.max(cabem, 0))];
 
     // O input é zerado para a pessoa poder escolher o mesmo arquivo de
     // novo depois de tirá-lo da lista — sem isso o "change" não dispara.
@@ -267,150 +310,218 @@ entradaFotos.addEventListener('change', () => {
 });
 
 function desenharPrevia() {
-    previaFotos.replaceChildren(...escolhidas.map((arquivo, i) => {
-        const moldura = document.createElement('div');
-        moldura.className = 'previa-item';
+    const molduras = [];
 
-        const img = document.createElement('img');
-        img.src = URL.createObjectURL(arquivo);
-        img.alt = `Foto ${i + 1}`;
-        // Solta a memória do arquivo assim que o navegador desenhou.
-        img.onload = () => URL.revokeObjectURL(img.src);
+    // Primeiro as que já estão no ar, na ordem em que foram gravadas.
+    jaNoAr.forEach((foto, i) => {
+        molduras.push(moldura(foto.caminho, i === 0, () => {
+            paraApagar.push(foto.id);
+            jaNoAr = jaNoAr.filter(f => f.id !== foto.id);
+            desenharPrevia();
+        }, `Foto ${i + 1}, já publicada`));
+    });
 
-        const tirar = document.createElement('button');
-        tirar.type = 'button';
-        tirar.className = 'previa-x';
-        tirar.setAttribute('aria-label', `Tirar a foto ${i + 1}`);
-        tirar.textContent = '×';
-        tirar.addEventListener('click', () => {
+    escolhidas.forEach((arquivo, i) => {
+        const url = URL.createObjectURL(arquivo);
+        molduras.push(moldura(url, jaNoAr.length === 0 && i === 0, () => {
             escolhidas.splice(i, 1);
             desenharPrevia();
-        });
+        }, `Foto nova ${i + 1}`, true));
+    });
 
-        // A primeira é a que aparece no cartão da busca. Dizer isso
-        // evita a pessoa subir a foto do banheiro em primeiro lugar.
-        if (i === 0) {
-            const selo = document.createElement('span');
-            selo.className = 'previa-selo';
-            selo.textContent = 'Capa';
-            moldura.appendChild(selo);
-        }
+    previaFotos.replaceChildren(...molduras);
+}
 
-        moldura.append(img, tirar);
-        return moldura;
-    }));
+function moldura(url, ehCapa, aoTirar, rotulo, soltarDepois) {
+    const caixa = document.createElement('div');
+    caixa.className = 'previa-item';
+
+    const img = document.createElement('img');
+    img.src = url;
+    img.alt = rotulo;
+    // Solta a memória do arquivo local assim que o navegador desenhou.
+    if (soltarDepois) img.onload = () => URL.revokeObjectURL(url);
+
+    const tirar = document.createElement('button');
+    tirar.type = 'button';
+    tirar.className = 'previa-x';
+    tirar.setAttribute('aria-label', `Tirar a ${rotulo}`);
+    tirar.textContent = '×';
+    tirar.addEventListener('click', aoTirar);
+
+    // A primeira é a que aparece no cartão da busca. Dizer isso evita o
+    // anúncio nascer com a foto do banheiro na frente.
+    if (ehCapa) {
+        const selo = document.createElement('span');
+        selo.className = 'previa-selo';
+        selo.textContent = 'Capa';
+        caixa.appendChild(selo);
+    }
+
+    caixa.append(img, tirar);
+    return caixa;
 }
 
 
 /* ---------------------------------------------------------------------
-   Publicar
+   Publicar ou salvar
    --------------------------------------------------------------------- */
 form.addEventListener('submit', async evento => {
     evento.preventDefault();
     limparRecados();
 
-    const nome = document.getElementById('nome').value.trim();
-    const bairro = document.getElementById('bairro').value.trim();
-    const preco = Number(document.getElementById('preco').value) || 0;
-    const caucao = Number(document.getElementById('caucao').value) || 0;
-    const vagas = Number(document.getElementById('vagas').value) || 1;
-    const minutos = Number(document.getElementById('minutos').value) || null;
-    const disponivel = document.getElementById('disponivel').value || null;
-    const descricao = document.getElementById('descricao').value.trim() || null;
-    const whatsapp = document.getElementById('whatsapp').value.replace(/\D/g, '');
-    const faculdadeId = selFaculdade.hidden ? null : (selFaculdade.value || null);
+    /* Quem fechou o pop-up com o Cancelar continua vendo o formulário
+       inteiro por trás dele. Sem esta linha, enviar dali estouraria num
+       "usuario is null" e a pessoa veria a página não fazer nada. */
+    if (!usuario) {
+        abrirJanela();
+        return;
+    }
 
-    if (!tipo)             return aviso('Escolha o que você está oferecendo.');
-    if (nome.length < 2)   return aviso('Escreva o nome da casa.');
-    if (!bairro)           return aviso('Escreva o bairro — é o que a pessoa procura primeiro.');
-    if (preco <= 0)        return aviso('Escreva o valor do aluguel.');
-    if (whatsapp.length < 10) return aviso('O WhatsApp precisa de DDD e número.');
-
-    ocupado(botaoPublicar, true, 'Publicando...');
-
-    const { data: vaga, error } = await banco.from('republicas').insert({
-        dono_id: usuario.id,
+    const campos = {
         cidade_id: selCidade.value,
-        faculdade_id: faculdadeId,
-        nome,
-        bairro,
-        descricao,
+        faculdade_id: selFaculdade.hidden ? null : (selFaculdade.value || null),
+        nome: document.getElementById('nome').value.trim(),
+        bairro: document.getElementById('bairro').value.trim(),
+        cep: document.getElementById('cep').value.replace(/\D/g, '') || null,
+        logradouro: document.getElementById('logradouro').value.trim(),
+        numero: document.getElementById('numero').value.trim(),
+        complemento: document.getElementById('complemento').value.trim() || null,
+        descricao: document.getElementById('descricao').value.trim() || null,
         tipo,
         perfil,
-        preco,
-        caucao,
-        minutos,
+        composicao: composicao || null,
+        moradores: document.getElementById('moradores').value === ''
+            ? null : Number(document.getElementById('moradores').value),
+        preco: Number(document.getElementById('preco').value) || 0,
+        caucao: Number(document.getElementById('caucao').value) || 0,
+        vagas: Number(document.getElementById('vagas').value) || 1,
+        minutos: Number(document.getElementById('minutos').value) || null,
         modo: selModo.value,
-        vagas,
-        disponivel_em: disponivel,
-        whatsapp
-    }).select('id, status').single();
+        disponivel_em: document.getElementById('disponivel').value || null,
+        whatsapp: document.getElementById('whatsapp').value.replace(/\D/g, '')
+    };
+
+    if (!tipo)                    return aviso('Escolha o que você está oferecendo.');
+    if (campos.nome.length < 2)   return aviso('Escreva o nome da casa.');
+    if (!campos.logradouro)       return aviso('Escreva a rua da casa.');
+    if (!campos.numero)           return aviso('Escreva o número da casa.');
+    if (!campos.bairro)           return aviso('Escreva o bairro — é o que a pessoa procura primeiro.');
+    if (!campos.composicao)       return aviso('Diga quem mora na casa.');
+    if (campos.moradores === null) return aviso('Diga quantas pessoas moram hoje. Zero também é resposta.');
+    if (campos.preco <= 0)        return aviso('Escreva o valor do aluguel.');
+    if (campos.whatsapp.length < 10) return aviso('O WhatsApp precisa de DDD e número.');
+
+    ocupado(botaoPublicar, true, editandoId ? 'Salvando...' : 'Publicando...');
+
+    const { data: vaga, error } = editandoId
+        ? await banco.from('republicas').update(campos)
+            .eq('id', editandoId).select('id, status').single()
+        : await banco.from('republicas').insert({ dono_id: usuario.id, ...campos })
+            .select('id, status').single();
 
     if (error) {
         ocupado(botaoPublicar, false);
-        console.error('Falhou ao publicar a vaga:', error);
-        return aviso('Não consegui publicar: ' + error.message);
+        console.error('Falhou ao salvar a vaga:', error);
+        return aviso('Não consegui salvar: ' + traduzirErro(error));
     }
 
-    /* As tabelas filhas vão depois, e cada uma pode falhar sozinha. Um
-       erro aqui NÃO derruba o anúncio — ele já está no ar, e uma casa
-       no ar sem a etiqueta "aceita pet" é melhor que casa nenhuma. O
-       que não pode é a pessoa achar que gravou o que não gravou, então
-       cada falha entra no aviso do fim. */
+    const falhas = await salvarOsPedacos(vaga.id);
+
+    ocupado(botaoPublicar, false);
+
+    /* A triagem do 04-anunciante.sql pode ter mandado o anúncio para a
+       fila — do terceiro em diante, ou quando o texto tem cara de
+       imobiliária. Dizer isso é obrigação: o dono vai procurar a casa na
+       busca e não vai achar, e sem explicação isso parece bug. */
+    let recado;
+    if (vaga.status === 'em_revisao') {
+        recado = 'Salvo, e em revisão. O anúncio ainda não aparece na busca — '
+               + 'a gente olha e libera. Isso acontece a partir do terceiro anúncio.';
+    } else if (editandoId) {
+        recado = 'Alterações salvas. Quem abrir a vaga já vê o novo.';
+    } else {
+        recado = 'Vaga no ar. Quem procurar república nessa cidade já vai ver a sua.';
+    }
+
+    if (falhas.length) recado += ' Só não consegui gravar ' + falhas.join(' e ') + '.';
+
+    aviso(recado, 'certo');
+
+    if (editandoId) {
+        // Continua editando o mesmo anúncio: as fotos que subiram agora
+        // passam a ser "já no ar", e a lista se refaz do banco.
+        await carregarParaEditar(editandoId, true);
+    } else {
+        limparFormulario();
+    }
+
+    carregarMinhas();
+});
+
+
+/* As tabelas filhas vão depois da principal, e cada uma pode falhar
+   sozinha. Um erro aqui NÃO derruba o anúncio — ele já está gravado, e
+   uma casa no ar sem a etiqueta "aceita pet" é melhor que casa nenhuma.
+   O que não pode é a pessoa achar que gravou o que não gravou. */
+async function salvarOsPedacos(vagaId) {
     const falhas = [];
+
+    // Na edição, marcas e cursos são reescritos por inteiro. Comparar o
+    // que mudou daria o mesmo resultado com três vezes mais código, e
+    // são listas de dez linhas.
+    if (editandoId) {
+        await banco.from('republica_marcas').delete().eq('republica_id', vagaId);
+        await banco.from('republica_cursos').delete().eq('republica_id', vagaId);
+    }
 
     const marcas = marcasEscolhidas();
     if (marcas.length) {
-        const { error: e } = await banco.from('republica_marcas')
-            .insert(marcas.map(marca => ({ republica_id: vaga.id, marca })));
-        if (e) falhas.push('as características');
+        const { error } = await banco.from('republica_marcas')
+            .insert(marcas.map(marca => ({ republica_id: vagaId, marca })));
+        if (error) falhas.push('as características');
     }
 
     const cursos = document.getElementById('cursos').value
         .split(',').map(c => c.trim()).filter(Boolean);
     if (cursos.length) {
-        const { error: e } = await banco.from('republica_cursos')
-            .insert(cursos.map(curso => ({ republica_id: vaga.id, curso })));
-        if (e) falhas.push('os cursos');
+        const { error } = await banco.from('republica_cursos')
+            .insert(cursos.map(curso => ({ republica_id: vagaId, curso })));
+        if (error) falhas.push('os cursos');
     }
+
+    // As fotas tiradas durante a edição saem do banco E do balde: linha
+    // apagada com arquivo esquecido enche o armazenamento com foto que
+    // ninguém mais consegue ver.
+    for (const id of paraApagar) {
+        const foto = (await banco.from('republica_fotos')
+            .select('caminho').eq('id', id).maybeSingle()).data;
+
+        await banco.from('republica_fotos').delete().eq('id', id);
+        if (foto) {
+            const caminho = caminhoNoBalde(foto.caminho);
+            if (caminho) await banco.storage.from('republicas').remove([caminho]);
+        }
+    }
+    paraApagar = [];
 
     // Uma foto de cada vez, e não as cinco juntas: são fotos de celular
     // de vários MB, e cinco subindo em paralelo numa internet de cidade
     // pequena travam as cinco.
-    let fotosQueSubiram = 0;
+    let subiram = 0;
     for (let i = 0; i < escolhidas.length; i++) {
-        const caminho = await subirFoto(escolhidas[i], vaga.id);
+        const caminho = await subirFoto(escolhidas[i], vagaId);
         if (!caminho) continue;
 
-        const { error: e } = await banco.from('republica_fotos')
-            .insert({ republica_id: vaga.id, caminho, ordem: i });
-        if (!e) fotosQueSubiram++;
+        const { error } = await banco.from('republica_fotos')
+            .insert({ republica_id: vagaId, caminho, ordem: jaNoAr.length + i });
+        if (!error) subiram++;
     }
-    if (fotosQueSubiram < escolhidas.length) falhas.push('parte das fotos');
-
-    ocupado(botaoPublicar, false);
-    form.reset();
+    if (subiram < escolhidas.length) falhas.push('parte das fotos');
     escolhidas = [];
-    desenharPrevia();
-    caixaMarcas.querySelectorAll('input[data-marca]').forEach(c => { c.checked = false; });
-    tipo = '';
-    resto.hidden = true;
-    document.querySelectorAll('#escolhaTipo .escolha').forEach(b => b.classList.remove('ativa'));
 
-    /* A triagem do 04-anunciante.sql pode ter mandado o anúncio para a
-       fila — do terceiro anúncio em diante, ou quando o texto tem cara
-       de imobiliária. Dizer isso é obrigação: o dono vai procurar a
-       casa na busca e não vai achar, e sem explicação isso parece bug. */
-    let recado = vaga.status === 'em_revisao'
-        ? 'Vaga cadastrada e em revisão. Ela ainda não aparece na busca — '
-          + 'a gente olha e libera. Isso acontece a partir do terceiro anúncio.'
-        : 'Vaga no ar. Quem procurar república nessa cidade já vai ver a sua.';
-
-    if (falhas.length) recado += ' Só não consegui gravar ' + falhas.join(' e ') + '.';
-
-    aviso(recado, 'certo');
-    carregarMinhas();
-});
+    return falhas;
+}
 
 
 /* O caminho começa com o id do dono e é isso que as regras do
@@ -429,6 +540,108 @@ async function subirFoto(arquivo, vagaId) {
     }
 
     return banco.storage.from('republicas').getPublicUrl(nome).data.publicUrl;
+}
+
+/* A coluna guarda o endereço público inteiro; o balde quer só o pedaço
+   depois do nome dele. Um devolve o outro sem precisar de outra coluna
+   para o mesmo dado. */
+function caminhoNoBalde(url) {
+    const marca = '/republicas/';
+    const corte = String(url || '').lastIndexOf(marca);
+    return corte === -1 ? null : url.slice(corte + marca.length);
+}
+
+
+function limparFormulario() {
+    form.reset();
+    escolhidas = [];
+    jaNoAr = [];
+    paraApagar = [];
+    desenharPrevia();
+    caixaMarcas.querySelectorAll('input[data-marca]').forEach(c => { c.checked = false; });
+    tipo = '';
+    composicao = '';
+    perfil = 'mista';
+    acender(caixaTipo, '');
+    acender(caixaComposicao, '');
+    acender(caixaPerfil, 'mista');
+    resto.hidden = true;
+}
+
+
+/* ---------------------------------------------------------------------
+   Abrir um anúncio para editar
+   --------------------------------------------------------------------- */
+async function carregarParaEditar(id, silencioso) {
+    const { data, error } = await banco
+        .from('republicas')
+        .select(`*, republica_fotos ( id, caminho, ordem ),
+                    republica_marcas ( marca ),
+                    republica_cursos ( curso )`)
+        .eq('id', id)
+        .maybeSingle();
+
+    // Anúncio de outra pessoa não volta nada: a regra de leitura do
+    // banco só devolve o próprio para quem está fora do ar. Cair aqui
+    // quer dizer "não é seu" ou "não existe".
+    if (error || !data) {
+        editandoId = null;
+        botaoPublicar.textContent = 'Publicar a vaga';
+        if (!silencioso) aviso('Não achei esse anúncio na sua conta. Você pode cadastrar um novo abaixo.');
+        return;
+    }
+
+    editandoId = id;
+    botaoPublicar.textContent = 'Salvar alterações';
+    document.querySelector('.conta-titulo').textContent = 'Editando: ' + data.nome;
+
+    tipo = data.tipo || '';
+    perfil = data.perfil || 'mista';
+    composicao = data.composicao || '';
+    acender(caixaTipo, tipo);
+    acender(caixaPerfil, perfil);
+    acender(caixaComposicao, composicao);
+    resto.hidden = !tipo;
+
+    const por = (campo, valor) => {
+        const el = document.getElementById(campo);
+        if (el) el.value = valor === null || valor === undefined ? '' : valor;
+    };
+
+    por('nome', data.nome);
+    por('bairro', data.bairro);
+    por('cep', data.cep ? mascararCep(data.cep) : '');
+    por('logradouro', data.logradouro);
+    por('numero', data.numero);
+    por('complemento', data.complemento);
+    por('descricao', data.descricao);
+    por('moradores', data.moradores);
+    por('preco', data.preco === null ? '' : Number(data.preco));
+    por('caucao', data.caucao === null ? '' : Number(data.caucao));
+    por('vagas', data.vagas);
+    por('minutos', data.minutos);
+    por('disponivel', data.disponivel_em);
+    por('whatsapp', data.whatsapp ? mascararTelefone(data.whatsapp) : '');
+
+    selCidade.value = data.cidade_id;
+    await carregarFaculdades(data.faculdade_id);
+    selModo.value = data.modo || 'pe';
+
+    por('cursos', (data.republica_cursos || []).map(c => c.curso).join(', '));
+
+    const marcas = new Set((data.republica_marcas || []).map(m => m.marca));
+    caixaMarcas.querySelectorAll('input[data-marca]').forEach(c => {
+        c.checked = marcas.has(c.value);
+    });
+
+    jaNoAr = (data.republica_fotos || [])
+        .slice()
+        .sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
+    escolhidas = [];
+    paraApagar = [];
+    desenharPrevia();
+
+    if (!silencioso) form.scrollIntoView({ block: 'start', behavior: 'smooth' });
 }
 
 
@@ -462,6 +675,7 @@ async function carregarMinhas() {
     listaMinhas.replaceChildren(...data.map(vaga => {
         const linha = document.createElement('div');
         linha.className = 'meu-item';
+        if (vaga.id === editandoId) linha.classList.add('editando');
 
         const nomeDaCidade = (cidades.find(c => c.id === vaga.cidade_id) || {}).nome || '';
 
@@ -485,6 +699,21 @@ async function carregarMinhas() {
         const acoes = document.createElement('div');
         acoes.className = 'meu-item-acoes';
 
+        const editar = document.createElement('button');
+        editar.type = 'button';
+        editar.className = 'btn btn-linha';
+        editar.textContent = vaga.id === editandoId ? 'Editando' : 'Editar';
+        editar.disabled = vaga.id === editandoId;
+        editar.addEventListener('click', async () => {
+            // Troca o endereço sem recarregar: assim voltar no navegador
+            // devolve a pessoa para onde ela estava, e recarregar a
+            // página continua abrindo o anúncio certo.
+            history.replaceState(null, '', `cadastrar-vaga.html?id=${vaga.id}`);
+            await carregarParaEditar(vaga.id);
+            carregarMinhas();
+        });
+        acoes.appendChild(editar);
+
         // Só faz sentido ver a página de uma vaga que está no ar.
         if (vaga.ativa && vaga.status === 'publicada') {
             const ver = document.createElement('a');
@@ -504,7 +733,7 @@ async function carregarMinhas() {
                 .update({ ativa: !vaga.ativa })
                 .eq('id', vaga.id);
             ocupado(alternar, false);
-            if (e) return aviso('Não consegui mudar: ' + e.message);
+            if (e) return aviso('Não consegui mudar: ' + traduzirErro(e));
             carregarMinhas();
         });
 
@@ -631,7 +860,7 @@ formCriar.addEventListener('submit', async evento => {
     entrar();
 });
 
-// CEP preenche o endereço, usando o buscarCep() do conta.js.
+// CEP do cadastro preenche o endereço DA PESSOA, usando o buscarCep().
 const campoCep = document.getElementById('cCep');
 campoCep.addEventListener('blur', () => buscarCep(campoCep.value, {
     logradouro: document.getElementById('cLogradouro'),
@@ -669,6 +898,9 @@ async function entrar() {
 
     await carregarCidades();
     await preencherDoPerfil();
+
+    if (editandoId) await carregarParaEditar(editandoId);
+
     carregarMinhas();
 }
 

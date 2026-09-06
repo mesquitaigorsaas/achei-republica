@@ -67,6 +67,66 @@
   </div>
 </main>
 
+<!-- A denúncia, o mesmo modal da home.
+
+     Aqui ela importa mais que no cartão: é com a página inteira aberta
+     — as fotos, o texto, o preço — que o estudante reconhece o anúncio
+     de imobiliária que ele já viu em outros três sites. Não pede conta,
+     de propósito: exigir login para denunciar é o mesmo que não ter
+     denúncia. -->
+<div class="denuncia" id="denuncia" role="dialog" aria-modal="true"
+     aria-labelledby="denunciaTitulo" hidden>
+  <div class="denuncia-caixa">
+
+    <button class="denuncia-fechar" id="denunciaFechar" type="button" aria-label="Fechar">✕</button>
+
+    <h2 id="denunciaTitulo">Denunciar anúncio</h2>
+    <p class="denuncia-alvo" id="denunciaAlvo"></p>
+    <p class="denuncia-dica">
+      A gente olha uma por uma. O anunciante não fica sabendo quem denunciou,
+      e você não precisa ter conta.
+    </p>
+
+    <p class="denuncia-erro" id="denunciaErro" role="alert" hidden></p>
+    <p class="denuncia-obrigado" id="denunciaObrigado" hidden></p>
+
+    <form id="denunciaForm">
+      <fieldset class="denuncia-motivos">
+        <legend>O que há de errado?</legend>
+
+        <label><input type="radio" name="motivo" value="imobiliaria" />
+          <span><b>É de imobiliária ou corretor</b>
+          <span>Anúncio de intermediário, não de quem mora ou tem a casa.</span></span></label>
+
+        <label><input type="radio" name="motivo" value="anuncio_falso" />
+          <span><b>O anúncio é falso</b>
+          <span>Foto de outra casa, preço que não existe, república inventada.</span></span></label>
+
+        <label><input type="radio" name="motivo" value="golpe" />
+          <span><b>Parece golpe</b>
+          <span>Pediram depósito antes de visitar, ou sumiram depois do PIX.</span></span></label>
+
+        <label><input type="radio" name="motivo" value="ja_alugada" />
+          <span><b>A vaga já foi alugada</b>
+          <span>Continua no ar, mas não existe mais vaga.</span></span></label>
+
+        <label><input type="radio" name="motivo" value="outro" />
+          <span><b>Outro motivo</b>
+          <span>Conte abaixo o que aconteceu.</span></span></label>
+      </fieldset>
+
+      <label class="denuncia-detalhe" for="denunciaDetalhe">
+        Quer contar mais? <span>(opcional)</span>
+      </label>
+      <textarea id="denunciaDetalhe" rows="3"
+                placeholder="O que você viu que não bateu"></textarea>
+
+      <button type="submit" class="btn btn-azul" id="denunciaEnviar">Enviar denúncia</button>
+    </form>
+
+  </div>
+</div>
+
 <footer class="rodape">
   <div class="wrap">
     <p class="direitos">© 2026 Achei República — Por Mesquita SaaS</p>
@@ -77,6 +137,7 @@
 <script src="js/supabase-config.js"></script>
 <script src="js/marcas.js"></script>
 <script src="js/vaga.js" defer></script>
+<script src="js/denuncia.js" defer></script>
 
 </body>
 </html>

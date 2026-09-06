@@ -33,11 +33,15 @@ if (janela) {
     let quemAbriu = null;
 
     function abrir(botao) {
-        const cartao = botao.closest('.anuncio');
+        /* [data-id] e nao '.anuncio': a mesma denúncia serve o cartão
+           da vitrine e a página de uma vaga, que não tem cartão nenhum
+           — e é justamente na página inteira, com foto e texto, que dá
+           para reconhecer o anúncio de imobiliária. */
+        const cartao = botao.closest('[data-id]');
         idDaVez = cartao ? (cartao.dataset.id || '') : '';
         quemAbriu = botao;
 
-        const nome = cartao ? cartao.querySelector('h3') : null;
+        const nome = cartao ? cartao.querySelector('h3, h1') : null;
         alvo.textContent = nome ? nome.textContent : 'este anúncio';
 
         formulario.hidden = false;
