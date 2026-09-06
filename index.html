@@ -294,15 +294,7 @@
 
         <div class="grupo">
           <h4>Tipo de acomodação</h4>
-          <div class="marcas">
-            <label class="marca-item"><input type="checkbox" /><span>Cama</span></label>
-            <label class="marca-item"><input type="checkbox" /><span>Quarto compartilhado</span></label>
-            <label class="marca-item"><input type="checkbox" /><span>Quarto individual</span></label>
-            <label class="marca-item"><input type="checkbox" /><span>Kitnet</span></label>
-            <label class="marca-item"><input type="checkbox" /><span>Apartamento</span></label>
-            <label class="marca-item"><input type="checkbox" /><span>Casa</span></label>
-            <label class="marca-item"><input type="checkbox" /><span>República</span></label>
-          </div>
+          <div class="marcas" id="fTipos"></div>
         </div>
 
         <div class="grupo">
@@ -317,74 +309,27 @@
               <input type="number" id="fMax" placeholder="R$ 900" />
             </div>
           </div>
-          <div class="marcas">
-            <label class="marca-item"><input type="checkbox" /><span>Sem caução</span></label>
-            <label class="marca-item"><input type="checkbox" /><span>Sem taxa de condomínio</span></label>
-            <label class="marca-item"><input type="checkbox" /><span>Sem taxa de limpeza</span></label>
-          </div>
+          <div class="marcas" id="fTaxas"></div>
         </div>
 
         <div class="grupo">
           <h4>Já vem incluso</h4>
-          <div class="marcas">
-            <label class="marca-item"><input type="checkbox" /><span>Água</span></label>
-            <label class="marca-item"><input type="checkbox" /><span>Energia</span></label>
-            <label class="marca-item"><input type="checkbox" /><span>Internet</span></label>
-            <label class="marca-item"><input type="checkbox" /><span>Gás</span></label>
-            <label class="marca-item"><input type="checkbox" /><span>IPTU</span></label>
-            <label class="marca-item"><input type="checkbox" /><span>Condomínio</span></label>
-          </div>
+          <div class="marcas" id="fIncluso"></div>
         </div>
 
         <div class="grupo">
           <h4>Estrutura</h4>
-          <div class="marcas">
-            <label class="marca-item"><input type="checkbox" /><span>Mobiliado</span></label>
-            <label class="marca-item"><input type="checkbox" /><span>Cozinha equipada</span></label>
-            <label class="marca-item"><input type="checkbox" /><span>Máquina de lavar</span></label>
-            <label class="marca-item"><input type="checkbox" /><span>Escrivaninha</span></label>
-            <label class="marca-item"><input type="checkbox" /><span>Guarda-roupa</span></label>
-            <label class="marca-item"><input type="checkbox" /><span>Ar-condicionado</span></label>
-            <label class="marca-item"><input type="checkbox" /><span>Garagem</span></label>
-            <label class="marca-item"><input type="checkbox" /><span>Área de lazer</span></label>
-            <label class="marca-item"><input type="checkbox" /><span>Churrasqueira</span></label>
-            <label class="marca-item"><input type="checkbox" /><span>Piscina</span></label>
-            <label class="marca-item"><input type="checkbox" /><span>Academia</span></label>
-            <label class="marca-item"><input type="checkbox" /><span>Lavanderia</span></label>
-            <label class="marca-item"><input type="checkbox" /><span>Sacada</span></label>
-            <label class="marca-item"><input type="checkbox" /><span>Elevador</span></label>
-            <label class="marca-item"><input type="checkbox" /><span>Portaria 24h</span></label>
-            <label class="marca-item"><input type="checkbox" /><span>Câmeras</span></label>
-            <label class="marca-item"><input type="checkbox" /><span>Portão eletrônico</span></label>
-            <label class="marca-item"><input type="checkbox" /><span>Acessível (PCD)</span></label>
-          </div>
+          <div class="marcas" id="fEstrutura"></div>
         </div>
 
         <div class="grupo">
           <h4>Jeito da casa</h4>
-          <div class="marcas">
-            <label class="marca-item"><input type="checkbox" /><span>Mista</span></label>
-            <label class="marca-item"><input type="checkbox" /><span>Somente feminina</span></label>
-            <label class="marca-item"><input type="checkbox" /><span>Somente masculina</span></label>
-            <label class="marca-item"><input type="checkbox" /><span>LGBTQIAPN+</span></label>
-            <label class="marca-item"><input type="checkbox" /><span>Ambiente silencioso</span></label>
-            <label class="marca-item"><input type="checkbox" /><span>Ambiente familiar</span></label>
-            <label class="marca-item"><input type="checkbox" /><span>Aceita calouros</span></label>
-            <label class="marca-item"><input type="checkbox" /><span>Aceita intercambistas</span></label>
-          </div>
+          <div class="marcas" id="fJeito"></div>
         </div>
 
         <div class="grupo">
           <h4>Regras</h4>
-          <div class="marcas">
-            <label class="marca-item"><input type="checkbox" /><span>Aceita pet</span></label>
-            <label class="marca-item"><input type="checkbox" /><span>Aceita visitas</span></label>
-            <label class="marca-item"><input type="checkbox" /><span>Permite pernoite</span></label>
-            <label class="marca-item"><input type="checkbox" /><span>Horário de silêncio</span></label>
-            <label class="marca-item"><input type="checkbox" /><span>Sem festas</span></label>
-            <label class="marca-item"><input type="checkbox" /><span>Tem festas</span></label>
-            <label class="marca-item"><input type="checkbox" /><span>Aceita fumantes</span></label>
-          </div>
+          <div class="marcas" id="fRegras"></div>
         </div>
 
         <div class="grupo">
@@ -404,9 +349,11 @@
           </div>
         </div>
 
+        <p class="painel-conta" id="painelConta" hidden></p>
+
         <div class="painel-pe">
           <button class="limpar" id="limparFiltros" type="button">Limpar tudo</button>
-          <button class="btn btn-azul" type="button">Aplicar filtros</button>
+          <button class="btn btn-azul" type="button" id="aplicarFiltros">Aplicar filtros</button>
         </div>
 
       </div>
@@ -785,6 +732,7 @@
         <a href="#quem-somos">Quem somos</a>
         <a href="#contato">Contato</a>
         <a href="cadastrar-vaga.html">Tenho uma vaga</a>
+        <a href="admin/index.html" class="rodape-admin">Admin</a>
       </nav>
     </div>
     <p class="direitos">© 2026 Achei República — Por Mesquita SaaS</p>
@@ -891,6 +839,7 @@
 <script src="js/marcas.js"></script>
 <script src="js/script.js" defer></script>
 <script src="js/vitrine.js" defer></script>
+<script src="js/filtros.js" defer></script>
 <script src="js/denuncia.js" defer></script>
 
 </body>

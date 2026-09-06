@@ -62,6 +62,7 @@ async function buscarRepublicas() {
         .from('republicas')
         .select(`
             id, nome, bairro, preco, caucao, minutos, modo, tipo, perfil, vagas,
+            disponivel_em,
             cidades ( slug ),
             faculdades ( sigla ),
             republica_fotos ( caminho, ordem ),
@@ -118,6 +119,14 @@ function montarCartao(vaga) {
     cartao.dataset.caucao = Number(vaga.caucao || 0);
     cartao.dataset.min = vaga.minutos || 999;
     cartao.dataset.modo = vaga.modo || 'pe';
+
+    /* Estes quatro são só para o painel de "Filtros completos". Não
+       aparecem em lugar nenhum da tela — existem para o filtro ter o que
+       comparar sem voltar ao banco a cada clique. */
+    cartao.dataset.tipo = vaga.tipo || '';
+    cartao.dataset.bairro = vaga.bairro || '';
+    cartao.dataset.vagas = vaga.vagas || 1;
+    cartao.dataset.disponivel = vaga.disponivel_em || '';
 
     /* data-perfil junta o jeito da casa com as características, do mesmo
        jeito que os cartões de exemplo faziam ("silencioso,pet,mista").

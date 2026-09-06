@@ -625,3 +625,76 @@
 .travado input, .travado select, .travado textarea, .travado button {
     cursor: not-allowed;
 }
+
+
+/* ---------------------------------------------------------------------
+   ADMINISTRAÇÃO
+
+   Lista densa e sem enfeite: é uma tela de trabalho, aberta para
+   decidir dez coisas seguidas, e não uma vitrine. O que importa em cada
+   linha é o texto do anúncio e os números ao lado dele.
+   --------------------------------------------------------------------- */
+.admin-cabeca { margin-bottom: 18px; }
+
+.aba-conta {
+    display: inline-block;
+    min-width: 20px;
+    margin-left: 6px;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: rgba(20, 32, 43, .1);
+    font-size: 12px;
+    font-weight: 800;
+}
+.aba.ativa .aba-conta { background: rgba(255, 255, 255, .25); }
+
+.admin-secao { margin-top: 18px; }
+
+.admin-linha {
+    border: 1px solid var(--linha);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+}
+.admin-linha.bloqueado { background: #fdf1f0; border-color: #f0c9c4; }
+
+.admin-linha-topo {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 4px;
+}
+.admin-linha-topo b { font-size: 15.5px; }
+.admin-linha-topo small { color: var(--tinta-fraca); font-size: 12px; white-space: nowrap; }
+
+.admin-dado { font-size: 13px; color: var(--tinta-suave); line-height: 1.5; }
+
+/* A descrição inteira, e não um resumo: é nela que mora a palavra de
+   imobiliária que trouxe o anúncio para a fila. */
+.admin-texto {
+    margin-top: 8px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: var(--nevoa);
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: var(--tinta);
+    white-space: pre-wrap;
+}
+
+.admin-acoes { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.admin-acoes .btn { font-size: 13px; padding: 8px 14px; }
+
+/* Vermelho só no que tira alguma coisa do ar. */
+.admin-recusar { border-color: #e6b8b2; color: #b03a2e; }
+.admin-recusar:hover { background: #b03a2e; border-color: #b03a2e; color: #fff; }
+
+/* O Admin no rodapé fica discreto: é atalho seu, não caminho do
+   visitante. Quem não é administrador cai numa tela que diz isso. */
+.rodape-admin { opacity: .45; }
+.rodape-admin:hover { opacity: 1; }
+
+@media (max-width: 560px) {
+    .admin-acoes .btn { flex: 1 1 auto; justify-content: center; }
+}

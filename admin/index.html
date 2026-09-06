@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Administração — Achei República</title>
+
+<!-- Fora do Google e de qualquer robô. Não é segurança — a segurança
+     está nas regras do banco — mas não há motivo para esta página
+     aparecer numa busca. -->
+<meta name="robots" content="noindex, nofollow" />
+
+<link rel="icon" type="image/png" sizes="32x32" href="../img/favicon-32.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../css/style.css" />
+<link rel="stylesheet" href="../css/conta.css" />
+</head>
+<body>
+
+<header class="topo" id="topo">
+  <div class="wrap">
+    <div class="topo-barra">
+      <a href="../index.html" class="marca" aria-label="Achei República">
+        <img src="../img/logoHorizontal.png" alt="Achei República" width="880" height="191" />
+      </a>
+
+      <button class="menu-botao" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="menu">
+        <span></span><span></span><span></span>
+      </button>
+
+      <nav class="menu" id="menu">
+        <a href="../index.html#cidade">Busque repúblicas</a>
+        <a href="../classificados.html">Classificados</a>
+        <button type="button" class="btn" id="botaoSair" hidden>Sair</button>
+      </nav>
+    </div>
+  </div>
+</header>
+
+<main class="conta">
+  <div class="wrap">
+
+    <p class="conta-linha-fina" id="verificando">Um instante...</p>
+
+    <!-- ENTRAR
+
+         A mesma conta e a mesma senha do site. Não existe usuário de
+         administrador separado, e é de propósito: mais uma senha é mais
+         uma senha para vazar. Quem manda é a coluna "admin" do perfil,
+         que só se acende pelo Supabase. -->
+    <div class="conta-caixa" id="telaEntrar" hidden>
+      <h1 class="conta-titulo">Administração</h1>
+      <p class="conta-linha-fina">
+        Entre com a sua conta do site. O acesso a esta página depende do
+        seu perfil estar marcado como administrador.
+      </p>
+
+      <div class="recado" id="recadoEntrar" role="alert" hidden></div>
+
+      <form id="formEntrar" novalidate>
+        <div class="campo">
+          <label for="email">E-mail <span class="obrigatorio">*</span></label>
+          <input type="email" id="email" autocomplete="email" placeholder="seuemail@exemplo.com" required />
+        </div>
+
+        <div class="campo">
+          <label for="senha">Senha <span class="obrigatorio">*</span></label>
+          <input type="password" id="senha" autocomplete="current-password" placeholder="Sua senha" required />
+        </div>
+
+        <div class="janela-acoes">
+          <button type="submit" class="btn btn-azul" id="botaoEntrar">Entrar</button>
+          <a class="btn btn-linha" href="../index.html">Voltar ao site</a>
+        </div>
+      </form>
+    </div>
+
+    <!-- ENTROU, MAS NÃO É ADMINISTRADOR
+
+         Diz o que é sem dizer como virar um. Uma tela que explicasse o
+         caminho seria um convite. -->
+    <div class="conta-caixa" id="telaNegado" hidden>
+      <h1 class="conta-titulo">Área restrita</h1>
+      <p class="conta-linha-fina">
+        Sua conta existe, mas não tem acesso a esta página. Se isso está
+        errado, fale com quem cuida do site.
+      </p>
+      <div class="janela-acoes">
+        <a class="btn btn-azul" href="../index.html">Voltar ao site</a>
+        <button type="button" class="btn btn-linha" id="botaoSairNegado">Sair desta conta</button>
+      </div>
+    </div>
+
+    <!-- O PAINEL -->
+    <div id="painel" hidden>
+
+      <div class="admin-cabeca">
+        <h1 class="conta-titulo">Administração</h1>
+        <p class="conta-linha-fina" id="quemSou"></p>
+      </div>
+
+      <div class="recado" id="recado" role="alert" hidden></div>
+
+      <div class="abas" role="tablist">
+        <button type="button" class="aba ativa" data-secao="revisao" role="tab">
+          Fila de revisão <span class="aba-conta" id="contaRevisao">0</span>
+        </button>
+        <button type="button" class="aba" data-secao="denuncias" role="tab">
+          Denúncias <span class="aba-conta" id="contaDenuncias">0</span>
+        </button>
+        <button type="button" class="aba" data-secao="anunciantes" role="tab">
+          Anunciantes <span class="aba-conta" id="contaAnunciantes">0</span>
+        </button>
+      </div>
+
+      <!-- FILA DE REVISÃO -->
+      <section class="conta-caixa larga admin-secao" id="secaoRevisao">
+        <h2 class="bloco-titulo">Anúncios esperando decisão</h2>
+        <p class="conta-linha-fina">
+          Caem aqui os anúncios que a triagem separou: quem já tem dois
+          no ar somando as contas parecidas, e quem escreveu palavra de
+          imobiliária no nome ou na descrição. Nada foi recusado — só
+          está esperando você olhar.
+        </p>
+        <div id="listaRevisao"></div>
+      </section>
+
+      <!-- DENÚNCIAS -->
+      <section class="conta-caixa larga admin-secao" id="secaoDenuncias" hidden>
+        <h2 class="bloco-titulo">O que os estudantes denunciaram</h2>
+        <p class="conta-linha-fina">
+          Quem reconhece anúncio de imobiliária é o estudante: ele já viu
+          o mesmo texto, com a mesma foto, em três sites. Denunciar não
+          pede conta, então aqui pode entrar coisa sem pé nem cabeça —
+          e também o aviso mais valioso que o site recebe.
+        </p>
+        <div id="listaDenuncias"></div>
+      </section>
+
+      <!-- ANUNCIANTES -->
+      <section class="conta-caixa larga admin-secao" id="secaoAnunciantes" hidden>
+        <h2 class="bloco-titulo">Quem anuncia</h2>
+        <p class="conta-linha-fina">
+          Cada conta anuncia uma república por vez. Quem te procurar
+          dizendo que tem duas de verdade, você libera aqui aumentando o
+          teto dela. Bloquear impede novos anúncios sem apagar os que já
+          existem.
+        </p>
+        <div id="listaAnunciantes"></div>
+      </section>
+
+    </div>
+
+  </div>
+</main>
+
+<footer class="rodape">
+  <div class="wrap">
+    <div class="rodape-inner">
+      <a href="../index.html#topo"><img src="../img/logoHorizontal.png" alt="Achei República" width="880" height="191" /></a>
+      <nav class="rodape-links">
+        <a href="../index.html#cidade">Busque repúblicas</a>
+        <a href="../index.html#como">Como funciona</a>
+        <a href="../index.html#quem-somos">Quem somos</a>
+        <a href="../index.html#contato">Contato</a>
+        <a href="../cadastrar-vaga.html">Tenho uma vaga</a>
+        <a href="../admin/index.html" class="rodape-admin">Admin</a>
+      </nav>
+    </div>
+    <p class="direitos">© 2026 Achei República — Por Mesquita SaaS</p>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/supabase-config.js"></script>
+<script src="../js/conta.js"></script>
+<script src="../js/admin.js" defer></script>
+
+</body>
+</html>

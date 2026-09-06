@@ -128,6 +128,16 @@ function aplicarFicha() {
         lista = base.filter(c => Number(c.dataset.caucao) === 0);
     }
 
+    /* O painel de "Filtros completos" entra por cima da ficha, e não no
+       lugar dela. As duas coisas são perguntas diferentes: a ficha diz
+       como ORDENAR ou um corte rápido, o painel diz o que a casa
+       precisa ter. Quem marcou "aceita pet" no painel e clicou em
+       "menor preço" quer as duas coisas, e não a segunda apagando a
+       primeira. */
+    if (typeof window.passaNoPainel === 'function') {
+        lista = lista.filter(window.passaNoPainel);
+    }
+
     daCidade.forEach(c => { c.hidden = !lista.includes(c); });
     lista.forEach(c => vitrineEl.appendChild(c));
 

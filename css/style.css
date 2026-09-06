@@ -1615,3 +1615,14 @@ a.contato:hover { border-color: var(--azul-linha); transform: translateY(-3px); 
     .vaga-mapa { height: 220px; }
     .vaga-mapa-link { width: 100%; justify-content: center; }
 }
+
+
+/* Quantas casas sobraram depois do filtro. Fica no pé do painel, onde
+   a pessoa acabou de clicar — dizer "nenhuma" ali é o que evita ela
+   fechar o painel e achar que a cidade esvaziou. */
+.painel-conta {
+    margin: 6px 0 14px;
+    font-size: .9rem;
+    font-weight: 600;
+    color: var(--azul-forte);
+}
