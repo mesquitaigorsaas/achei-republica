@@ -184,5 +184,11 @@ function destinoDepoisDoLogin() {
     /* Só caminho interno: link de fora vindo pela URL viraria um jeito
      * bonito de mandar a pessoa para uma página falsa. */
     if (pedido && pedido.startsWith('/') && !pedido.startsWith('//')) return pedido;
-    return '../painel/anuncios.html';
+
+    /* painel/anuncios.html nunca existiu: quem entrava caia num 404 do
+     * GitHub Pages, que não é nem página do site. Até o painel das
+     * vagas existir, a volta é para anunciar.html — o único lugar onde
+     * quem está logado tem o que fazer: publicar e tirar do ar os
+     * próprios anúncios. */
+    return '../anunciar.html';
 }

@@ -397,7 +397,8 @@ formCadastro.addEventListener('submit', async evento => {
     const { data: sessao } = await banco.auth.getSession();
 
     if (sessao.session) {
-        location.href = '../painel/anuncios.html';
+        // Mesmo destino do login, e pelo mesmo motivo: painel/ nao existe.
+        location.href = '../anunciar.html';
         return;
     }
 
