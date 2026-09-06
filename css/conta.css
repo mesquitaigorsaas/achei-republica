@@ -690,11 +690,6 @@
 .admin-recusar { border-color: #e6b8b2; color: #b03a2e; }
 .admin-recusar:hover { background: #b03a2e; border-color: #b03a2e; color: #fff; }
 
-/* O Admin no rodapé fica discreto: é atalho seu, não caminho do
-   visitante. Quem não é administrador cai numa tela que diz isso. */
-.rodape-admin { opacity: .45; }
-.rodape-admin:hover { opacity: 1; }
-
 @media (max-width: 560px) {
     .admin-acoes .btn { flex: 1 1 auto; justify-content: center; }
 }
