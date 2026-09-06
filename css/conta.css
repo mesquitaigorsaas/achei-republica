@@ -289,3 +289,163 @@
 }
 
 .bloco-titulo:first-of-type { border-top: 0; padding-top: 0; margin-top: 0; }
+
+/* ---------------------------------------------------------------------
+   A LISTA DOS ANÚNCIOS DELE — página de anunciar
+
+   Uma linha por item: o que é à esquerda, as duas ações à direita. No
+   celular as ações descem, porque espremer dois botões ao lado de um
+   nome de produto deixa os dois pequenos demais para o dedo.
+   --------------------------------------------------------------------- */
+.meu-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--linha);
+}
+
+.meu-item:last-child { border-bottom: 0; }
+
+.meu-item strong { display: block; font-weight: 700; }
+
+.meu-item-detalhe {
+    display: block;
+    margin-top: 3px;
+    font-size: 13.5px;
+    color: var(--tinta-suave);
+}
+
+.meu-item-acoes { display: flex; gap: 8px; flex-shrink: 0; }
+
+.meu-item-acoes .btn { padding: 7px 13px; font-size: 13.5px; }
+
+/* Apagar não tem volta, então não parece com os outros. */
+.btn-perigo { color: #a4343a; border-color: #e8c4c4; }
+.btn-perigo:hover { background: #fdf0ee; border-color: #a4343a; }
+
+@media (max-width: 520px) {
+    .meu-item-acoes { width: 100%; }
+    .meu-item-acoes .btn { flex: 1; }
+}
+
+/* ---------------------------------------------------------------------
+   O POP-UP DE CONTA — página de anunciar
+
+   Por cima da página, e não numa página à parte: quem clicou "estou
+   desfazendo de" veio com uma intenção pronta, e mandá-la para outra
+   tela faz a intenção esfriar no caminho.
+   --------------------------------------------------------------------- */
+.janela {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.janela[hidden] { display: none; }
+
+.janela-fundo {
+    position: absolute;
+    inset: 0;
+    background: rgba(12, 22, 36, .55);
+}
+
+.janela-caixa {
+    position: relative;
+    width: 100%;
+    max-width: 520px;
+    max-height: 90vh;
+    overflow-y: auto;
+    background: #fff;
+    border-radius: 18px;
+    padding: 30px 28px;
+    box-shadow: 0 20px 60px rgba(12, 22, 36, .28);
+}
+
+.janela-x {
+    position: absolute;
+    top: 12px; right: 14px;
+    width: 34px; height: 34px;
+    border: 0; border-radius: 50%;
+    background: transparent;
+    font-size: 26px; line-height: 1;
+    color: var(--tinta-suave);
+    cursor: pointer;
+}
+.janela-x:hover { background: #f1f4f8; color: var(--tinta); }
+
+@media (max-width: 560px) {
+    .janela { padding: 0; align-items: flex-end; }
+    .janela-caixa { max-width: none; max-height: 94vh; border-radius: 18px 18px 0 0; }
+}
+
+
+/* As duas abas: já tenho conta / criar conta */
+.abas { display: flex; gap: 6px; margin: 18px 0 16px; }
+
+.aba {
+    flex: 1;
+    padding: 10px 12px;
+    border: 1px solid var(--linha);
+    border-radius: 10px;
+    background: #fff;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--tinta-suave);
+    cursor: pointer;
+}
+.aba:hover { border-color: var(--azul-linha); }
+.aba.ativa { background: var(--azul); border-color: var(--azul); color: #fff; }
+
+
+/* ---------------------------------------------------------------------
+   ESCOLHA POR BOTÃO — cômodo, e vender ou doar
+
+   Botão grande em vez de <select>: são cinco opções curtas, todas
+   visíveis de uma vez, e no celular acerta-se com o polegar sem abrir
+   roda nenhuma.
+   --------------------------------------------------------------------- */
+.bloco-escolha { border: 0; padding: 0; margin: 0 0 18px; }
+
+.escolhas { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.escolha {
+    padding: 10px 16px;
+    border: 1.5px solid var(--linha);
+    border-radius: 999px;
+    background: #fff;
+    font: inherit;
+    font-size: 14.5px;
+    font-weight: 600;
+    color: var(--tinta);
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+}
+.escolha:hover { border-color: var(--azul-linha); }
+.escolha.ativa { background: var(--azul); border-color: var(--azul); color: #fff; }
+
+
+/* A prévia das fotos, para ele conferir antes de publicar que mandou a
+   foto certa. Galeria de celular é fácil de errar. */
+.previa-fotos { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+
+.previa-fotos img {
+    width: 84px;
+    height: 84px;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 1px solid var(--linha);
+}
+
+/* O atributo hidden diz display:none, mas .btn diz display:inline-flex
+   — e a classe ganha da regra do navegador. Sem isto, o "Sair" aparece
+   para quem nunca entrou. */
+.btn[hidden], [hidden] { display: none !important; }

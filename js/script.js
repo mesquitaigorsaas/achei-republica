@@ -286,12 +286,19 @@ selPrecisando.addEventListener('change', () => {
     });
 });
 
-// O link de quem está saindo leva a cidade junto do mesmo jeito. Como
-// ele é um <a> de verdade, o endereço é refeito a cada troca de cidade
-// em vez de ser montado no clique — assim abrir em nova aba, que não
-// dispara clique nenhum, continua indo para o lugar certo.
+/* Quem está se desfazendo não veio olhar vitrine: veio anunciar. Vai
+   direto para a página de anunciar, e não para a lista com um "modo"
+   pendurado na URL — a página de lá cuida sozinha de mandar ao login
+   quem ainda não tem conta, e de trazer de volta depois.
+
+   O endereço é refeito a cada troca de cidade em vez de ser montado no
+   clique: como é um <a> de verdade, abrir em nova aba — que não
+   dispara clique nenhum — continua indo para o lugar certo, com a
+   cidade junto. */
 function atualizarLinkDesfazendo() {
-    linkDesfazendo.href = enderecoDosClassificados({ modo: 'desfazendo' });
+    linkDesfazendo.href = selCidade.value
+        ? `anunciar.html?cidade=${selCidade.value}`
+        : 'anunciar.html';
 }
 atualizarLinkDesfazendo();
 

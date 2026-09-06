@@ -420,6 +420,12 @@ h1, h2, h3 { font-family: var(--display); line-height: 1.14; letter-spacing: -0.
    casa. Parecidas na tela porque são irmãs. */
 .classificados-porta {
     flex: 0 1 300px;
+    /* Encostada na direita por conta própria, e não pelo space-between
+       da linha. Cidade sem república esconde as fichas, e aí a porta
+       ficava sendo o único filho do flex — que o space-between joga
+       para a esquerda. Os classificados apareciam num canto em Alfenas
+       e no outro em Varginha, sem nada explicar a mudança. */
+    margin-left: auto;
     border: 1.5px solid var(--linha);
     border-radius: 13px;
     padding: 10px 14px;
@@ -1223,3 +1229,126 @@ a.contato:hover { border-color: var(--azul-linha); transform: translateY(-3px); 
 @media (max-width: 520px) {
     .denuncia-caixa { padding: 26px 20px 22px; border-radius: 20px; }
 }
+
+
+/* ---------------------------------------------------------------------
+   CLASSIFICADOS — a volta para a busca
+
+   Quem chega aqui veio de uma cidade e quer poder voltar para ela. O
+   link existia no HTML sem uma linha de estilo: saía como link cru do
+   navegador, letra miúda ao pé de um título enorme, e passava batido.
+   Vira uma pílula — a mesma linguagem das fichas logo abaixo, para ser
+   lido como coisa em que se clica.
+   --------------------------------------------------------------------- */
+.voltar-busca {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 18px;
+    padding: 9px 16px 9px 13px;
+    border: 1px solid var(--azul-linha);
+    border-radius: 999px;
+    background: var(--azul-fraco);
+    font-size: .88rem;
+    font-weight: 700;
+    color: var(--azul-forte);
+    text-decoration: none;
+    transition: all .16s;
+}
+
+.voltar-busca:hover {
+    background: var(--azul);
+    border-color: var(--azul);
+    color: #fff;
+}
+
+.voltar-busca:focus-visible {
+    outline: 2px solid var(--azul);
+    outline-offset: 3px;
+}
+
+/* Nas páginas de caixa — entrar, criar conta, recuperar a senha,
+   anunciar — a caixa é estreita e centrada. A volta se alinha pela
+   borda esquerda dela, e não pela da tela: jogada no canto da janela
+   ela pareceria ter sobrado de outra página. */
+.voltar-linha { width: 100%; max-width: 560px; margin: 0 auto; }
+.voltar-linha.larga { max-width: 720px; }
+
+
+/* ---------------------------------------------------------------------
+   CLASSIFICADOS — a vitrine dos itens
+
+   Grade parecida com a das repúblicas, mas com quadros menores: um
+   ventilador não precisa da mesma área que uma casa, e a pessoa está
+   passando o olho por muitos de uma vez.
+   --------------------------------------------------------------------- */
+.itens {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 18px;
+}
+
+.itens[hidden] { display: none; }
+
+.item {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--linha);
+    border-radius: var(--raio-g);
+    overflow: hidden;
+    background: #fff;
+}
+
+.item-foto {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    background: var(--nevoa);
+    overflow: hidden;
+}
+
+.item-foto img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* Sem foto, o quadro diz o cômodo em vez de ficar um buraco cinza. */
+.item-foto.sem-foto {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--tinta-fraca);
+    font-size: .84rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+
+.item-quantas {
+    position: absolute;
+    right: 8px; bottom: 8px;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: rgba(12, 22, 36, .72);
+    color: #fff;
+    font-size: .74rem;
+    font-weight: 600;
+}
+
+.item-corpo { display: flex; flex-direction: column; gap: 6px; padding: 14px 16px 16px; }
+
+.item-corpo h3 { font-size: 1.02rem; font-weight: 800; line-height: 1.3; }
+
+.item-preco { font-size: 1.12rem; font-weight: 800; }
+
+/* Doação em verde: é a palavra que faz o olho parar na lista. */
+.item-preco.doacao { color: var(--verde); }
+
+.item-conta {
+    font-size: .88rem;
+    color: var(--tinta-suave);
+    line-height: 1.5;
+    /* Três linhas e corta: o cartão é a chamada, não o anúncio inteiro. */
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.item-zap { margin-top: 6px; justify-content: center; }

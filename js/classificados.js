@@ -109,6 +109,12 @@ document.getElementById('nomeCidadeVazio').textContent = nomeDaCidade;
 document.getElementById('voltarBusca').href =
     cidade ? `index.html?cidade=${cidade}#republicas` : 'index.html#cidade';
 
+// E o "quero anunciar" também. Sem isso, quem está olhando Varginha
+// cairia no formulário com Alfenas escolhida — a primeira da lista —
+// e publicaria na cidade errada sem perceber.
+document.getElementById('botaoAnunciar').href =
+    cidade ? `anunciar.html?cidade=${cidade}` : 'anunciar.html';
+
 // Quem clicou "Estou desfazendo de" não veio olhar vitrine: veio
 // anunciar. A página diz isso na linha fina em vez de mostrar a lista
 // de compra e deixar o botão de anunciar no rodapé.
@@ -179,7 +185,7 @@ async function carregar() {
 
     let consulta = bancoClassificados
         .from('itens')
-        .select('id, titulo, preco, comodo, foto_url, whatsapp')
+        .select('id, titulo, descricao, preco, modo, comodo, fotos, whatsapp')
         .eq('publicado', true)
         .order('criado_em', { ascending: false });
 
@@ -188,14 +194,35 @@ async function carregar() {
 
     const { data, error } = await consulta;
 
-    // Falhou a rede ou a tabela ainda não existe: mostra o vazio, que é
-    // honesto, em vez de um erro que a pessoa não pode resolver.
-    if (error || !data || data.length === 0) {
+    /* Sem nada para mostrar, mostra o vazio — que é honesto.
+
+       Mas erro de consulta NÃO é lista vazia, e tratar os dois igual
+       escondeu um anúncio de verdade por meia hora: a coluna pedida
+       tinha sido apagada do banco, a consulta falhava, e a página dizia
+       "ainda não tem nada" com o anúncio publicado ali dentro. Mentir
+       assim é pior que dar erro. */
+    if (error) {
+        listaVazia.hidden = false;
+        vazioTitulo.textContent = 'Não consegui carregar os anúncios';
+        vazioTexto.textContent = 'Tente recarregar a página. Se continuar, '
+            + 'me avise: ' + error.message;
+        return;
+    }
+
+    if (!data || data.length === 0) {
         mostrarVazio();
         return;
     }
 
     desenhar(data);
+}
+
+/* O WhatsApp é o produto: a página existe para pôr quem precisa em
+   contato com quem está se desfazendo. A mensagem já vai escrita para
+   ninguém travar no "oi, é sobre o anúncio". */
+function linkDoZap(item) {
+    const texto = `Olá! Vi o anúncio de "${item.titulo}" no Achei República. Ainda está disponível?`;
+    return `https://wa.me/55${item.whatsapp}?text=${encodeURIComponent(texto)}`;
 }
 
 function desenhar(itens) {
@@ -205,20 +232,59 @@ function desenhar(itens) {
         const cartao = document.createElement('article');
         cartao.className = 'item';
 
+        const moldura = document.createElement('div');
+        moldura.className = 'item-foto';
+
+        // Sem foto, um quadro com o nome do cômodo em vez de um buraco
+        // cinza: a grade continua alinhada e o cartão continua dizendo
+        // alguma coisa.
+        if (item.fotos && item.fotos.length) {
+            const foto = document.createElement('img');
+            foto.src = item.fotos[0];
+            foto.alt = item.titulo;
+            foto.loading = 'lazy';
+            moldura.appendChild(foto);
+
+            if (item.fotos.length > 1) {
+                const quantas = document.createElement('span');
+                quantas.className = 'item-quantas';
+                quantas.textContent = `${item.fotos.length} fotos`;
+                moldura.appendChild(quantas);
+            }
+        } else {
+            moldura.classList.add('sem-foto');
+            moldura.textContent = COMODOS[item.comodo] || 'Sem foto';
+        }
+
+        const corpo = document.createElement('div');
+        corpo.className = 'item-corpo';
+
         const nome = document.createElement('h3');
         nome.textContent = item.titulo;
 
         const preco = document.createElement('p');
         preco.className = 'item-preco';
-        preco.textContent = Number(item.preco) === 0
-            ? 'Doação'
-            : `R$ ${item.preco}`;
+        preco.textContent = item.modo === 'doacao' ? 'Doação' : `R$ ${Number(item.preco)}`;
+        if (item.modo === 'doacao') preco.classList.add('doacao');
 
-        const onde = document.createElement('p');
-        onde.className = 'item-comodo';
-        onde.textContent = COMODOS[item.comodo] || '';
+        corpo.append(nome, preco);
 
-        cartao.append(nome, preco, onde);
+        if (item.descricao) {
+            const conta = document.createElement('p');
+            conta.className = 'item-conta';
+            conta.textContent = item.descricao;
+            corpo.appendChild(conta);
+        }
+
+        const zap = document.createElement('a');
+        zap.className = 'btn btn-azul item-zap';
+        zap.href = linkDoZap(item);
+        zap.target = '_blank';
+        zap.rel = 'noopener';
+        zap.textContent = 'Chamar no WhatsApp';
+        corpo.appendChild(zap);
+
+        cartao.append(moldura, corpo);
         return cartao;
     }));
 

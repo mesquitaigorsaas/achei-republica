@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Anunciar nos classificados — Achei República</title>
+<meta name="description" content="Está de mudança? Anuncie a geladeira, o ventilador, a escrivaninha. Quem chega no próximo semestre procura exatamente isso." />
+
+<meta name="robots" content="noindex, nofollow" />
+
+<link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png" />
+<link rel="apple-touch-icon" sizes="180x180" href="img/favicon-180.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="img/favicon-512.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="css/conta.css" />
+</head>
+<body>
+
+<header class="topo" id="topo">
+  <div class="wrap">
+    <div class="topo-barra">
+      <a href="index.html" class="marca" aria-label="Achei República">
+        <img src="img/logoHorizontal.png" alt="Achei República" width="880" height="191" />
+      </a>
+
+      <button class="menu-botao" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="menu">
+        <span></span><span></span><span></span>
+      </button>
+
+      <nav class="menu" id="menu">
+        <a href="index.html#cidade">Busque repúblicas</a>
+        <a href="classificados.html">Classificados</a>
+        <a href="index.html#quem-somos">Quem somos</a>
+        <a href="index.html#contato">Contato</a>
+        <button type="button" class="btn" id="botaoSair" hidden>Sair</button>
+      </nav>
+    </div>
+  </div>
+</header>
+
+<main class="conta">
+  <div class="wrap">
+
+    <!-- A volta para a busca. O mesmo link da vitrine e dos
+         classificados: em toda página que não é a inicial, a saída
+         fica no mesmo canto e com as mesmas palavras. O endereço leva
+         a cidade junto, montado pelo js/anunciar.js. -->
+    <div class="voltar-linha">
+      <a class="voltar-busca" id="voltarBusca" href="index.html">← Voltar para as repúblicas</a>
+    </div>
+
+    <p class="conta-linha-fina" id="verificando">Um instante...</p>
+
+    <div id="tela" hidden>
+
+      <div class="conta-caixa">
+        <h1 class="conta-titulo">O que você está passando adiante?</h1>
+        <p class="conta-linha-fina">
+          Quem chega no próximo semestre está montando a casa do zero.
+          O que não cabe na sua mudança resolve a vida de alguém.
+        </p>
+
+        <div class="recado" id="recado" role="alert" hidden></div>
+
+        <form id="formItem" novalidate>
+
+          <!-- A CATEGORIA PRIMEIRO.
+
+               É a pergunta que a pessoa já respondeu na cabeça antes de
+               chegar aqui — ela está olhando para a geladeira, sabe que
+               é da cozinha. Perguntar isso primeiro, com botões
+               grandes, faz o formulário começar com um clique fácil em
+               vez de um campo em branco. -->
+          <fieldset class="bloco-escolha">
+            <legend class="bloco-titulo">De qual cômodo é?</legend>
+            <div class="escolhas" id="escolhaComodo">
+              <button type="button" class="escolha" data-valor="quarto">Quarto</button>
+              <button type="button" class="escolha" data-valor="cozinha">Cozinha</button>
+              <button type="button" class="escolha" data-valor="banheiro">Banheiro</button>
+              <button type="button" class="escolha" data-valor="area-de-servico">Área de serviço</button>
+              <button type="button" class="escolha" data-valor="quintal">Quintal</button>
+            </div>
+          </fieldset>
+
+          <!-- O resto só aparece depois da escolha: um formulário
+               inteiro aberto de cara é uma parede. -->
+          <div id="resto" hidden>
+
+            <div class="campo">
+              <label for="titulo">O que é <span class="obrigatorio">*</span></label>
+              <input type="text" id="titulo" maxlength="80"
+                     placeholder="Geladeira Consul 300L" required />
+            </div>
+
+            <fieldset class="bloco-escolha">
+              <legend class="bloco-titulo">Você está vendendo ou doando?</legend>
+              <div class="escolhas" id="escolhaModo">
+                <button type="button" class="escolha ativa" data-valor="venda">Vendendo</button>
+                <button type="button" class="escolha" data-valor="doacao">Doando</button>
+              </div>
+            </fieldset>
+
+            <div class="dupla">
+              <div class="campo" id="campoPreco">
+                <label for="preco">Por quanto <span class="obrigatorio">*</span></label>
+                <input type="number" id="preco" min="0" step="1" placeholder="150" />
+              </div>
+
+              <div class="campo">
+                <label for="cidade">Em qual cidade <span class="obrigatorio">*</span></label>
+                <select id="cidade" required></select>
+              </div>
+            </div>
+
+            <div class="campo">
+              <label for="fotos">Fotos — até três</label>
+              <input type="file" id="fotos" accept="image/*" multiple />
+              <small class="conta-linha-fina">
+                Uma de frente e uma de perto do que estiver gasto. Anúncio
+                honesto sobre o estado é o que evita a pessoa ir até lá e
+                desistir na porta.
+              </small>
+              <div class="previa-fotos" id="previaFotos"></div>
+            </div>
+
+            <div class="campo">
+              <label for="descricao">Comentário</label>
+              <textarea id="descricao" rows="3" maxlength="400"
+                        placeholder="Dois anos de uso, funcionando bem. Retirar no Centro, combinar horário."></textarea>
+            </div>
+
+            <div class="campo">
+              <label for="whatsapp">WhatsApp para contato <span class="obrigatorio">*</span></label>
+              <input type="tel" id="whatsapp" data-mascara="telefone"
+                     placeholder="(35) 99999-9999" required />
+              <small class="conta-linha-fina">
+                Já vem preenchido com o do seu cadastro. Pode trocar se
+                quiser atender em outro número.
+              </small>
+            </div>
+
+            <button type="submit" class="btn btn-azul" id="botaoPublicar">Publicar anúncio</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="conta-caixa" style="margin-top: 22px;">
+        <h2 class="bloco-titulo">Seus anúncios</h2>
+        <div id="meusItens"></div>
+      </div>
+
+    </div>
+
+  </div>
+</main>
+
+<!-- =====================================================================
+     O POP-UP DE ENTRAR OU CRIAR CONTA
+
+     Aparece por cima da página em vez de mandar a pessoa para outra
+     tela. Quem clicou "estou desfazendo de" veio com uma intenção
+     pronta; jogá-la numa página de login faz a intenção esfriar no
+     caminho, e metade não volta.
+
+     Quem PROCURA nunca vê isto — a vitrine é aberta. A conta existe só
+     para quem publica, porque anúncio sem dono é anúncio que ninguém
+     consegue tirar do ar depois de vendido.
+     ===================================================================== -->
+<div class="janela" id="janelaConta" hidden>
+  <div class="janela-fundo" data-fecha-janela></div>
+
+  <div class="janela-caixa" role="dialog" aria-modal="true" aria-labelledby="janelaTitulo">
+
+    <button type="button" class="janela-x" data-fecha-janela aria-label="Fechar">&times;</button>
+
+    <h2 class="conta-titulo" id="janelaTitulo">Para anunciar, entre na sua conta</h2>
+    <p class="conta-linha-fina">
+      É rápido, e é o que deixa você tirar o anúncio do ar depois que vender.
+    </p>
+
+    <div class="abas" role="tablist">
+      <button type="button" class="aba ativa" data-aba="entrar" role="tab">Já tenho conta</button>
+      <button type="button" class="aba" data-aba="criar" role="tab">Criar conta</button>
+    </div>
+
+    <div class="recado" id="recadoJanela" role="alert" hidden></div>
+
+    <!-- ---- entrar ---- -->
+    <form id="formEntrar" novalidate>
+      <div class="campo">
+        <label for="jEmail">E-mail <span class="obrigatorio">*</span></label>
+        <input type="email" id="jEmail" autocomplete="email" placeholder="seuemail@exemplo.com" required />
+      </div>
+
+      <div class="campo">
+        <label for="jSenha">Senha <span class="obrigatorio">*</span></label>
+        <input type="password" id="jSenha" autocomplete="current-password" placeholder="Sua senha" required />
+      </div>
+
+      <button type="submit" class="btn btn-azul" id="botaoEntrar">Entrar</button>
+      <p class="conta-esqueci"><a href="auth/recuperar-senha.html">Esqueci minha senha</a></p>
+    </form>
+
+    <!-- ---- criar conta ---- -->
+    <form id="formCriar" novalidate hidden>
+      <div class="campo">
+        <label for="cNome">Seu nome <span class="obrigatorio">*</span></label>
+        <input type="text" id="cNome" autocomplete="name" placeholder="Como você assina" required />
+      </div>
+
+      <div class="dupla">
+        <div class="campo">
+          <label for="cWhatsapp">WhatsApp <span class="obrigatorio">*</span></label>
+          <input type="tel" id="cWhatsapp" data-mascara="telefone" autocomplete="tel"
+                 placeholder="(35) 99999-9999" required />
+        </div>
+
+        <div class="campo">
+          <label for="cEmail">E-mail <span class="obrigatorio">*</span></label>
+          <input type="email" id="cEmail" autocomplete="email"
+                 placeholder="seuemail@exemplo.com" required />
+        </div>
+      </div>
+
+      <div class="campo">
+        <label for="cSenha">Crie uma senha <span class="obrigatorio">*</span></label>
+        <input type="password" id="cSenha" autocomplete="new-password"
+               placeholder="Pelo menos 6 caracteres" required />
+      </div>
+
+      <!-- O endereço fica no seu cadastro e NÃO vai para o anúncio.
+           Publicar a rua e o número de quem mora sozinho ao lado de um
+           móvel à venda é problema de segurança, não de produto. Serve
+           para a gente saber de onde vem o anúncio e para você não
+           digitar de novo na próxima vez. -->
+      <div class="dupla dupla-estreita">
+        <div class="campo">
+          <label for="cCep">CEP</label>
+          <input type="text" id="cCep" data-mascara="cep" inputmode="numeric" placeholder="37130-000" />
+        </div>
+
+        <div class="campo">
+          <label for="cNumero">Número</label>
+          <input type="text" id="cNumero" placeholder="62" />
+        </div>
+      </div>
+
+      <div class="campo">
+        <label for="cLogradouro">Rua</label>
+        <input type="text" id="cLogradouro" placeholder="Preenche sozinho pelo CEP" />
+      </div>
+
+      <div class="dupla">
+        <div class="campo">
+          <label for="cBairro">Bairro</label>
+          <input type="text" id="cBairro" placeholder="Centro" />
+        </div>
+
+        <div class="campo">
+          <label for="cCidade">Cidade</label>
+          <input type="text" id="cCidade" placeholder="Alfenas" />
+        </div>
+      </div>
+
+      <input type="hidden" id="cUf" />
+
+      <p class="conta-linha-fina">
+        Seu endereço fica guardado só para você. No anúncio aparece a
+        cidade e o que você escrever no comentário — nada mais.
+      </p>
+
+      <button type="submit" class="btn btn-azul" id="botaoCriar">Criar conta e anunciar</button>
+    </form>
+
+  </div>
+</div>
+
+<footer class="rodape">
+  <div class="wrap">
+    <p class="direitos">© 2026 Achei República — Por Mesquita SaaS</p>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/conta.js"></script>
+<script src="js/anunciar.js" defer></script>
+
+</body>
+</html>
