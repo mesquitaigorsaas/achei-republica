@@ -58,8 +58,13 @@ if (janela) {
         if (quemAbriu) quemAbriu.focus();
     }
 
-    document.querySelectorAll('.denunciar').forEach(botao => {
-        botao.addEventListener('click', () => abrir(botao));
+    /* Delegação, e não um ouvinte por botão: os cartões das
+       repúblicas chegam do banco depois desta linha rodar, e ligados um
+       a um os novos nasceriam sem denúncia — justamente os anúncios de
+       verdade, que são os únicos que dá para denunciar. */
+    document.addEventListener('click', evento => {
+        const botao = evento.target.closest('.denunciar');
+        if (botao) abrir(botao);
     });
 
     fechar.addEventListener('click', fecharJanela);

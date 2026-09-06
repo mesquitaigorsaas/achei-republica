@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Vaga — Achei República</title>
+<meta name="description" content="Os detalhes da vaga: as fotos, o que a casa tem, quanto tempo até a faculdade e como falar com quem mora lá." />
+
+<link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png" />
+<link rel="apple-touch-icon" sizes="180x180" href="img/favicon-180.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="img/favicon-512.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<header class="topo" id="topo">
+  <div class="wrap">
+    <div class="topo-barra">
+      <a href="index.html" class="marca" aria-label="Achei República">
+        <img src="img/logoHorizontal.png" alt="Achei República" width="880" height="191" />
+      </a>
+
+      <button class="menu-botao" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="menu">
+        <span></span><span></span><span></span>
+      </button>
+
+      <nav class="menu" id="menu">
+        <a href="index.html#cidade">Busque repúblicas</a>
+        <a href="classificados.html">Classificados</a>
+        <a href="index.html#quem-somos">Quem somos</a>
+        <a href="index.html#contato">Contato</a>
+        <a href="cadastrar-vaga.html" class="btn btn-azul">Tenho uma vaga</a>
+      </nav>
+    </div>
+  </div>
+</header>
+
+<main class="secao" id="vaga">
+  <div class="wrap">
+
+    <div class="voltar-linha-solta">
+      <a class="voltar-busca" id="voltarBusca" href="index.html#cidade">← Voltar para as repúblicas</a>
+    </div>
+
+    <!-- Enquanto o banco responde. Não é um esqueleto animado de
+         propósito: a página inteira aparece de uma vez, e uma frase
+         curta explica melhor a espera que cinco retângulos cinzas. -->
+    <p class="conta-linha-fina" id="carregando">Abrindo a vaga...</p>
+
+    <!-- Vaga que não existe, que saiu do ar ou que está em revisão cai
+         aqui. Um 404 do GitHub Pages não parece nem página deste site. -->
+    <div class="vazio" id="naoAchei" hidden>
+      <div class="vazio-icone" aria-hidden="true">🏠</div>
+      <h3 id="naoAcheiTitulo">Não achei essa vaga</h3>
+      <p id="naoAcheiTexto">
+        Ela pode ter sido alugada e tirada do ar. Veja as outras
+        repúblicas da cidade.
+      </p>
+      <a class="btn btn-azul" id="naoAcheiVoltar" href="index.html#cidade">Ver as repúblicas</a>
+    </div>
+
+    <article id="conteudo" hidden></article>
+
+  </div>
+</main>
+
+<footer class="rodape">
+  <div class="wrap">
+    <p class="direitos">© 2026 Achei República — Por Mesquita SaaS</p>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/marcas.js"></script>
+<script src="js/vaga.js" defer></script>
+
+</body>
+</html>

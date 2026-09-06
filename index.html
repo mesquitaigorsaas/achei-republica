@@ -415,9 +415,25 @@
     <!-- Os dados de cada república ficam no próprio cartão. Assim a
          página funciona sem script nenhum, e o questionário só entra por
          cima reordenando e recalculando as notas. -->
+    <!-- A faixa do exemplo.
+
+         Cidade sem nenhuma casa cadastrada mostra os seis cartões de
+         exemplo em vez de uma caixa vazia — o site não fica com cara
+         de abandonado, e quem tem vaga vê exatamente como a dele vai
+         aparecer. O que não pode é a pessoa achar que são casas de
+         verdade e mandar mensagem para ninguém: por isso a faixa diz
+         o que são, e o bot��o convida a ser a primeira da cidade. -->
+    <div class="aviso-exemplo" id="avisoExemplo" hidden>
+      <span>
+        <b>Ainda não tem república cadastrada em <span id="nomeCidadeExemplo">Varginha</span>.</b>
+        Os anúncios abaixo são exemplos, para você ver como a sua vaga vai aparecer.
+      </span>
+      <a class="btn btn-azul" id="cadastrarPrimeira" href="cadastrar-vaga.html">Cadastrar a primeira</a>
+    </div>
+
     <div class="vitrine" id="vitrine">
 
-      <article class="anuncio" data-cidade="alfenas" data-uni="UNIFAL" data-cursos="Medicina,Enfermagem"
+      <article class="anuncio" data-exemplo="1" data-cidade="alfenas" data-uni="UNIFAL" data-cursos="Medicina,Enfermagem"
                data-preco="650" data-caucao="0" data-min="8" data-modo="pe" data-perfil="silencioso,pet,mista">
         <div class="anuncio-foto">
           <small>Foto em breve</small>
@@ -438,12 +454,11 @@
           <div class="mimos"><span class="mimo">Internet inclusa</span><span class="mimo">Aceita pet</span><span class="mimo">Mobiliada</span></div>
           <div class="anuncio-pe">
             <div class="preco">R$ 650<span> /mês</span></div>
-            <a href="#" class="ver">Ver vaga →</a>
           </div>
         </div>
       </article>
 
-      <article class="anuncio" data-cidade="alfenas" data-uni="UNIFAL" data-cursos="Enfermagem,Nutrição"
+      <article class="anuncio" data-exemplo="1" data-cidade="alfenas" data-uni="UNIFAL" data-cursos="Enfermagem,Nutrição"
                data-preco="580" data-caucao="580" data-min="12" data-modo="bike" data-perfil="silencioso,feminina">
         <div class="anuncio-foto">
           <small>Foto em breve</small>
@@ -464,12 +479,11 @@
           <div class="mimos"><span class="mimo">Lavanderia</span><span class="mimo">Área de lazer</span><span class="mimo">Portaria 24h</span></div>
           <div class="anuncio-pe">
             <div class="preco">R$ 580<span> /mês</span></div>
-            <a href="#" class="ver">Ver vaga →</a>
           </div>
         </div>
       </article>
 
-      <article class="anuncio" data-cidade="alfenas" data-uni="UNIFAL" data-cursos="Medicina,Odontologia"
+      <article class="anuncio" data-exemplo="1" data-cidade="alfenas" data-uni="UNIFAL" data-cursos="Medicina,Odontologia"
                data-preco="720" data-caucao="720" data-min="5" data-modo="pe" data-perfil="silencioso,individual">
         <div class="anuncio-foto">
           <small>Foto em breve</small>
@@ -490,12 +504,11 @@
           <div class="mimos"><span class="mimo">Cozinha equipada</span><span class="mimo">Ar-condicionado</span><span class="mimo">Silenciosa</span></div>
           <div class="anuncio-pe">
             <div class="preco">R$ 720<span> /mês</span></div>
-            <a href="#" class="ver">Ver vaga →</a>
           </div>
         </div>
       </article>
 
-      <article class="anuncio" data-cidade="alfenas" data-uni="UNIFENAS" data-cursos="Agronomia,Veterinária"
+      <article class="anuncio" data-exemplo="1" data-cidade="alfenas" data-uni="UNIFENAS" data-cursos="Agronomia,Veterinária"
                data-preco="590" data-caucao="0" data-min="10" data-modo="pe" data-perfil="pet,festas,masculina">
         <div class="anuncio-foto">
           <small>Foto em breve</small>
@@ -516,12 +529,11 @@
           <div class="mimos"><span class="mimo">Aceita pet</span><span class="mimo">Garagem</span><span class="mimo">Churrasqueira</span></div>
           <div class="anuncio-pe">
             <div class="preco">R$ 590<span> /mês</span></div>
-            <a href="#" class="ver">Ver vaga →</a>
           </div>
         </div>
       </article>
 
-      <article class="anuncio" data-cidade="alfenas" data-uni="UNIFAL" data-cursos="Direito,Letras"
+      <article class="anuncio" data-exemplo="1" data-cidade="alfenas" data-uni="UNIFAL" data-cursos="Direito,Letras"
                data-preco="610" data-caucao="300" data-min="6" data-modo="pe" data-perfil="silencioso,pet,mista">
         <div class="anuncio-foto">
           <small>Foto em breve</small>
@@ -542,12 +554,11 @@
           <div class="mimos"><span class="mimo">Mobiliada</span><span class="mimo">Internet inclusa</span><span class="mimo">Ambiente familiar</span></div>
           <div class="anuncio-pe">
             <div class="preco">R$ 610<span> /mês</span></div>
-            <a href="#" class="ver">Ver vaga →</a>
           </div>
         </div>
       </article>
 
-      <article class="anuncio" data-cidade="alfenas" data-uni="IFSULDEMINAS" data-cursos="Administração,Informática"
+      <article class="anuncio" data-exemplo="1" data-cidade="alfenas" data-uni="IFSULDEMINAS" data-cursos="Administração,Informática"
                data-preco="780" data-caucao="780" data-min="15" data-modo="bike" data-perfil="individual,silencioso">
         <div class="anuncio-foto">
           <small>Foto em breve</small>
@@ -568,7 +579,6 @@
           <div class="mimos"><span class="mimo">Ar-condicionado</span><span class="mimo">Elevador</span><span class="mimo">Portão eletrônico</span></div>
           <div class="anuncio-pe">
             <div class="preco">R$ 780<span> /mês</span></div>
-            <a href="#" class="ver">Ver vaga →</a>
           </div>
         </div>
       </article>
@@ -585,7 +595,7 @@
         tem vaga aí, cadastre agora — quem chega primeiro fica no topo quando
         a cidade abrir.
       </p>
-      <a href="#anunciar" class="btn btn-azul">Cadastrar a primeira</a>
+      <a href="cadastrar-vaga.html" class="btn btn-azul" id="vazioCadastrar">Cadastrar a primeira</a>
     </div>
   </div>
 </section>
@@ -720,7 +730,7 @@
           Vaga vazia é aluguel saindo do seu bolso. Cadastre em cinco minutos
           e apareça para quem está procurando exatamente o que você tem.
         </p>
-        <a href="#" class="btn btn-branco">Cadastrar minha vaga de graça</a>
+        <a href="cadastrar-vaga.html" class="btn btn-branco">Cadastrar minha vaga de graça</a>
       </div>
       <ul>
         <li><span class="ok">✓</span>Grátis enquanto Alfenas estiver no começo</li>
@@ -878,7 +888,9 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/supabase-config.js"></script>
+<script src="js/marcas.js"></script>
 <script src="js/script.js" defer></script>
+<script src="js/vitrine.js" defer></script>
 <script src="js/denuncia.js" defer></script>
 
 </body>

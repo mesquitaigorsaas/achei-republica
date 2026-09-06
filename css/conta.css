@@ -449,3 +449,112 @@
    — e a classe ganha da regra do navegador. Sem isto, o "Sair" aparece
    para quem nunca entrou. */
 .btn[hidden], [hidden] { display: none !important; }
+
+
+/* ---------------------------------------------------------------------
+   CADASTRO DA VAGA — o que a casa tem
+
+   Um formulário bem maior que o dos classificados: uma geladeira se
+   descreve em quatro campos, uma casa não. O que segura o tamanho é o
+   agrupamento — a pessoa lê "Estrutura" e passa o olho por dezoito
+   pílulas de uma vez, em vez de descer dezoito linhas.
+   --------------------------------------------------------------------- */
+.bloco-caixa {
+    border: 1px solid var(--linha);
+    border-radius: 14px;
+    padding: 18px 18px 20px;
+    margin: 0 0 18px;
+}
+
+.bloco-caixa .bloco-titulo { padding: 0 6px; }
+
+.grupo-marcas { margin-top: 16px; }
+.grupo-marcas:first-of-type { margin-top: 10px; }
+
+.grupo-marcas h4 {
+    font-size: .72rem;
+    font-weight: 800;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    color: var(--tinta-fraca);
+    margin: 0 0 8px;
+}
+
+/* As mesmas pílulas dos filtros da busca, e de propósito: quem cadastra
+   marcando "Aceita pet" reconhece a pílula quando for procurar. */
+.marcas-grade { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* O aceite não é pílula: é uma frase que precisa ser lida inteira, com
+   a caixa à vista. Escondida como nas outras, ninguém saberia que
+   marcou. */
+.marca-item.aceite {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 4px 0 16px;
+    cursor: pointer;
+}
+.marca-item.aceite input {
+    position: static;
+    opacity: 1;
+    width: 18px;
+    height: 18px;
+    margin-top: 2px;
+    flex: 0 0 auto;
+    accent-color: var(--azul);
+}
+.marca-item.aceite span {
+    display: inline;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    font-size: 14px;
+    line-height: 1.45;
+    color: var(--tinta-suave);
+    background: none;
+}
+.marca-item.aceite input:checked + span {
+    background: none;
+    border: 0;
+    color: var(--tinta);
+    font-weight: 400;
+}
+
+
+/* ---------------------------------------------------------------------
+   A prévia das fotos, com o que tirar e qual é a capa
+
+   Cinco fotos numa galeria de celular é fácil de errar a ordem, e a
+   primeira é a que vira o cartão da busca. Dizer qual é a capa antes de
+   publicar evita o anúncio nascer com a foto do banheiro na frente.
+   --------------------------------------------------------------------- */
+.previa-item { position: relative; line-height: 0; }
+
+.previa-x {
+    position: absolute;
+    top: -6px; right: -6px;
+    width: 22px; height: 22px;
+    display: grid; place-items: center;
+    border: 1px solid var(--linha);
+    border-radius: 999px;
+    background: #fff;
+    color: var(--tinta-suave);
+    font-size: 15px;
+    line-height: 1;
+    cursor: pointer;
+}
+.previa-x:hover { background: var(--azul); border-color: var(--azul); color: #fff; }
+
+.previa-selo {
+    position: absolute;
+    left: 5px; bottom: 5px;
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: rgba(12, 22, 36, .74);
+    color: #fff;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    line-height: 1.6;
+}

@@ -48,12 +48,33 @@ let fichaAtiva = 'combinam';
 // que ele roda, para "Mais combinam" ter ao que voltar.
 let ordemOriginal = [];
 
+/* Quais cartões valem para uma cidade.
+
+   As casas de verdade; e os seis exemplos só quando não há nenhuma.
+
+   Isto é uma função, e não três filtros espalhados, porque quando só
+   o trocarCidade sabia da regra, clicar em "Aceita pet" trazia os
+   exemplos de volta para o meio das casas reais — a ficha refazia a
+   conta por conta própria e não conhecia exemplo nenhum.
+
+   Os exemplos vestem a cidade escolhida: assim o resto do arquivo
+   continua comparando data-cidade sem precisar saber que existe
+   exemplo. */
+function cartoesDaCidade(slug) {
+    const todos = [...document.querySelectorAll('.anuncio')];
+    const reais = todos.filter(c => !c.dataset.exemplo && c.dataset.cidade === slug);
+    const exemplos = todos.filter(c => c.dataset.exemplo);
+
+    exemplos.forEach(c => { c.dataset.cidade = slug; });
+
+    return { todos, daCidade: reais.length ? reais : exemplos, temReal: reais.length > 0 };
+}
+
 function montarFaculdades() {
     // Todas as faculdades da cidade, e não só as dos cartões visíveis:
     // se a ficha anterior tivesse filtrado, faculdade sumiria da lista
     // sem motivo nenhum.
-    const daCidade = [...document.querySelectorAll('.anuncio')]
-        .filter(c => c.dataset.cidade === selCidade.value);
+    const daCidade = cartoesDaCidade(selCidade.value).daCidade;
     const siglas = [...new Set(daCidade.map(c => c.dataset.uni))].sort();
 
     const escolhida = selFaculdade.value;
@@ -83,8 +104,7 @@ function montarFaculdades() {
 
 function aplicarFicha() {
     const vitrineEl = document.getElementById('vitrine');
-    const daCidade = [...vitrineEl.querySelectorAll('.anuncio')]
-        .filter(c => c.dataset.cidade === selCidade.value);
+    const daCidade = cartoesDaCidade(selCidade.value).daCidade;
 
     // Toda ficha parte da lista inteira da cidade: nada de filtro que se
     // acumula sem a pessoa perceber.
@@ -120,6 +140,9 @@ function aplicarFicha() {
             'Nenhuma república com esse filtro';
         vitrineVazia.querySelector('p').textContent =
             'Tente outra ficha acima, ou veja todas as repúblicas da cidade.';
+        // Lista vazia por causa de um filtro não é cidade sem casa: o
+        // convite para cadastrar a primeira não cabe aqui.
+        document.getElementById('vazioCadastrar').hidden = true;
     }
 
     atualizarContagem(lista.length);
@@ -170,6 +193,7 @@ const nomeCidade = document.getElementById('nomeCidade');
 const nomeCidadeVazia = document.getElementById('nomeCidadeVazia');
 const barraConta = document.getElementById('barraConta');
 const vitrineVazia = document.getElementById('vitrineVazia');
+const avisoExemplo = document.getElementById('avisoExemplo');
 const chapeuDobra = document.querySelector('.heroi .chapeu');
 
 /* Se o questionário já foi respondido. Separa o que a página pode
@@ -182,9 +206,31 @@ function trocarCidade() {
     const nome = selCidade.options[selCidade.selectedIndex].textContent.trim();
 
     const cartoes = [...document.querySelectorAll('.anuncio')];
-    const daCidade = cartoes.filter(c => c.dataset.cidade === slug);
 
-    cartoes.forEach(c => { c.hidden = c.dataset.cidade !== slug; });
+    /* República de verdade na frente do exemplo.
+
+       Os seis cartões escritos à mão no HTML continuam existindo, mas
+       só aparecem em cidade que ainda não tem nenhuma casa cadastrada.
+       A cidade que tem mostra as de verdade, e os exemplos somem —
+       anúncio que não dá para clicar no meio de anúncio que dá é o
+       mesmo problema do botão que falha no clique.
+
+       Os exemplos não são de cidade nenhuma: eles vestem a cidade
+       escolhida, para as fichas e o questionário continuarem filtrando
+       por data-cidade sem precisar saber que exemplo existe. */
+    const { daCidade, temReal } = cartoesDaCidade(slug);
+
+    cartoes.forEach(c => { c.hidden = !daCidade.includes(c); });
+
+    // A faixa que avisa, sem rodeio, que aquilo ali é exemplo — e
+    // convida a pessoa a ser a primeira da cidade dela.
+    const mostrandoExemplo = slug !== '' && !temReal;
+    avisoExemplo.hidden = !mostrandoExemplo;
+    if (mostrandoExemplo) {
+        document.getElementById('nomeCidadeExemplo').textContent = nome;
+        document.getElementById('cadastrarPrimeira').href =
+            'cadastrar-vaga.html?cidade=' + slug;
+    }
 
     // Três estados, e não dois: sem cidade escolhida, cidade com anúncio
     // e cidade sem anúncio. O primeiro existe porque a página não decide
@@ -234,6 +280,9 @@ function trocarCidade() {
     fichas.forEach(f => f.classList.toggle('ativa', f.dataset.ficha === 'combinam'));
     fichaAtiva = 'combinam';
     fichaFaculdade.hidden = true;
+
+    // De volta à caixa de cidade sem casa, o convite vale outra vez.
+    document.getElementById('vazioCadastrar').hidden = false;
 
     vitrineVazia.querySelector('h3').innerHTML =
         'Ainda não tem república em <span id="nomeCidadeVazia">' + nome + '</span>';
@@ -321,6 +370,15 @@ selCidade.addEventListener('change', () => {
 });
 
 ordemOriginal = [...document.querySelectorAll('.anuncio')];
+
+/* O js/vitrine.js busca as repúblicas no banco e chama isto quando elas
+   chegam. Precisa existir porque a busca é assíncrona: quando este
+   arquivo roda, os únicos cartões na página são os seis de exemplo, e
+   ordemOriginal nasceria sem nenhuma casa de verdade dentro. */
+window.reconstruirVitrine = function () {
+    ordemOriginal = [...document.querySelectorAll('.anuncio')];
+    trocarCidade();
+};
 
 /* Quem volta dos classificados traz a cidade na URL. Sem ler isso, o
    "voltar para as repúblicas" devolveria a pessoa a uma página sem
