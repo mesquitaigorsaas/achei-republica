@@ -744,14 +744,32 @@ if (nota) {
     }, { threshold: 0.4 }).observe(nota);
 }
 
-// A setinha aparece quando a primeira dobra sai de vista.
-//
-// Quem é observado é a dobra, e não o cabeçalho: o cabeçalho fica grudado
-// no alto e nunca sai de vista, então a conta nunca fecharia e a setinha
-// ficaria acesa até no topo da página.
+/* A setinha aparece depois da primeira dobra.
+
+   Era um IntersectionObserver olhando a dobra. Funcionava no computador
+   e não no celular — e observador com rootMargin negativo é justamente
+   o canto onde os navegadores de celular mais divergem. Trocado por uma
+   conta de rolagem: menos elegante, e funciona igual em todo navegador
+   que existe.
+
+   O clique também deixou de ser só o href="#topo". Âncora para um
+   cabeçalho grudado no alto às vezes não sai do lugar, porque o alvo já
+   está na tela; rolar até zero na mão nunca falha. */
 const subir = document.querySelector('.subir');
 const dobra = document.querySelector('.heroi');
 
-new IntersectionObserver(([entrada]) => {
-    subir.classList.toggle('aparece', !entrada.isIntersecting);
-}, { rootMargin: '-200px 0px 0px 0px' }).observe(dobra);
+if (subir) {
+    const conferirSetinha = () => {
+        const alvo = dobra ? dobra.offsetHeight * 0.6 : 400;
+        subir.classList.toggle('aparece', window.scrollY > alvo);
+    };
+
+    window.addEventListener('scroll', conferirSetinha, { passive: true });
+    window.addEventListener('resize', conferirSetinha);
+    conferirSetinha();
+
+    subir.addEventListener('click', evento => {
+        evento.preventDefault();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+}

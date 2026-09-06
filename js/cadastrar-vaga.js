@@ -961,10 +961,7 @@ function conferirLimite(ativos) {
     const estourou = !editandoId && ativos >= limiteDaConta;
 
     avisoLimite.hidden = !estourou;
-    botaoPublicar.disabled = estourou;
-    botaoPublicar.title = estourou
-        ? 'Sua conta já tem anúncio no ar. Tire um do ar ou peça liberação.'
-        : '';
+    travarFormulario(estourou);
 
     // O pedido já vai escrito: quem está pedindo liberação não deve ter
     // que explicar do zero quem é nem o que quer.
@@ -974,6 +971,29 @@ function conferirLimite(ativos) {
             + ') e tenho mais de uma república. Posso anunciar a segunda?';
         pedido.href = 'https://wa.me/5531999347032?text=' + encodeURIComponent(texto);
     }
+}
+
+/* Trava o formulário inteiro, e não só o botão.
+
+   O botão sozinho não basta por dois motivos. O primeiro é honesto:
+   quem não leu a faixa preenche trinta campos e sobe cinco fotos para
+   descobrir no fim que não podia — e a culpa disso o site leva sozinho.
+   O segundo é o outro: campo aberto convida a tentar burlar.
+
+   Nada disso é a barreira de verdade. Quem quiser passar por cima da
+   tela consegue, porque a chave pública está no código-fonte. Quem
+   recusa mesmo é o gatilho do 10-um-anuncio-por-conta.sql, no banco.
+   Isto aqui é para a pessoa honesta não perder a tarde. */
+function travarFormulario(travado) {
+    form.querySelectorAll('input, select, textarea, button').forEach(campo => {
+        campo.disabled = travado;
+    });
+
+    form.classList.toggle('travado', travado);
+
+    botaoPublicar.title = travado
+        ? 'Sua conta já tem anúncio no ar. Tire um do ar ou peça liberação.'
+        : '';
 }
 
 /* O teto vem do perfil. Se a leitura falhar, fica em 1 — errar para o

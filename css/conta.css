@@ -271,7 +271,8 @@
 .conta-pe a { color: var(--azul); font-weight: 600; text-decoration: none; }
 .conta-pe a:hover { text-decoration: underline; }
 
-.conta-esqueci { text-align: right; margin: -8px 0 0; font-size: 13.5px; }
+/* Colado nos botões, ele parecia legenda do Cancelar. */
+.conta-esqueci { text-align: right; margin: 14px 0 0; font-size: 13.5px; }
 .conta-esqueci a { color: var(--tinta-suave); text-decoration: none; }
 .conta-esqueci a:hover { color: var(--azul); text-decoration: underline; }
 
@@ -614,4 +615,13 @@
 
 @media (max-width: 560px) {
     .aviso-limite .btn { width: 100%; justify-content: center; }
+}
+
+
+/* O formulário travado por causa do teto da conta. Apagado, e não
+   escondido: a pessoa precisa ver o que ela vai preencher quando for
+   liberada — some tudo e o aviso amarelo fica falando sozinho. */
+.travado { opacity: .5; }
+.travado input, .travado select, .travado textarea, .travado button {
+    cursor: not-allowed;
 }

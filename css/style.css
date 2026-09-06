@@ -699,6 +699,11 @@ h1, h2, h3 { font-family: var(--display); line-height: 1.14; letter-spacing: -0.
     transition: opacity .25s, visibility .25s, background-color .2s;
 }
 .subir.aparece { opacity: 1; visibility: visible; }
+
+/* No computador o cabeçalho acompanha a rolagem e leva de volta a
+   qualquer lugar; a setinha vira enfeite tapando o canto. No celular o
+   cabeçalho encolhe e ela é o único jeito rápido de subir. */
+@media (min-width: 1030px) { .subir { display: none; } }
 .subir:hover { background: var(--azul-forte); }
 .subir svg { width: 20px; height: 20px; fill: #fff; }
 
@@ -1532,6 +1537,19 @@ a.contato:hover { border-color: var(--azul-linha); transform: translateY(-3px); 
     font-size: .92rem;
     line-height: 1.5;
 }
+/* Sem esta linha a faixa NUNCA sumia.
+
+   O atributo hidden vale display:none pela folha do navegador, que é um
+   seletor de atributo; ".aviso-exemplo" é um seletor de classe e ganha
+   dele. Escondida no JavaScript, ela continuava desenhada com o último
+   nome de cidade escrito dentro — ou com o "Varginha" que está fixo no
+   HTML, se nenhum tivesse sido escrito ainda. Quem estava olhando
+   Alfenas lia "ainda não tem república em Varginha".
+
+   O conta.css já resolve isso com uma regra global; o style.css não
+   tem, e por isso só a home quebrou. */
+.aviso-exemplo[hidden] { display: none; }
+
 .aviso-exemplo b { color: var(--tinta); }
 .aviso-exemplo .btn { flex: 0 0 auto; }
 
