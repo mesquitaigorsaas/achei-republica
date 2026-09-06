@@ -664,12 +664,74 @@ async function carregarParaEditar(id, silencioso) {
    recebendo mensagem por meses — e é o anunciante que fica com fama de
    quem não responde.
    --------------------------------------------------------------------- */
+/* A promoção mais recente de cada vaga, e os números dela. Buscados
+   uma vez por carregamento da lista, e não um por linha: com o limite
+   de anúncios por conta são poucas vagas, mas uma consulta dentro do
+   laço vira lentidão na hora em que alguém for liberado para dez. */
+let promocaoDaVaga = {};
+let numerosDaVaga = {};
+
+async function carregarPromocoes(ids) {
+    promocaoDaVaga = {};
+    numerosDaVaga = {};
+    if (!ids.length) return;
+
+    const { data } = await banco
+        .from('promocoes')
+        .select('id, republica_id, plano, status, preco_centavos, comeca_em, termina_em, criada_em')
+        .in('republica_id', ids)
+        .order('criada_em', { ascending: false });
+
+    // A primeira de cada vaga é a mais recente, porque a consulta já
+    // veio ordenada. Uma ativa vence uma antiga encerrada.
+    (data || []).forEach(promo => {
+        const atual = promocaoDaVaga[promo.republica_id];
+        if (!atual || (promo.status === 'ativa' && atual.status !== 'ativa')) {
+            promocaoDaVaga[promo.republica_id] = promo;
+        }
+    });
+
+    /* Os números. Em paralelo, e com falha tolerada: se o resumo não
+       vier, a linha da vaga aparece sem as estatísticas — e não some. */
+    await Promise.all(ids.map(async id => {
+        try {
+            const { data: linhas } = await banco.rpc('resumo_da_vaga', { alvo: id });
+            numerosDaVaga[id] = linhas || [];
+        } catch (e) {
+            console.debug('Resumo não carregado para', id, e);
+        }
+    }));
+}
+
+/* Soma o resumo devolvido pelo banco, que vem quebrado por janela, tipo
+   e origem. Aqui vira o par de números que a pessoa lê sem pensar. */
+function somar(linhas, janela, tipo, origem) {
+    return (linhas || [])
+        .filter(l => l.janela === janela && l.tipo === tipo
+                     && (!origem || l.origem === origem))
+        .reduce((total, l) => total + Number(l.quantas || 0), 0);
+}
+
 async function carregarMinhas() {
-    const { data, error } = await banco
+    /* As colunas do destaque podem ainda não existir: o site sobe pelo
+       GitHub Pages e o banco muda pelo SQL Editor, nunca juntos. Pedir
+       coluna inexistente derruba a consulta inteira no PostgREST — e
+       aqui isso apagaria a lista de vagas da pessoa, que é a parte da
+       página que ela mais precisa. */
+    const buscar = campos => banco
         .from('republicas')
-        .select('id, nome, bairro, preco, vagas, ativa, status, cidade_id')
+        .select(campos)
         .eq('dono_id', usuario.id)
         .order('criada_em', { ascending: false });
+
+    const base = 'id, nome, bairro, preco, vagas, ativa, status, cidade_id';
+
+    let { data, error } = await buscar(base + ', destaque, destaque_ate');
+
+    if (error && (error.code === '42703' || /destaque/.test(error.message || ''))) {
+        console.warn('Banco ainda sem as colunas de destaque; seguindo sem elas.');
+        ({ data, error } = await buscar(base));
+    }
 
     if (error) {
         listaMinhas.textContent = 'Não consegui carregar suas vagas: ' + error.message;
@@ -684,6 +746,8 @@ async function carregarMinhas() {
     }
 
     conferirLimite(data.filter(v => v.ativa).length);
+
+    await carregarPromocoes(data.map(v => v.id));
 
     listaMinhas.replaceChildren(...data.map(vaga => {
         const linha = document.createElement('div');
@@ -708,6 +772,10 @@ async function carregarMinhas() {
         detalhe.textContent = partes.filter(Boolean).join(' · ');
 
         texto.append(titulo, document.createElement('br'), detalhe);
+        texto.appendChild(faixaDoDestaque(vaga));
+
+        const numeros = faixaDeNumeros(vaga);
+        if (numeros) texto.appendChild(numeros);
 
         const acoes = document.createElement('div');
         acoes.className = 'meu-item-acoes';
@@ -751,9 +819,147 @@ async function carregarMinhas() {
         });
 
         acoes.appendChild(alternar);
+
+        /* O botão de destacar.
+
+           Não aparece para anúncio em revisão nem para anúncio fora do
+           ar: nos dois casos ele levaria a pessoa a pagar por
+           visibilidade que a vaga não tem. É a mesma regra do botão
+           "Falar" sem telefone — caminho que não funciona não se
+           oferece, mesmo quando oferecer daria dinheiro.
+
+           E não aparece quando já há destaque valendo: um por vez. */
+        const jaDestacada = destaqueValendo(vaga);
+        if (vaga.ativa && vaga.status === 'publicada' && !jaDestacada) {
+            const promo = promocaoDaVaga[vaga.id];
+            const jaTeve = promo && ['expirada', 'ativa'].includes(promo.status);
+
+            const destacar = document.createElement('a');
+            destacar.className = 'btn btn-linha btn-destacar';
+            destacar.href = `planos.html?vaga=${vaga.id}`;
+            destacar.textContent = jaTeve ? 'Destacar de novo' : 'Destacar vaga';
+            acoes.appendChild(destacar);
+        }
+
         linha.append(texto, acoes);
         return linha;
     }));
+}
+
+
+/* ---------------------------------------------------------------------
+   A faixa de situação da vaga
+
+   Uma linha, sempre presente, dizendo em que pé está o anúncio:
+
+     Vaga gratuita
+     ⭐ Destaque · 23 dias restantes · até 06/10/2026
+     Pagamento em análise
+     Destaque pausado enquanto a vaga está fora do ar
+     Seu destaque terminou. Sua vaga continua ativa gratuitamente.
+
+   "Gratuita" aparece com todas as letras, e não como ausência de
+   selo. Quem anuncia de graça não está num limbo: está num plano, com
+   nome, que funciona. Deixar a linha vazia faria parecer que falta
+   fazer alguma coisa.
+   --------------------------------------------------------------------- */
+function faixaDoDestaque(vaga) {
+    const faixa = document.createElement('small');
+    faixa.className = 'meu-item-plano';
+
+    const promo = promocaoDaVaga[vaga.id];
+    const plano = destaqueValendo(vaga);
+
+    if (plano) {
+        faixa.classList.add('plano-' + plano);
+        faixa.textContent =
+            `${SELO_DO_PLANO[plano]} ${NOME_DO_PLANO[plano]} · `
+            + `${frasedeDiasRestantes(vaga.destaque_ate)} · `
+            + `até ${dataCurtaBR(vaga.destaque_ate)}`;
+        return faixa;
+    }
+
+    if (promo && promo.status === 'aguardando') {
+        faixa.classList.add('plano-aguardando');
+        faixa.textContent = 'Pagamento em análise. O destaque acende sozinho assim que for '
+            + 'confirmado — não precisa pagar de novo.';
+        return faixa;
+    }
+
+    /* Promoção ativa numa vaga fora do ar: o destaque está pausado, e
+       não perdido. Dizer isso importa — a pessoa acabou de tirar do ar
+       achando que alugou, e a primeira coisa que passa pela cabeça é
+       "perdi os R$ 39,90". */
+    if (promo && promo.status === 'ativa' && !vaga.ativa
+        && new Date(promo.termina_em).getTime() > Date.now()) {
+        faixa.classList.add('plano-pausado');
+        faixa.textContent =
+            `${SELO_DO_PLANO[promo.plano] || ''} ${NOME_DO_PLANO[promo.plano]} pausado: `
+            + `a vaga está fora do ar. Pondo de volta, o destaque volta com ela, `
+            + `até ${dataCurtaBR(promo.termina_em)}.`;
+        return faixa;
+    }
+
+    if (promo && promo.status === 'expirada') {
+        faixa.classList.add('plano-terminado');
+        faixa.textContent = 'Seu destaque terminou. Sua vaga continua ativa gratuitamente.';
+        return faixa;
+    }
+
+    if (promo && promo.status === 'recusada') {
+        faixa.classList.add('plano-aguardando');
+        faixa.textContent = 'O último pagamento não foi aprovado. Nada foi cobrado.';
+        return faixa;
+    }
+
+    faixa.textContent = 'Vaga gratuita · aparece nas buscas e nos filtros';
+    return faixa;
+}
+
+
+/* ---------------------------------------------------------------------
+   Os números
+
+   Aparece só quando há o que mostrar. Zero visita num anúncio de
+   ontem não é informação — é desânimo sem motivo.
+
+   O que o plano muda aqui é o DETALHE, e não o acesso: os números são
+   do anunciante, e cobrar para ele ver o que é dele seria feio. O
+   grátis vê o total; quem pagou vê de onde as pessoas vieram, que é o
+   que responde se vale destacar de novo.
+   --------------------------------------------------------------------- */
+function faixaDeNumeros(vaga) {
+    const linhas = numerosDaVaga[vaga.id];
+    if (!linhas || !linhas.length) return null;
+
+    const apareceu = somar(linhas, 'sempre', 'vitrine');
+    const visitas  = somar(linhas, 'sempre', 'visita');
+    const contatos = somar(linhas, 'sempre', 'contato');
+
+    if (!apareceu && !visitas && !contatos) return null;
+
+    const caixa = document.createElement('small');
+    caixa.className = 'meu-item-numeros';
+
+    const partes = [
+        `${apareceu} ${apareceu === 1 ? 'aparição' : 'aparições'} nas buscas`,
+        `${visitas} ${visitas === 1 ? 'visita' : 'visitas'} ao anúncio`,
+        `${contatos} no WhatsApp`,
+    ];
+
+    const plano = destaqueValendo(vaga);
+    if (plano === 'premium' || plano === 'pro') {
+        const porFiltro = somar(linhas, 'sempre', 'visita', 'filtro');
+        const porMatch  = somar(linhas, 'sempre', 'visita', 'match');
+        partes.push(`${porFiltro} chegaram pelos filtros`);
+        if (porMatch) partes.push(`${porMatch} pelo questionário`);
+
+        const naPromocao = somar(linhas, 'na_promocao', 'contato');
+        if (naPromocao) partes.push(`${naPromocao} contatos durante o destaque`);
+    }
+
+    caixa.textContent = partes.join(' · ');
+    return caixa;
 }
 
 
@@ -915,7 +1121,64 @@ async function entrar() {
 
     if (editandoId) await carregarParaEditar(editandoId);
 
-    carregarMinhas();
+    await carregarMinhas();
+    conferirVoltaDoPagamento();
+}
+
+
+/* ---------------------------------------------------------------------
+   A volta do Mercado Pago
+
+   Quem paga é mandado de volta para cá com ?pagamento=aprovado. Só que
+   "aprovado" ali é o navegador falando: quem acende o destaque é a
+   notificação que chega do Mercado Pago no servidor, e ela pode levar
+   alguns segundos — no Pix, quase sempre menos de cinco.
+
+   Isso cria uma janela pequena e desagradável: a pessoa pagou, voltou,
+   e a lista ainda diz "vaga gratuita". Sem explicação, ela paga de
+   novo.
+
+   Então a página diz o que está acontecendo e volta a olhar sozinha,
+   duas vezes. Se em quinze segundos não acendeu, o recado muda de tom
+   sem assustar: está registrado, ninguém precisa pagar outra vez.
+   --------------------------------------------------------------------- */
+function conferirVoltaDoPagamento() {
+    const situacao = new URLSearchParams(location.search).get('pagamento');
+    if (!situacao) return;
+
+    // Some da URL: recarregar a página depois não deve reabrir o aviso.
+    const limpa = new URL(location.href);
+    limpa.searchParams.delete('pagamento');
+    history.replaceState(null, '', limpa);
+
+    if (situacao === 'falhou') {
+        return aviso('O pagamento não foi concluído, e nada foi cobrado. '
+            + 'Sua vaga continua no ar gratuitamente.');
+    }
+
+    if (situacao === 'pendente') {
+        return aviso('Pagamento em análise. Assim que for confirmado, o destaque '
+            + 'acende sozinho — não precisa pagar de novo.', 'certo');
+    }
+
+    aviso('Pagamento recebido. O destaque acende em alguns segundos.', 'certo');
+
+    let tentativas = 0;
+    const olhar = setInterval(async () => {
+        tentativas++;
+        await carregarMinhas();
+
+        const acendeu = Object.values(promocaoDaVaga).some(p => p.status === 'ativa');
+        if (acendeu) {
+            clearInterval(olhar);
+            aviso('Pronto: sua vaga está destacada.', 'certo');
+        } else if (tentativas >= 3) {
+            clearInterval(olhar);
+            aviso('Seu pagamento está registrado e o destaque acende assim que o '
+                + 'Mercado Pago confirmar. Não pague de novo — se em uma hora não '
+                + 'tiver acendido, fale com a gente.', 'certo');
+        }
+    }, 5000);
 }
 
 /* O WhatsApp do cadastro já vem preenchido: quem acabou de digitar o

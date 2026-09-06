@@ -58,6 +58,12 @@ function naoEncontrada(titulo, texto) {
    separadas dariam o mesmo resultado e cinco idas ao servidor — numa
    internet de cidade pequena isso é a diferença entre abrir e desistir.
    --------------------------------------------------------------------- */
+/* Qual vaga está aberta, e por onde a pessoa chegou. Guardado para o
+   clique no WhatsApp poder contar com a mesma origem da visita — é o
+   que permite dizer ao anunciante "dos 31 que abriram pelo filtro, 9 te
+   chamaram". */
+let vagaAberta = null;
+
 async function carregar() {
     const id = new URLSearchParams(location.search).get('id');
 
@@ -71,20 +77,34 @@ async function carregar() {
             'O endereço veio sem o identificador da vaga.');
     }
 
-    const { data, error } = await bancoVaga
+    /* As duas colunas do destaque vão numa variável porque elas podem
+       não existir ainda: o site sobe pelo GitHub Pages e o banco muda
+       pelo SQL Editor, nunca ao mesmo tempo. E pedir coluna inexistente
+       ao PostgREST derruba a consulta inteira — aqui isso significaria
+       a página inteira da vaga virando "não achei". Mesma rede da
+       vitrine, pelo mesmo motivo. */
+    const campos = extra => `
+        id, nome, bairro, descricao, tipo, perfil, preco, caucao,
+        minutos, modo, vagas, disponivel_em, whatsapp, ativa, status,
+        composicao, moradores, cep, logradouro, numero, complemento,${extra}
+        cidades ( nome, slug ),
+        faculdades ( sigla, nome ),
+        republica_fotos ( caminho, ordem ),
+        republica_marcas ( marca ),
+        republica_cursos ( curso )`;
+
+    const consultar = extra => bancoVaga
         .from('republicas')
-        .select(`
-            id, nome, bairro, descricao, tipo, perfil, preco, caucao,
-            minutos, modo, vagas, disponivel_em, whatsapp, ativa, status,
-            composicao, moradores, cep, logradouro, numero, complemento,
-            cidades ( nome, slug ),
-            faculdades ( sigla, nome ),
-            republica_fotos ( caminho, ordem ),
-            republica_marcas ( marca ),
-            republica_cursos ( curso )
-        `)
+        .select(campos(extra))
         .eq('id', id)
         .maybeSingle();
+
+    let { data, error } = await consultar(' destaque, destaque_ate,');
+
+    if (error && (error.code === '42703' || /destaque/.test(error.message || ''))) {
+        console.warn('Banco ainda sem as colunas de destaque; seguindo sem elas.');
+        ({ data, error } = await consultar(''));
+    }
 
     /* Erro de consulta NÃO é vaga inexistente, e tratar os dois igual
        esconde problema de verdade atrás de "não achei". */
@@ -101,6 +121,19 @@ async function carregar() {
     if (!data) return naoEncontrada();
 
     desenhar(data);
+
+    /* Contar a visita.
+
+       Só depois de desenhar: se a página não abriu, não houve visita a
+       contar. E "direto" quando não há de onde ter vindo — o parâmetro
+       ?de= é posto pelos cartões da vitrine, que sabem se a pessoa
+       chegou por filtro, por questionário ou pela lista simples. */
+    if (typeof window.registrarMetrica === 'function') {
+        const de = new URLSearchParams(location.search).get('de');
+        const origem = ['vitrine', 'filtro', 'match'].includes(de) ? de : 'direto';
+        window.registrarMetrica(data.id, 'visita', origem);
+        vagaAberta = { id: data.id, origem };
+    }
 }
 
 
@@ -231,6 +264,14 @@ function cabecalho(vaga, cidade, faculdade) {
     // de decidir se lê o resto.
     const selos = document.createElement('div');
     selos.className = 'vaga-selos';
+
+    /* O selo de destaque vem primeiro na fileira, e diz o que é: um
+       anúncio que o próprio anunciante destacou. Não diz "recomendado"
+       nem "melhor opção" — nós não recomendamos ninguém por dinheiro, e
+       escrever isso seria vender a palavra do site junto com o espaço. */
+    const destaque = seloDeDestaque(vaga);
+    if (destaque) selos.appendChild(destaque);
+
     [
         NOME_DA_MARCA[vaga.tipo],
         NOME_DA_MARCA[vaga.perfil],
@@ -365,6 +406,17 @@ function contato(vaga) {
     zap.target = '_blank';
     zap.rel = 'noopener';
     zap.textContent = 'Chamar no WhatsApp';
+
+    /* O clique que vale dinheiro para o anunciante. Registrado no
+       caminho, sem segurar o link: o WhatsApp abre na mesma hora, e a
+       contagem viaja depois, em lote. Se a contagem falhar, a conversa
+       acontece do mesmo jeito — que é a ordem certa de prioridades. */
+    zap.addEventListener('click', () => {
+        if (typeof window.registrarMetrica === 'function') {
+            window.registrarMetrica(
+                vaga.id, 'contato', (vagaAberta || {}).origem || 'direto');
+        }
+    });
 
     caixa.append(h, p, zap);
     return caixa;

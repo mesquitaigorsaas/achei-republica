@@ -693,3 +693,381 @@
 @media (max-width: 560px) {
     .admin-acoes .btn { flex: 1 1 auto; justify-content: center; }
 }
+
+/* =====================================================================
+   O PLANO DA VAGA, NO PAINEL
+
+   Uma linha por vaga dizendo em que pé ela está. "Vaga gratuita"
+   aparece escrito, e não como ausência: quem anuncia de graça está num
+   plano que funciona, e não num limbo esperando pagar.
+   ===================================================================== */
+
+.meu-item-plano {
+    display: block;
+    margin-top: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--tinta-suave);
+}
+
+.meu-item-plano.plano-destaque { color: var(--azul-forte); }
+.meu-item-plano.plano-premium  { color: #8a5b00; }
+.meu-item-plano.plano-pro      { color: #7a5c00; }
+
+/* Aguardando e pausado não são erro: são estados normais que a pessoa
+   precisa entender sem susto. Cor de aviso, não de perigo. */
+.meu-item-plano.plano-aguardando,
+.meu-item-plano.plano-pausado {
+    color: #8a5b00;
+    font-weight: 600;
+}
+
+.meu-item-plano.plano-terminado { color: var(--tinta-suave); font-weight: 600; }
+
+.meu-item-numeros {
+    display: block;
+    margin-top: 4px;
+    font-size: 12.5px;
+    color: var(--tinta-fraca);
+}
+
+.btn-destacar { border-color: var(--azul-linha); color: var(--azul-forte); }
+.btn-destacar:hover { background: var(--azul-fraco); border-color: var(--azul); }
+
+
+/* =====================================================================
+   A PÁGINA DE PLANOS
+
+   Quatro colunas no computador, uma embaixo da outra no celular. E a
+   ordem no celular importa: grátis primeiro, e não escondido no fim.
+   Quem chega aqui precisa ver, antes de qualquer preço, que anunciar
+   não custa nada — senão a página lê como pedágio.
+   ===================================================================== */
+
+.planos-pagina { padding: 40px 0 80px; }
+
+.planos-capa { max-width: 720px; margin: 0 auto 34px; text-align: center; }
+
+.planos-chapeu {
+    display: inline-block;
+    font-size: 12.5px; font-weight: 800; letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--azul-forte);
+    background: var(--azul-fraco);
+    padding: 6px 13px; border-radius: 999px;
+    margin-bottom: 14px;
+}
+
+.planos-capa h1 {
+    font-family: var(--display);
+    font-size: clamp(1.6rem, 4.4vw, 2.5rem);
+    line-height: 1.18;
+    letter-spacing: -.02em;
+    margin-bottom: 14px;
+}
+
+.planos-linha { font-size: 1.02rem; color: var(--tinta-suave); line-height: 1.6; }
+
+.planos-promessa {
+    margin-top: 18px;
+    font-size: .95rem;
+    color: var(--petroleo);
+    background: var(--nevoa);
+    border: 1px solid var(--linha);
+    border-radius: var(--raio);
+    padding: 12px 16px;
+}
+
+.planos-vaga {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 14px; flex-wrap: wrap;
+    max-width: 720px; margin: 0 auto 24px;
+    background: var(--azul-fraco);
+    border: 1px solid var(--azul-linha);
+    border-radius: var(--raio);
+    padding: 14px 18px;
+}
+
+.planos-vaga small { display: block; font-size: 12px; color: var(--tinta-suave); }
+.planos-vaga b { font-size: 1rem; }
+
+.planos-escolher-vaga {
+    font: inherit; font-weight: 700;
+    border: 1px solid var(--azul-linha); border-radius: 10px;
+    padding: 6px 10px; background: #fff; max-width: 100%;
+}
+
+.planos-grade {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    align-items: stretch;
+    margin-bottom: 50px;
+    padding-top: 14px;
+}
+
+.plano {
+    position: relative;
+    display: flex; flex-direction: column;
+    background: var(--papel);
+    border: 1px solid var(--linha);
+    border-radius: var(--raio-g);
+    padding: 26px 22px;
+}
+
+/* O "mais escolhido" ganha borda e sombra — e não uma cor berrante. A
+   diferença tem que ser lida como recomendação, não como alarme. */
+.plano-realce {
+    border: 2px solid var(--azul);
+    box-shadow: var(--sombra);
+}
+
+.plano-etiqueta {
+    position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+    white-space: nowrap;
+    font-size: 11.5px; font-weight: 800; letter-spacing: .04em;
+    background: var(--azul); color: #fff;
+    padding: 5px 13px; border-radius: 999px;
+}
+
+.plano-pro .plano-etiqueta { background: #7a5c00; }
+
+.plano-nome {
+    font-family: var(--display);
+    font-size: 1.15rem; font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.plano-objetivo {
+    font-size: 13px; color: var(--tinta-suave);
+    min-height: 34px;
+    margin-bottom: 12px;
+}
+
+.plano-preco {
+    font-family: var(--display);
+    font-size: 1.9rem; font-weight: 800;
+    letter-spacing: -.02em;
+    line-height: 1.1;
+}
+
+.plano-periodo {
+    font-size: 13.5px; font-weight: 700; color: var(--tinta);
+    margin-top: 4px;
+}
+
+/* A linha que impede a leitura errada. Fica colada no preço de
+   propósito: é ali que o olho vai procurar a barra de "por mês". */
+.plano-unico {
+    font-size: 12px; color: var(--tinta-suave);
+    margin-top: 3px; margin-bottom: 18px;
+}
+
+.plano-itens {
+    list-style: none;
+    display: grid; gap: 9px;
+    margin-bottom: 22px;
+    flex: 1;
+}
+
+.plano-itens li {
+    position: relative;
+    padding-left: 22px;
+    font-size: 13.5px;
+    line-height: 1.45;
+    color: var(--tinta-suave);
+}
+
+.plano-itens li::before {
+    content: "";
+    position: absolute; left: 0; top: 6px;
+    width: 12px; height: 7px;
+    border-left: 2px solid var(--verde);
+    border-bottom: 2px solid var(--verde);
+    transform: rotate(-45deg);
+}
+
+.plano-botao { width: 100%; justify-content: center; margin-top: auto; }
+
+
+/* ---------------------------------------------------------------------
+   As três seções de texto
+   --------------------------------------------------------------------- */
+.planos-claro, .planos-limite, .planos-duvidas {
+    max-width: 760px; margin: 0 auto 40px;
+}
+
+.planos-claro h2, .planos-limite h2, .planos-duvidas h2 {
+    font-family: var(--display);
+    font-size: 1.3rem;
+    margin-bottom: 16px;
+}
+
+.planos-claro ul { list-style: none; display: grid; gap: 14px; }
+
+.planos-claro li {
+    background: var(--nevoa);
+    border: 1px solid var(--linha);
+    border-radius: var(--raio);
+    padding: 15px 18px;
+    font-size: 14.5px; line-height: 1.6;
+    color: var(--tinta-suave);
+}
+
+.planos-claro li b { color: var(--tinta); }
+
+.planos-limite p {
+    font-size: 14.5px; line-height: 1.65;
+    color: var(--tinta-suave); margin-bottom: 12px;
+}
+
+.planos-limite p b { color: var(--tinta); }
+
+.planos-porque {
+    border-left: 3px solid var(--azul-linha);
+    padding-left: 14px;
+    font-style: italic;
+}
+
+.planos-duvidas details {
+    border-bottom: 1px solid var(--linha);
+    padding: 14px 0;
+}
+
+.planos-duvidas summary {
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 15px;
+    list-style: none;
+}
+
+.planos-duvidas summary::-webkit-details-marker { display: none; }
+
+.planos-duvidas summary::after {
+    content: "+";
+    float: right;
+    font-weight: 400;
+    color: var(--azul);
+    font-size: 20px; line-height: 1;
+}
+
+.planos-duvidas details[open] summary::after { content: "−"; }
+
+.planos-duvidas details p {
+    margin-top: 10px;
+    font-size: 14px; line-height: 1.65;
+    color: var(--tinta-suave);
+}
+
+
+/* ---------------------------------------------------------------------
+   A CONFIRMAÇÃO ANTES DE PAGAR
+
+   Tela cheia no celular, caixa centralizada no computador. O botão de
+   voltar vem primeiro na leitura, à esquerda: desistir tem que ser o
+   caminho mais fácil, não o mais escondido.
+   --------------------------------------------------------------------- */
+.planos-confirmar {
+    position: fixed; inset: 0; z-index: 60;
+    display: flex; align-items: center; justify-content: center;
+    padding: 18px;
+    background: rgba(20,32,43,.55);
+    overflow-y: auto;
+}
+
+.planos-confirmar-caixa {
+    width: 100%; max-width: 440px;
+    background: var(--papel);
+    border-radius: var(--raio-g);
+    padding: 26px 24px;
+    box-shadow: var(--sombra-alta);
+}
+
+.planos-confirmar-caixa h2 {
+    font-family: var(--display);
+    font-size: 1.2rem;
+    margin-bottom: 18px;
+}
+
+.planos-resumo { display: grid; gap: 10px; margin-bottom: 18px; }
+
+.planos-resumo > div {
+    display: flex; justify-content: space-between; gap: 12px;
+    font-size: 14px;
+}
+
+.planos-resumo dt { color: var(--tinta-suave); }
+.planos-resumo dd { font-weight: 700; text-align: right; }
+
+.planos-total {
+    border-top: 1px solid var(--linha);
+    padding-top: 10px;
+}
+
+.planos-total dt { font-weight: 700; color: var(--tinta); }
+.planos-total dd { font-family: var(--display); font-size: 1.25rem; }
+
+.planos-avisos {
+    list-style: none;
+    display: grid; gap: 8px;
+    background: var(--azul-fraco);
+    border-radius: var(--raio);
+    padding: 14px 16px;
+    margin-bottom: 20px;
+}
+
+.planos-avisos li {
+    font-size: 13px; line-height: 1.5;
+    color: var(--petroleo);
+    padding-left: 16px; position: relative;
+}
+
+.planos-avisos li::before {
+    content: "·"; position: absolute; left: 4px; font-weight: 800;
+}
+
+.planos-confirmar-acoes { display: flex; gap: 10px; }
+.planos-confirmar-acoes .btn { flex: 1; justify-content: center; }
+
+.planos-selo-mp {
+    margin-top: 14px;
+    font-size: 12px; line-height: 1.5;
+    color: var(--tinta-fraca);
+    text-align: center;
+}
+
+
+/* ---------------------------------------------------------------------
+   Telas pequenas
+
+   O estudante é mobile-first, mas quem lê ESTA página é a república —
+   e ela também decide no celular, quase sempre entre uma mensagem e
+   outra do WhatsApp. Quatro colunas viram duas no tablet e uma no
+   celular, sem nada encolher a ponto de o preço ficar pequeno.
+   --------------------------------------------------------------------- */
+@media (max-width: 980px) {
+    .planos-grade { grid-template-columns: repeat(2, 1fr); gap: 26px 16px; }
+}
+
+@media (max-width: 640px) {
+    .planos-pagina { padding: 28px 0 60px; }
+    .planos-grade { grid-template-columns: 1fr; gap: 28px; }
+    .plano { padding: 24px 20px; }
+    .plano-objetivo { min-height: 0; }
+    .planos-confirmar { align-items: flex-end; padding: 0; }
+    .planos-confirmar-caixa {
+        max-width: none;
+        border-radius: var(--raio-g) var(--raio-g) 0 0;
+        padding: 24px 20px 30px;
+    }
+    .planos-confirmar-acoes { flex-direction: column-reverse; }
+}
+
+
+/* O botão que arruma os vencidos fica no topo da lista, e não colado
+   em nenhuma linha: ele age sobre a tabela inteira. */
+.admin-acoes-topo { margin: 0 0 16px; }
+
+/* Destaque no ar ganha uma faixa à esquerda. É a única linha da tela
+   que representa dinheiro entrando agora. */
+.admin-linha.promocao-ativa { border-left: 3px solid var(--verde); padding-left: 13px; }

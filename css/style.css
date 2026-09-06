@@ -1626,3 +1626,49 @@ a.contato:hover { border-color: var(--azul-linha); transform: translateY(-3px); 
     font-weight: 600;
     color: var(--azul-forte);
 }
+
+/* =====================================================================
+   O DESTAQUE PAGO
+
+   A pergunta que este bloco responde: quanto de evidência é justo?
+
+   Muito pouco e o anunciante não vê o que comprou. Muito e a lista
+   vira propaganda — o estudante para de ler o resto da página e passa
+   a rolar procurando o que NÃO está destacado, que é o contrário do
+   que se vendeu.
+
+   A medida escolhida: moldura colorida, fundo levíssimo e um selo. O
+   cartão continua do mesmo tamanho, com a mesma foto e a mesma
+   tipografia dos outros. Um anúncio destacado é o mesmo anúncio, mais
+   visível — e não um anúncio maior que os outros.
+   ===================================================================== */
+
+.anuncio.destacado {
+    border-color: var(--azul-linha);
+    background: linear-gradient(180deg, var(--azul-fraco) 0%, #fff 120px);
+}
+
+/* Pro e Premium ganham a borda mais firme, na proporção do que custam.
+   Continua sendo borda: nada de sombra saltada, que faria o cartão
+   flutuar acima da lista e quebrar o alinhamento da grade. */
+.anuncio.destacado-premium { border-color: #f2b544; }
+.anuncio.destacado-pro     { border-color: #c9a227; border-width: 2px; }
+
+.selo-destaque {
+    position: absolute; top: 44px; left: 12px;
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: .7rem; font-weight: 800; letter-spacing: .01em;
+    background: rgba(255,255,255,.96);
+    color: var(--petroleo);
+    border: 1px solid var(--azul-linha);
+    padding: 4px 10px; border-radius: 999px;
+    /* Abaixo do selo de tipo e do lado oposto à nota de compatibilidade:
+       o canto direito é do estudante, e não se vende. */
+}
+
+.selo-destaque.selo-premium { border-color: #f2b544; color: #8a5b00; }
+.selo-destaque.selo-pro     { border-color: #c9a227; color: #7a5c00; background: #fffaf0; }
+
+/* Na página da vaga o selo entra na fileira de etiquetas, sem posição
+   absoluta — lá ele é uma etiqueta entre as outras, não um adesivo. */
+.vaga-selos .selo-destaque { position: static; }

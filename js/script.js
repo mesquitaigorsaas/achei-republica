@@ -102,8 +102,123 @@ function montarFaculdades() {
     return siglas.length;
 }
 
-function aplicarFicha() {
+/* ---------------------------------------------------------------------
+   O DESTAQUE PAGO, E O LIMITE DELE
+
+   Esta é a parte do arquivo que decide se o estudante pode confiar na
+   lista. Vale escrever a regra inteira, porque ela é fácil de afrouxar
+   sem querer no dia em que alguém pedir "mais visibilidade".
+
+   O destaque NUNCA escolhe QUEM aparece. Isso já foi decidido duas
+   etapas antes: a ficha corta, o painel de filtros corta, e o que
+   sobrou é a lista dos elegíveis. Uma casa que não aceita pet não
+   entra na busca de quem marcou "aceita pet" nem pagando Pro.
+
+   O destaque escolhe, dentro dos elegíveis, QUEM VEM ANTES — e mesmo
+   isso com trava:
+
+   A TRAVA DA FAIXA. Depois do questionário cada cartão tem uma nota de
+   0 a 100. Comparar só o peso do plano deixaria um Pro de 40% na
+   frente de um grátis de 95%, e a lista viraria propaganda. Então a
+   comparação é por FAIXA de dez pontos: o destaque só desempata entre
+   casas que combinam praticamente igual. Um Pro de 71 passa na frente
+   de um grátis de 79 (mesma faixa dos 70). Um Pro de 51 não passa —
+   fica onde a nota dele manda.
+
+   Dez pontos é a distância em que a diferença de compatibilidade deixa
+   de ser sentida por quem lê. Abaixo disso, qualquer uma das duas
+   serve, e aí a preferência de quem pagou é justa.
+
+   ONDE ESTA FUNÇÃO NÃO É CHAMADA, e é o ponto mais importante:
+
+   "Menor preço" e "Mais perto da faculdade" são PROMESSAS LITERAIS. A
+   pessoa pediu uma ordem específica e vai conferir com os olhos. Um
+   anúncio pago furando a ordem de preço não seria exposição: seria a
+   descoberta, em três segundos, de que a lista mente. Nessas duas
+   fichas o pago ganha só a moldura — a posição é do preço e do
+   trajeto.
+   --------------------------------------------------------------------- */
+function faixaDeCompatibilidade(cartao) {
+    const pontos = Number(cartao.dataset.pontos);
+    // Sem questionário respondido não há nota, e todo mundo empata na
+    // mesma faixa — que é justamente quando o destaque deve valer mais.
+    return Number.isFinite(pontos) ? Math.floor(pontos / 10) : 0;
+}
+
+function ordenarComDestaque(lista) {
+    // A ordem de chegada vira o critério de desempate final: sem ela, o
+    // sort embaralharia casas iguais a cada clique, e a lista dançaria
+    // na frente da pessoa sem motivo.
+    const posicao = new Map(lista.map((cartao, i) => [cartao, i]));
+
+    return [...lista].sort((a, b) => {
+        const faixaA = faixaDeCompatibilidade(a);
+        const faixaB = faixaDeCompatibilidade(b);
+        if (faixaA !== faixaB) return faixaB - faixaA;
+
+        const pesoA = Number(a.dataset.peso || 0);
+        const pesoB = Number(b.dataset.peso || 0);
+        if (pesoA !== pesoB) return pesoB - pesoA;
+
+        return posicao.get(a) - posicao.get(b);
+    });
+}
+
+/* De onde veio quem está vendo esta lista. É o que responde, no painel
+   do anunciante, "quantos estudantes chegaram até mim pelos filtros" —
+   a pergunta que separa exposição de curiosidade. */
+function origemDaLista() {
+    if (document.querySelectorAll('#painelFiltros input:checked').length) return 'filtro';
+    if (respondeu) return 'match';
+    return 'vitrine';
+}
+
+/* ---------------------------------------------------------------------
+   O ACABAMENTO DA LISTA
+
+   Três coisas que precisam acontecer toda vez que a vitrine muda, venha
+   a mudança de onde vier: a ordem com destaque, a contagem de que
+   aquelas vagas apareceram, e a origem carimbada no link de cada
+   cartão.
+
+   Existe como função própria porque a vitrine muda por TRÊS caminhos
+   diferentes — trocar de cidade, clicar numa ficha e responder o
+   questionário — e só um deles passava pelo aplicarFicha(). Escrito lá
+   dentro, abrir a home direto numa cidade não contava aparição nenhuma
+   e mandava todo mundo para a página da vaga como "direto".
+
+   reordenar = false nas fichas que prometem uma ordem literal (menor
+   preço, mais perto): ali o pago ganha só a moldura.
+   --------------------------------------------------------------------- */
+function arrumarVitrine(lista, reordenar) {
     const vitrineEl = document.getElementById('vitrine');
+    const ordenada = reordenar ? ordenarComDestaque(lista) : lista;
+
+    ordenada.forEach(c => vitrineEl.appendChild(c));
+
+    const origem = origemDaLista();
+    const reais = ordenada.filter(c => !c.dataset.exemplo);
+
+    if (typeof window.registrarMetricas === 'function') {
+        window.registrarMetricas(reais.map(c => c.dataset.id), 'vitrine', origem);
+    }
+
+    /* A origem viaja no link para a página da vaga. Sem ela, toda visita
+       seria contada como "direto", e o anunciante nunca saberia quantos
+       chegaram pelos filtros — que é a pergunta que ele faz quando
+       decide se vale destacar de novo.
+
+       Reescrito inteiro a cada passagem, e não acrescentado: assim
+       trocar de ficha não empilha "&de=" atrás de "&de=". */
+    reais.forEach(c => {
+        const ver = c.querySelector('.ver');
+        if (ver) ver.href = `vaga.html?id=${c.dataset.id}&de=${origem}`;
+    });
+
+    return ordenada;
+}
+
+function aplicarFicha() {
     const daCidade = cartoesDaCidade(selCidade.value).daCidade;
 
     // Toda ficha parte da lista inteira da cidade: nada de filtro que se
@@ -139,7 +254,12 @@ function aplicarFicha() {
     }
 
     daCidade.forEach(c => { c.hidden = !lista.includes(c); });
-    lista.forEach(c => vitrineEl.appendChild(c));
+
+    /* O destaque entra por ÚLTIMO, sobre o que sobrou dos cortes — e
+       fora das duas fichas que prometem uma ordem literal. A leitura de
+       cima para baixo deste trecho é a regra inteira: corta, corta, e
+       só então o pago sobe entre iguais. */
+    lista = arrumarVitrine(lista, fichaAtiva !== 'preco' && fichaAtiva !== 'faculdade');
 
     // Filtro que não sobra nada é o mesmo caso de cidade sem anúncio.
     const vazia = lista.length === 0;
@@ -306,6 +426,15 @@ function trocarCidade() {
     } else if (temAnuncio) {
         atualizarContagem(daCidade.length);
         chapeuDobra.innerHTML = `<span class="pisca"></span>${nome}, MG · no ar`;
+
+        /* A ordem, a contagem de aparições e a origem nos links.
+
+           Aqui e não só no aplicarFicha() porque este é o caminho da
+           ABERTURA da página: quem chega pelo link de uma cidade vê a
+           vitrine montada por esta função e pode nunca clicar em ficha
+           nenhuma. Sem esta linha, a visita mais comum do site era a
+           única que não contava nada. */
+        arrumarVitrine(daCidade, true);
     } else {
         barraConta.classList.add('vazia');
         barraConta.innerHTML = `<span class="bolinha"></span>Nenhuma república cadastrada ainda`;
@@ -667,6 +796,15 @@ function aplicarResultado() {
     // Só a cidade escolhida entra na conta: ordenar república de Lavras
     // junto com as de Alfenas não faria sentido nenhum para quem está
     // procurando em uma das duas.
+    /* Guardar o que a pessoa procurou vem ANTES da saída por lista
+       vazia, e é de propósito. A busca que não encontra nada é a mais
+       valiosa das duas: é ela que diz em qual cidade vale a pena bater
+       na porta das repúblicas. Registrar só quando dá resultado seria
+       perguntar sobre a demanda só onde a oferta já existe. */
+    if (typeof window.registrarBusca === 'function') {
+        window.registrarBusca({ ...resposta, cidade: selCidade.value });
+    }
+
     const cartoes = [...vitrine.querySelectorAll('.anuncio')].filter(c => !c.hidden);
     if (!cartoes.length) return;
 
@@ -675,11 +813,24 @@ function aplicarResultado() {
 
     pontuados.forEach(({ cartao, pontos }) => {
         cartao.querySelector('.selo-match').textContent = pontos + '%';
-        vitrine.appendChild(cartao); // reordena mantendo o mesmo nó
+        // A nota fica gravada no cartão porque a ordenação com destaque
+        // precisa dela depois, em cada clique de ficha, sem refazer a
+        // conta inteira.
+        cartao.dataset.pontos = pontos;
     });
 
-    // O cartão da primeira dobra passa a mostrar o melhor resultado real.
+    /* O cartão da primeira dobra mostra a MAIOR NOTA, e não o primeiro
+       da lista. A diferença aparece quando um anúncio pago sobe uma
+       posição dentro da faixa dele: a lista embaixo respeita o
+       destaque, mas o "seu melhor match", com a rosquinha de
+       porcentagem, continua sendo o que de fato pontuou mais.
+
+       Vender aquele lugar seria vender a única frase da página que o
+       estudante tem motivo para acreditar. */
     const melhor = pontuados[0];
+
+    // Agora sim a lista, com o desempate de quem pagou entre iguais.
+    arrumarVitrine(pontuados.map(p => p.cartao), true);
     if (melhor) {
         const nome = melhor.cartao.querySelector('h3').textContent;
         const onde = melhor.cartao.querySelector('.anuncio-onde').textContent;

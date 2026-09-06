@@ -113,6 +113,9 @@
         <button type="button" class="aba" data-secao="anunciantes" role="tab">
           Anunciantes <span class="aba-conta" id="contaAnunciantes">0</span>
         </button>
+        <button type="button" class="aba" data-secao="promocoes" role="tab">
+          Destaques <span class="aba-conta" id="contaPromocoes">0</span>
+        </button>
       </div>
 
       <!-- FILA DE REVISÃO -->
@@ -151,6 +154,34 @@
         <div id="listaAnunciantes"></div>
       </section>
 
+      <!-- DESTAQUES PAGOS
+
+           Aqui é dinheiro, e por isso a tela mostra o caminho inteiro:
+           quem pagou, quanto, quando, por qual vaga, e em que situação
+           o pagamento está do lado do Mercado Pago.
+
+           Nenhum botão desta tela acende destaque. Acender é sempre o
+           webhook, depois de perguntar ao Mercado Pago se o dinheiro
+           entrou de verdade. O que existe aqui é o contrário: cancelar,
+           para o caso de estorno ou de anúncio que se revelou de
+           imobiliária depois de pago. -->
+      <section class="conta-caixa larga admin-secao" id="secaoPromocoes" hidden>
+        <h2 class="bloco-titulo">Destaques contratados</h2>
+        <p class="conta-linha-fina">
+          Cada linha é uma vaga que alguém pagou para destacar. "Aguardando"
+          é cobrança criada cujo dinheiro ainda não chegou — some sozinho
+          quando o pagamento é confirmado ou recusado. Se alguém disser
+          que pagou e o destaque não acendeu, é aqui que você acha a
+          referência do pagamento para conferir no Mercado Pago.
+        </p>
+        <div class="admin-acoes admin-acoes-topo">
+          <button type="button" class="btn btn-linha" id="botaoExpirar">
+            Arrumar os vencidos
+          </button>
+        </div>
+        <div id="listaPromocoes"></div>
+      </section>
+
     </div>
 
   </div>
@@ -174,6 +205,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../js/supabase-config.js"></script>
+<script src="../js/planos.js"></script>
 <script src="../js/conta.js"></script>
 <script src="../js/admin.js" defer></script>
 

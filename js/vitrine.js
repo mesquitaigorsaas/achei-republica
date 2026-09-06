@@ -55,23 +55,54 @@ document.querySelectorAll('.anuncio[data-exemplo]').forEach(cartao => {
    escrito aqui também: sem ele o próprio dono veria o rascunho dele
    misturado na vitrine pública e acharia que todo mundo vê.
    --------------------------------------------------------------------- */
+/* O site e o banco NUNCA sobem juntos.
+
+   O site é arquivo estático no GitHub Pages; o banco é o Supabase, e
+   uma migração roda quando alguém abre o SQL Editor e clica. Entre uma
+   coisa e outra existe uma janela — minutos ou dias — em que a página
+   nova pede colunas que o banco ainda não tem.
+
+   E o PostgREST não devolve o que dá: pedir uma coluna inexistente
+   derruba a consulta INTEIRA. Sem esta rede, publicar antes de rodar o
+   SQL apagaria as repúblicas de verdade da home e deixaria só os seis
+   exemplos, sem erro visível para quem estivesse olhando.
+
+   Então: tenta com as colunas do destaque; se o banco disser que não as
+   conhece, tenta de novo sem elas. A vitrine perde o selo dourado e
+   continua sendo a vitrine.
+
+   Isto não é gambiarra de migração: é uma propriedade permanente de
+   servir HTML de um lugar e dados de outro. */
+const CAMPOS_BASE = `
+    id, nome, bairro, preco, caucao, minutos, modo, tipo, perfil, vagas,
+    disponivel_em,
+    cidades ( slug ),
+    faculdades ( sigla ),
+    republica_fotos ( caminho, ordem ),
+    republica_marcas ( marca ),
+    republica_cursos ( curso )`;
+
+const CAMPOS_COM_DESTAQUE = CAMPOS_BASE.replace(
+    'disponivel_em,', 'disponivel_em, destaque, destaque_ate,');
+
 async function buscarRepublicas() {
     if (!bancoVitrine) return;
 
-    const { data, error } = await bancoVitrine
+    const consultar = campos => bancoVitrine
         .from('republicas')
-        .select(`
-            id, nome, bairro, preco, caucao, minutos, modo, tipo, perfil, vagas,
-            disponivel_em,
-            cidades ( slug ),
-            faculdades ( sigla ),
-            republica_fotos ( caminho, ordem ),
-            republica_marcas ( marca ),
-            republica_cursos ( curso )
-        `)
+        .select(campos)
         .eq('ativa', true)
         .eq('status', 'publicada')
         .order('criada_em', { ascending: false });
+
+    let { data, error } = await consultar(CAMPOS_COM_DESTAQUE);
+
+    // 42703 é "coluna não existe" no Postgres. Qualquer outro erro é
+    // erro de verdade e segue o caminho de sempre.
+    if (error && (error.code === '42703' || /destaque/.test(error.message || ''))) {
+        console.warn('Banco ainda sem as colunas de destaque; seguindo sem elas.');
+        ({ data, error } = await consultar(CAMPOS_BASE));
+    }
 
     if (error) {
         // Sem estardalhaço na tela: os exemplos continuam lá e a página
@@ -128,6 +159,22 @@ function montarCartao(vaga) {
     cartao.dataset.vagas = vaga.vagas || 1;
     cartao.dataset.disponivel = vaga.disponivel_em || '';
 
+    /* O destaque pago.
+
+       data-peso é o que o script.js usa para desempatar a ordem, e ele
+       vem de destaqueValendo() — que confere a DATA. Uma promoção que
+       venceu ontem devolve peso 0 aqui mesmo que a coluna do banco
+       ainda diga "premium", porque nada neste projeto depende de uma
+       tarefa noturna ter rodado.
+
+       A classe .destacado é só aparência: moldura e fundo. Quem decide
+       posição é o peso, e ele nunca fura filtro — o filtro roda antes,
+       no js/filtros.js. */
+    const plano = destaqueValendo(vaga);
+    cartao.dataset.destaque = plano || '';
+    cartao.dataset.peso = pesoDoDestaque(vaga);
+    if (plano) cartao.classList.add('destacado', 'destacado-' + plano);
+
     /* data-perfil junta o jeito da casa com as características, do mesmo
        jeito que os cartões de exemplo faziam ("silencioso,pet,mista").
        É o que a ficha "Aceita pet" e o cálculo do questionário leem. O
@@ -169,6 +216,14 @@ function moldura(vaga) {
     tipo.className = 'selo-tipo';
     tipo.textContent = NOME_DA_MARCA[vaga.perfil] || NOME_DA_MARCA[vaga.tipo] || '';
     caixa.appendChild(tipo);
+
+    /* O selo do destaque, quando há um valendo. Vai embaixo do selo de
+       tipo, no mesmo canto — e não em cima da nota de compatibilidade,
+       que fica do outro lado e é a informação do estudante, não a do
+       anunciante. Quem pagou ganha evidência; quem procura não perde
+       de vista o que veio responder. */
+    const destaque = seloDeDestaque(vaga);
+    if (destaque) caixa.appendChild(destaque);
 
     // Fica em "—" até a pessoa responder o questionário. É o script.js
     // que preenche a nota depois, e ele procura por esta classe.

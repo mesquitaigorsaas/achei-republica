@@ -369,7 +369,7 @@
          de abandonado, e quem tem vaga vê exatamente como a dele vai
          aparecer. O que não pode é a pessoa achar que são casas de
          verdade e mandar mensagem para ninguém: por isso a faixa diz
-         o que são, e o bot��o convida a ser a primeira da cidade. -->
+         o que são, e o bot��o convida a ser a primeira da cidade. -->
     <div class="aviso-exemplo" id="avisoExemplo" hidden>
       <span>
         <b>Ainda não tem república cadastrada em <span id="nomeCidadeExemplo">Varginha</span>.</b>
@@ -732,6 +732,7 @@
         <a href="#quem-somos">Quem somos</a>
         <a href="#contato">Contato</a>
         <a href="cadastrar-vaga.html">Tenho uma vaga</a>
+        <a href="planos.html">Destaque sua vaga</a>
       </nav>
     </div>
     <p class="direitos">© 2026 Achei República — Por Mesquita SaaS</p>
@@ -835,7 +836,12 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/supabase-config.js"></script>
+<!-- O planos.js NÃO leva defer, de propósito: o vitrine.js chama as
+     funções dele já na montagem do primeiro cartão, e um defer aqui o
+     deixaria carregando enquanto a vitrine desenha. -->
 <script src="js/marcas.js"></script>
+<script src="js/planos.js"></script>
+<script src="js/metricas.js" defer></script>
 <script src="js/script.js" defer></script>
 <script src="js/vitrine.js" defer></script>
 <script src="js/filtros.js" defer></script>

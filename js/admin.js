@@ -79,7 +79,8 @@ document.getElementById('botaoSairNegado').addEventListener('click', sair);
 const secoes = {
     revisao: document.getElementById('secaoRevisao'),
     denuncias: document.getElementById('secaoDenuncias'),
-    anunciantes: document.getElementById('secaoAnunciantes')
+    anunciantes: document.getElementById('secaoAnunciantes'),
+    promocoes: document.getElementById('secaoPromocoes')
 };
 
 document.querySelectorAll('.aba').forEach(aba => {
@@ -388,6 +389,132 @@ async function mudarTeto(id, novo) {
 
 
 /* ---------------------------------------------------------------------
+   DESTAQUES CONTRATADOS
+
+   A tela onde se olha dinheiro. Duas coisas que ela NÃO faz, e as duas
+   são de propósito:
+
+   1. Não acende destaque. Acender é o webhook, depois de perguntar ao
+      Mercado Pago se o pagamento foi mesmo aprovado. Um botão "ativar"
+      aqui seria a porta dos fundos que o resto do desenho passou o dia
+      inteiro trancando — e a primeira coisa que alguém pediria pelo
+      WhatsApp: "ativa aí pra mim que eu te pago depois".
+
+   2. Não estorna. Devolver dinheiro é no painel do Mercado Pago, com o
+      registro deles. Aqui você cancela o destaque, que é a parte que
+      pertence a este site.
+   --------------------------------------------------------------------- */
+const SITUACAO_DA_PROMOCAO = {
+    aguardando: 'esperando o pagamento',
+    ativa: 'no ar',
+    expirada: 'terminou',
+    cancelada: 'cancelada por você',
+    recusada: 'pagamento não aprovado'
+};
+
+async function carregarPromocoes() {
+    const { data, error } = await banco.rpc('admin_promocoes');
+    const lista = document.getElementById('listaPromocoes');
+
+    if (error) {
+        lista.textContent = 'Não consegui carregar os destaques: ' + error.message;
+        return;
+    }
+
+    /* A conta na aba mostra as ATIVAS, e não o total de todos os tempos.
+       Um número que só cresce não é informação — o que interessa saber
+       de relance é quantas vagas estão destacadas agora. */
+    const ativas = (data || []).filter(p => p.status === 'ativa');
+    document.getElementById('contaPromocoes').textContent = ativas.length;
+
+    if (!data || !data.length) {
+        lista.innerHTML = '<p class="conta-linha-fina">Nenhum destaque contratado ainda.</p>';
+        return;
+    }
+
+    lista.replaceChildren(...data.map(p => {
+        const caixa = document.createElement('div');
+        caixa.className = 'admin-linha';
+        if (p.status === 'ativa') caixa.classList.add('promocao-ativa');
+
+        const topo = document.createElement('div');
+        topo.className = 'admin-linha-topo';
+
+        const nome = document.createElement('b');
+        nome.textContent = `${SELO_DO_PLANO[p.plano] || ''} ${NOME_DO_PLANO[p.plano] || p.plano}`
+            + ` — ${p.republica}`;
+
+        const situacao = document.createElement('small');
+        situacao.textContent = (SITUACAO_DA_PROMOCAO[p.status] || p.status).toUpperCase();
+
+        topo.append(nome, situacao);
+
+        const dados = document.createElement('p');
+        dados.className = 'admin-dado';
+        dados.textContent = [
+            emReais(p.preco_centavos),
+            p.anunciante,
+            p.telefone,
+            p.comeca_em ? `de ${dataCurtaBR(p.comeca_em)} a ${dataCurtaBR(p.termina_em)}` : null,
+            p.status === 'ativa' ? frasedeDiasRestantes(p.termina_em) : null,
+            // A vaga fora do ar com destaque pago é o caso que gera
+            // telefonema: "paguei e sumiu". Fica escrito na linha.
+            p.status === 'ativa' && !p.vaga_no_ar ? 'VAGA FORA DO AR — destaque pausado' : null,
+            p.metodo || null,
+            p.referencia ? `pagamento ${p.referencia}` : null
+        ].filter(Boolean).join(' · ');
+
+        caixa.append(topo, dados);
+
+        if (p.status === 'ativa' || p.status === 'aguardando') {
+            const acoes = document.createElement('div');
+            acoes.className = 'admin-acoes';
+
+            acoes.appendChild(botaoDeAcao('Cancelar destaque', 'btn-linha admin-recusar', async () => {
+                const motivo = prompt(
+                    'Por que este destaque está sendo cancelado?\n'
+                    + '(fica gravado, e é o que explica a decisão daqui a três meses)');
+
+                // Cancelar sem motivo é o começo de uma discussão sem
+                // prova. Fechar a caixa desiste da ação inteira.
+                if (motivo === null) return;
+
+                const { error: e } = await banco.rpc('admin_cancelar_promocao', {
+                    p_promocao: p.id,
+                    p_motivo: motivo
+                });
+
+                if (e) return aviso('Não consegui cancelar: ' + e.message);
+                aviso('Destaque cancelado. O estorno, se for o caso, é no painel do '
+                    + 'Mercado Pago — aqui só apagamos o destaque.', 'certo');
+                carregarTudo();
+            }));
+
+            caixa.appendChild(acoes);
+        }
+
+        return caixa;
+    }));
+}
+
+/* Passa as vencidas de "ativa" para "expirada". Não desliga destaque
+   nenhum: o destaque já parou sozinho no segundo em que a data passou,
+   porque tudo no site compara com a hora de agora. Isto arruma o
+   rótulo desta tela. */
+const botaoExpirar = document.getElementById('botaoExpirar');
+if (botaoExpirar) {
+    botaoExpirar.addEventListener('click', async () => {
+        const { data, error } = await banco.rpc('expirar_promocoes');
+        if (error) return aviso('Não consegui arrumar: ' + error.message);
+        aviso(data
+            ? `${data} destaque(s) marcados como terminados.`
+            : 'Nenhum destaque vencido para arrumar.', 'certo');
+        carregarPromocoes();
+    });
+}
+
+
+/* ---------------------------------------------------------------------
    Utilidades
    --------------------------------------------------------------------- */
 function dataCurta(iso) {
@@ -401,6 +528,7 @@ function carregarTudo() {
     carregarRevisao();
     carregarDenuncias();
     carregarAnunciantes();
+    carregarPromocoes();
 }
 
 

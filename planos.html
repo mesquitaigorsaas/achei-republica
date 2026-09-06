@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Destaque sua vaga — Achei República</title>
+<meta name="description" content="Anuncie sua república de graça. Se quiser preencher a vaga mais rápido, destaque o anúncio por até 30 dias. Pagamento único, sem assinatura e sem renovação automática." />
+
+<meta property="og:title" content="Destaque sua vaga — Achei República" />
+<meta property="og:description" content="Cadastro gratuito. Destaque opcional por até 30 dias, com pagamento único." />
+<meta property="og:type" content="website" />
+
+<link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png" />
+<link rel="apple-touch-icon" sizes="180x180" href="img/favicon-180.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="img/favicon-512.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="css/conta.css" />
+</head>
+<body>
+
+<header class="topo" id="topo">
+  <div class="wrap">
+    <div class="topo-barra">
+      <a href="index.html" class="marca" aria-label="Achei República">
+        <img src="img/logoHorizontal.png" alt="Achei República" width="880" height="191" />
+      </a>
+
+      <button class="menu-botao" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="menu">
+        <span></span><span></span><span></span>
+      </button>
+
+      <nav class="menu" id="menu">
+        <a href="index.html#cidade">Busque repúblicas</a>
+        <a href="classificados.html">Classificados</a>
+        <a href="index.html#contato">Contato</a>
+        <a href="cadastrar-vaga.html" class="btn btn-azul">Tenho uma vaga</a>
+      </nav>
+    </div>
+  </div>
+</header>
+
+<main class="planos-pagina">
+  <div class="wrap">
+
+    <!-- ================================================================
+         A ABERTURA
+
+         O título fala do problema da república (demora para preencher),
+         e não do produto. Quem tem uma vaga vazia não acorda querendo
+         comprar destaque; acorda querendo parar de responder as mesmas
+         quinze mensagens e não fechar com ninguém.
+         ================================================================ -->
+    <header class="planos-capa">
+      <span class="planos-chapeu">Para quem tem uma vaga</span>
+      <h1>Encontre mais rápido quem procura uma vaga como a sua.</h1>
+      <p class="planos-linha">
+        Cadastre sua república gratuitamente ou destaque sua vaga para
+        aumentar sua visibilidade entre estudantes que estão procurando
+        uma moradia.
+      </p>
+
+      <!-- A promessa que sustenta o resto da página. Vem antes dos
+           preços de propósito: quem lê "pagamento único" depois de ver
+           R$ 69,90 já leu o número com desconfiança. -->
+      <p class="planos-promessa">
+        <b>Pagamento único. Não é assinatura. Não há renovação automática.</b>
+      </p>
+    </header>
+
+    <!-- Qual vaga vai ser destacada. Preenchido pelo JavaScript quando a
+         pessoa chega pelo painel com ?vaga=<id>. -->
+    <section class="planos-vaga" id="vagaEscolhida" hidden>
+      <div>
+        <small>Destacando a vaga</small>
+        <b id="nomeDaVaga"></b>
+      </div>
+      <a href="cadastrar-vaga.html" class="btn btn-linha">Trocar</a>
+    </section>
+
+    <div class="recado" id="recado" role="alert" hidden></div>
+
+    <!-- ================================================================
+         OS QUATRO PLANOS
+
+         Montados pelo JavaScript a partir da tabela "planos" do banco.
+         Os preços NÃO estão escritos neste arquivo, e a razão não é
+         organização: preço no HTML é preço que o navegador conhece, e
+         portanto pode trocar antes de mandar para a cobrança. Aqui a
+         página só mostra o que o banco disser; quem cobra confere de
+         novo, do lado de lá.
+         ================================================================ -->
+    <section class="planos-grade" id="grade" aria-live="polite">
+      <p class="conta-linha-fina" id="carregandoPlanos">Carregando os planos...</p>
+    </section>
+
+    <!-- ================================================================
+         A TRANSPARÊNCIA
+
+         Não é rodapé de letra miúda. É a parte que faz a república
+         clicar sem medo de estar assinando alguma coisa — que é o medo
+         real de quem já foi pego por renovação automática de outro
+         serviço qualquer.
+         ================================================================ -->
+    <section class="planos-claro">
+      <h2>Sem letra miúda</h2>
+      <ul>
+        <li>
+          <b>É uma cobrança só.</b> Você paga uma vez por aquela vaga.
+          Não existe mensalidade, não existe assinatura e não guardamos
+          seu cartão para cobrar de novo.
+        </li>
+        <li>
+          <b>Encontrou um morador antes dos 30 dias?</b> Basta marcar a
+          vaga como preenchida. O anúncio sai do ar na hora e o destaque
+          para junto — e não há cobrança nenhuma pelo tempo que sobrou.
+        </li>
+        <li>
+          <b>O destaque é daquela vaga.</b> Se mais para a frente você
+          tiver outra, ela começa gratuita como qualquer outra. O plano
+          não se repete sozinho.
+        </li>
+        <li>
+          <b>Quando os 30 dias acabam</b>, sua vaga continua no ar,
+          gratuitamente, do mesmo jeito que estava antes. O que termina
+          é o destaque, não o anúncio.
+        </li>
+        <li>
+          <b>Anunciar continua de graça.</b> O plano grátis não é uma
+          versão capada: sua vaga aparece nas buscas, entra nos filtros
+          e recebe contato direto, com ou sem destaque.
+        </li>
+      </ul>
+    </section>
+
+    <!-- ================================================================
+         O QUE O DESTAQUE NÃO FAZ
+
+         Esta seção parece contra o comércio e é o contrário. Quem
+         anuncia sabe que "primeiro lugar garantido" é conversa, e
+         desconfia do resto da página junto. Dizer o limite com todas as
+         letras é o que faz o que promete valer alguma coisa.
+         ================================================================ -->
+    <section class="planos-limite">
+      <h2>O que o destaque não faz</h2>
+      <p>
+        Ele <b>não coloca sua vaga na frente de quem procura outra
+        coisa</b>. Se o estudante filtrou por Varginha, até R$ 600 e
+        aceita pet, ele vê as casas de Varginha, até R$ 600, que aceitam
+        pet — pagando ou não pagando.
+      </p>
+      <p>
+        O destaque atua <b>dentro dos resultados em que sua vaga já se
+        encaixa</b>: ela aparece com mais evidência e passa à frente de
+        anúncios equivalentes. É mais exposição para quem já estava
+        procurando exatamente o que você tem.
+      </p>
+      <p class="planos-porque">
+        Fazemos assim porque o dia em que a busca deixar de ser honesta,
+        o estudante para de usar o site — e aí não sobra exposição para
+        vender a ninguém.
+      </p>
+    </section>
+
+    <section class="planos-duvidas">
+      <h2>Perguntas que todo mundo faz</h2>
+
+      <details>
+        <summary>Vou ser cobrado todo mês?</summary>
+        <p>
+          Não. É um pagamento só, por aquela vaga, válido por até 30
+          dias. Quando o prazo termina, nada acontece na sua conta: o
+          destaque simplesmente para e a vaga continua anunciada de
+          graça.
+        </p>
+      </details>
+
+      <details>
+        <summary>E se eu alugar no terceiro dia?</summary>
+        <p>
+          Marque a vaga como preenchida no seu painel. O anúncio sai do
+          ar e o destaque para junto. Se o combinado cair e você puser a
+          vaga de volta dentro do prazo, o destaque volta com ela até a
+          data original — os dias que você comprou não se perdem por um
+          clique.
+        </p>
+      </details>
+
+      <details>
+        <summary>Preciso pagar para aparecer no site?</summary>
+        <p>
+          Não. Cadastrar a república e a vaga é gratuito, e a vaga
+          gratuita aparece nas buscas e nos filtros como qualquer outra.
+          O destaque é para quem tem pressa de preencher.
+        </p>
+      </details>
+
+      <details>
+        <summary>Como eu sei se valeu a pena?</summary>
+        <p>
+          No seu painel, cada vaga mostra quantas vezes apareceu nas
+          buscas, quantas pessoas abriram o anúncio e quantas clicaram
+          no seu WhatsApp. Nos planos Premium e Pro você vê também por
+          onde essas pessoas chegaram — pelos filtros, pelo questionário
+          ou direto.
+        </p>
+      </details>
+
+      <details>
+        <summary>Que formas de pagamento vocês aceitam?</summary>
+        <p>
+          Pix e cartão, pelo Mercado Pago. Você é levado para o ambiente
+          deles para pagar: seus dados de cartão não passam pelo Achei
+          República em momento nenhum.
+        </p>
+      </details>
+    </section>
+
+  </div>
+</main>
+
+<footer class="rodape">
+  <div class="wrap">
+    <div class="rodape-inner">
+      <a href="index.html"><img src="img/logoHorizontal.png" alt="Achei República" width="880" height="191" /></a>
+      <nav class="rodape-links">
+        <a href="index.html#cidade">Busque repúblicas</a>
+        <a href="index.html#como">Como funciona</a>
+        <a href="index.html#quem-somos">Quem somos</a>
+        <a href="index.html#contato">Contato</a>
+        <a href="cadastrar-vaga.html">Tenho uma vaga</a>
+        <a href="planos.html">Destaque sua vaga</a>
+      </nav>
+    </div>
+    <p class="direitos">© 2026 Achei República — Por Mesquita SaaS</p>
+  </div>
+</footer>
+
+<!-- O conta.js vem antes por trazer prontas as quatro coisas que esta
+     página também precisa: a ligação com o banco, o menu sanduíche do
+     celular, a caixa de recados e o botão que trava enquanto o servidor
+     responde. Recriar qualquer uma delas aqui seria a mesma peça em
+     dois lugares, que é como o filtro de "aceita pet" quebrou uma vez. -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/planos.js"></script>
+<script src="js/conta.js"></script>
+<script src="js/destaque.js" defer></script>
+
+</body>
+</html>
