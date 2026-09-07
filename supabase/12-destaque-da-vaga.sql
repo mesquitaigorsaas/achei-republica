@@ -244,7 +244,7 @@ as $$
      limit 1;
 $$;
 
-revoke all on function destaque_vigente(uuid) from public;
+revoke all on function destaque_vigente(uuid) from public, anon, authenticated;
 
 
 -- ---------------------------------------------------------------------
@@ -387,7 +387,7 @@ begin
     return promo;
 end $$;
 
-revoke all on function ativar_promocao(uuid, text, text, jsonb) from public;
+revoke all on function ativar_promocao(uuid, text, text, jsonb) from public, anon, authenticated;
 
 
 -- ---------------------------------------------------------------------
@@ -429,7 +429,7 @@ begin
        and (referencia = p_referencia or referencia is null);
 end $$;
 
-revoke all on function recusar_promocao(uuid, text, text, jsonb) from public;
+revoke all on function recusar_promocao(uuid, text, text, jsonb) from public, anon, authenticated;
 
 
 -- ---------------------------------------------------------------------
@@ -464,7 +464,7 @@ begin
     return quantas;
 end $$;
 
-revoke all on function expirar_promocoes() from public;
+revoke all on function expirar_promocoes() from public, anon, authenticated;
 grant execute on function expirar_promocoes() to authenticated;
 
 
