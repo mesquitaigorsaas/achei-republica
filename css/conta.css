@@ -972,14 +972,24 @@
     display: flex; align-items: center; justify-content: center;
     padding: 18px;
     background: rgba(20,32,43,.55);
-    overflow-y: auto;
 }
 
+/* O max-height nao e detalhe: sem ele a caixa cresce alem da tela, e
+   como ela esta centrada num flex, o que passa do topo fica INALCANCAVEL
+   -- nao ha como rolar para cima ate ele. Foi o que aconteceu com o
+   formulario do Mercado Pago, que e alto: o titulo "Confirmar o
+   destaque" ficava cortado na borda de cima, num notebook comum.
+
+   Preso a altura da tela, quem rola e a propria caixa, e ai tudo se
+   alcanca. O 36px sao os 18px de folga em cima e embaixo. */
 .planos-confirmar-caixa {
-    width: 100%; max-width: 440px;
+    width: 100%; max-width: 420px;
+    max-height: calc(100vh - 36px);
+    overflow-y: auto;
+    overscroll-behavior: contain;   /* rolar aqui dentro nao rola a pagina atras */
     background: var(--papel);
     border-radius: var(--raio-g);
-    padding: 26px 24px;
+    padding: 22px;
     box-shadow: var(--sombra-alta);
 }
 
@@ -1118,10 +1128,24 @@
     .planos-confirmar { align-items: flex-end; padding: 0; }
     .planos-confirmar-caixa {
         max-width: none;
+        max-height: 94vh;
         border-radius: var(--raio-g) var(--raio-g) 0 0;
-        padding: 24px 20px 30px;
+        padding: 22px 18px 26px;
     }
     .planos-confirmar-acoes { flex-direction: column-reverse; }
+}
+
+/* Notebook de tela baixa: sobra pouca altura depois das abas e da barra
+   de endereço do navegador, e o formulário de cartão é comprido. Aqui a
+   caixa aperta as folgas em vez de empurrar tudo para a rolagem. */
+@media (max-height: 720px) {
+    .planos-confirmar { padding: 10px; }
+    .planos-confirmar-caixa { max-height: calc(100vh - 20px); padding: 18px; }
+    .planos-confirmar-caixa h2 { font-size: 1.1rem; margin-bottom: 12px; }
+    .planos-resumo { gap: 7px; margin-bottom: 12px; }
+    .planos-avisos { margin-bottom: 14px; }
+    .planos-pagar-alvo { margin-bottom: 12px; }
+    .planos-pix-qr { width: 190px; height: 190px; margin-top: 12px; }
 }
 
 
