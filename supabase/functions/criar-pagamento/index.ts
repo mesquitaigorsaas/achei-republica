@@ -51,6 +51,12 @@ const ORIGENS_PERMITIDAS = [
     'https://mesquitaigorsaas.github.io',
     'http://localhost:5500',
     'http://127.0.0.1:5500',
+    /* A porta do servidor local deste repositório (.claude/launch.json).
+       Está aqui para dar para consertar o pagamento sem republicar o
+       site a cada tentativa. Continua exigindo login: a lista abre a
+       porta do CORS, não a da autorização. */
+    'http://localhost:4322',
+    'http://127.0.0.1:4322',
 ];
 
 function cabecalhos(origem: string | null) {
