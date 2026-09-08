@@ -339,6 +339,14 @@ async function buscarFaculdades() {
         if (!cidade || !f.sigla) return;
         (window.FACULDADES_POR_CIDADE[cidade] ||= []).push(f.sigla);
     });
+
+    /* Refaz a tela agora que se sabe as faculdades.
+
+       Sem isto haveria uma janela de alguns décimos de segundo em que a
+       pessoa poderia escolher a cidade antes da resposta do banco — e os
+       cartões de exemplo ficariam vestindo a faculdade errada até ela
+       mexer em outra coisa. Curta, mas é a primeira tela que ela vê. */
+    if (typeof window.reconstruirVitrine === 'function') window.reconstruirVitrine();
 }
 
 

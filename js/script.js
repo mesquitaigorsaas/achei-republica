@@ -70,12 +70,33 @@ function cartoesDaCidade(slug) {
     return { todos, daCidade: reais.length ? reais : exemplos, temReal: reais.length > 0 };
 }
 
+/* As faculdades que a cidade tem, segundo o banco. Vazio enquanto a
+   resposta não chega, e vazio de verdade numa cidade que ainda não teve
+   faculdade cadastrada. */
+function faculdadesDaCidade(slug) {
+    return (window.FACULDADES_POR_CIDADE || {})[slug] || [];
+}
+
 function montarFaculdades() {
     // Todas as faculdades da cidade, e não só as dos cartões visíveis:
     // se a ficha anterior tivesse filtrado, faculdade sumiria da lista
     // sem motivo nenhum.
-    const daCidade = cartoesDaCidade(selCidade.value).daCidade;
-    const siglas = [...new Set(daCidade.map(c => c.dataset.uni))].sort();
+    const { daCidade, temReal } = cartoesDaCidade(selCidade.value);
+
+    /* De onde sai a lista, e por que muda:
+
+       COM casa de verdade, sai dos anúncios. Oferecer uma faculdade que
+       não tem nenhuma república perto é oferecer um filtro que devolve
+       lista vazia.
+
+       SEM casa nenhuma, sai do BANCO. Aqui a vitrine está mostrando os
+       seis cartões de exemplo, e eles trazem escrito no HTML as
+       faculdades de Alfenas — era isso que fazia Belo Horizonte oferecer
+       IFSULDEMINAS, UNIFAL e UNIFENAS. A ficha dizia que BH tem UNIFAL,
+       e o mesmo valia, calado, para as outras treze cidades vazias. */
+    const siglas = temReal
+        ? [...new Set(daCidade.map(c => c.dataset.uni))].sort()
+        : faculdadesDaCidade(selCidade.value).slice().sort();
 
     const escolhida = selFaculdade.value;
     selFaculdade.innerHTML = '';
@@ -97,7 +118,10 @@ function montarFaculdades() {
     selFaculdade.value =
         siglas.includes(escolhida) ? escolhida :
         siglas.includes(resposta.uni) ? resposta.uni :
-        maisCasas;
+        // Numa cidade sem casa, a contagem acima empata tudo em zero e
+        // não escolhe nada. A primeira da lista é melhor que nenhuma:
+        // seletor aberto sem valor não filtra e não explica por quê.
+        (maisCasas || siglas[0] || '');
 
     return siglas.length;
 }
@@ -233,6 +257,21 @@ function aplicarFicha() {
 
     if (fichaAtiva === 'faculdade') {
         const alvo = selFaculdade.value;
+
+        /* Numa cidade sem casa nenhuma, os cartões visíveis são os seis
+           exemplos — e eles trazem as faculdades de Alfenas escritas no
+           HTML. Filtrar por "UFMG Pampulha" varreria a tela e deixaria a
+           pessoa achando que a busca não funciona, quando o que não há é
+           anúncio.
+
+           Então o exemplo veste a faculdade escolhida, como já veste a
+           cidade. Ele continua dizendo "Exemplo" no selo; o que ele
+           mostra é como a lista vai ficar quando existir casa de
+           verdade. */
+        if (!cartoesDaCidade(selCidade.value).temReal && alvo) {
+            base.forEach(c => { if (c.dataset.exemplo) c.dataset.uni = alvo; });
+        }
+
         lista = base.filter(c => c.dataset.uni === alvo)
                     .sort((a, b) => Number(a.dataset.min) - Number(b.dataset.min));
     } else if (fichaAtiva === 'preco') {
@@ -383,6 +422,26 @@ let respondeu = false;
 function trocarCidade() {
     const slug = selCidade.value;
     const nome = selCidade.options[selCidade.selectedIndex].textContent.trim();
+
+    /* Cidade sem faculdade cadastrada não mostra a ficha "Perto da
+       faculdade". Deixá-la ali era um beco: clicar filtrava por uma
+       faculdade que não existe, a lista esvaziava, e a única explicação
+       na tela era "nenhuma república com esse filtro" — que faz a
+       pessoa pensar que a cidade está vazia, e não que a pergunta não
+       fazia sentido ali.
+
+       Se a ficha estava ativa e a cidade nova não tem faculdade, a
+       ordenação volta para "Mais combinam". */
+    const temFaculdade = faculdadesDaCidade(slug).length > 0;
+    const chip = document.querySelector('.ficha[data-ficha="faculdade"]');
+
+    if (chip) chip.hidden = !temFaculdade;
+
+    if (!temFaculdade && fichaAtiva === 'faculdade') {
+        fichaAtiva = 'combinam';
+        fichas.forEach(f => f.classList.toggle('ativa', f.dataset.ficha === 'combinam'));
+        fichaFaculdade.hidden = true;
+    }
 
     const cartoes = [...document.querySelectorAll('.anuncio')];
 
