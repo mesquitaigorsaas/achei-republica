@@ -73,11 +73,16 @@ create table if not exists planos (
 comment on table planos is
     'Catalogo de planos. E a autoridade sobre o preco: a funcao de pagamento le daqui, nunca do navegador.';
 
+-- Os valores aqui são os de uma instalação NOVA. Premium e Pro nasceram
+-- 3990 e 6990 e foram reajustados pelo 15-precos-de-setembro.sql, quando
+-- saíram dos planos as promessas que o site não cumpria. Para mudar
+-- preço num banco que já existe, use um arquivo pequeno como o 15 — não
+-- este, que também cria as funções sensíveis.
 insert into planos (slug, nome, preco_centavos, dias, peso, selo, chamada, ordem) values
     ('gratuito', 'Grátis',   0,    30, 0, null, 'Estar na plataforma',       1),
     ('destaque', 'Destaque', 1990, 30, 1, '⭐', 'Aumentar a visibilidade',   2),
-    ('premium',  'Premium',  3990, 30, 2, '🔥', 'Mais exposição + recursos', 3),
-    ('pro',      'Pro',      6990, 30, 3, '👑', 'Máxima exposição',          4)
+    ('premium',  'Premium',  2990, 30, 2, '🔥', 'Mais exposição + recursos', 3),
+    ('pro',      'Pro',      4990, 30, 3, '👑', 'Máxima exposição',          4)
 on conflict (slug) do update
     set nome = excluded.nome,
         preco_centavos = excluded.preco_centavos,

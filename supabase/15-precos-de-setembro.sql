@@ -1,0 +1,54 @@
+-- =====================================================================
+-- Achei República — Premium para R$ 29,90 e Pro para R$ 49,90
+--
+-- POR QUE BAIXOU
+--
+-- Os planos foram ao ar prometendo, no Premium e no Pro, coisas que o
+-- site não fazia: área especial na página da cidade, faixa para vagas
+-- com entrada imediata, relatório do período e "estatísticas avançadas"
+-- que eram exatamente as do Premium. As promessas saíram do texto de
+-- venda, e com elas saiu parte do que sustentava os preços.
+--
+-- O que sobrou de automático, do Premium para o Pro, é o selo e a
+-- prioridade na ordem. R$ 30 de degrau por isso era caro; R$ 20 é
+-- honesto enquanto o resto não existir.
+--
+--   Destaque   R$ 19,90   (não muda)
+--   Premium    R$ 39,90 -> R$ 29,90
+--   Pro        R$ 69,90 -> R$ 49,90
+--
+-- ---------------------------------------------------------------------
+-- O QUE ISTO **NÃO** MEXE
+--
+-- Nada que já foi vendido. A tabela promocoes copia preco_centavos no
+-- momento da compra, de propósito: o recibo de uma compra de setembro
+-- não muda quando o preço de outubro mudar. Uma promoção 'aguardando',
+-- esperando um Pix cair, continua valendo o preço com que nasceu — e é
+-- esse valor que o webhook confere contra o que o Mercado Pago diz que
+-- foi pago.
+--
+-- Também não precisa publicar nada: a home, a página de planos e a
+-- função de cobrança leem o preço desta tabela a cada vez. No segundo
+-- em que este arquivo rodar, o site inteiro já mostra o novo valor.
+--
+-- ---------------------------------------------------------------------
+-- NÃO RODE O 12 DE NOVO PARA MUDAR PREÇO
+--
+-- O 12 é o arquivo de origem: além dos planos, ele cria as funções
+-- sensíveis, cujas permissões só foram fechadas depois, no 14. Rodar o
+-- 12 outra vez para reajustar um valor é mexer em muita coisa para
+-- alterar duas linhas. Reajuste é um arquivo pequeno como este.
+--
+-- (Os valores do 12 foram atualizados junto, para que uma instalação
+--  nova nasça com o preço certo — não para ser reexecutado aqui.)
+-- =====================================================================
+
+update planos set preco_centavos = 2990 where slug = 'premium';
+update planos set preco_centavos = 4990 where slug = 'pro';
+
+-- Confira antes de fechar a aba:
+--
+--   select slug, nome, preco_centavos / 100.0 as reais, ativo
+--     from planos order by ordem;
+--
+-- Esperado: gratuito 0, destaque 19.90, premium 29.90, pro 49.90.
