@@ -76,8 +76,8 @@ const ENTREGA = {
     pro: {
         objetivo: 'Máxima exposição',
         itens: [
-            'Prioridade máxima entre os compatíveis',
-            'Relatório do período e atendimento prioritário',
+            'Tudo do Premium, com prioridade máxima',
+            'Atendimento prioritário no WhatsApp',
             'Até 2 divulgações nas nossas redes',
         ],
     },

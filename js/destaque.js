@@ -79,7 +79,6 @@ const ENTREGA = {
             'Prioridade acima do plano Destaque nos resultados',
             'Estatísticas completas: de onde vieram as visitas',
             'Quantos chegaram pelos filtros e pelo questionário',
-            'Espaço nas áreas especiais da página da cidade',
         ],
         botao: 'Destacar por até 30 dias',
     },
@@ -87,13 +86,17 @@ const ENTREGA = {
         objetivo: 'Máxima exposição',
         periodo: 'Até 30 dias de destaque',
         etiqueta: 'MAIOR EXPOSIÇÃO',
+        /* O que sobrou aqui é o que o site FAZ, mais duas coisas que
+           você faz à mão. Saíram três promessas que não tinham código
+           atrás: área especial na página da cidade, faixa de entrada
+           imediata e relatório do período. As estatísticas do Pro são
+           as mesmas do Premium — não existe um nível a mais, e dizer
+           "avançadas" era vender diferença que não há. */
         itens: [
-            'Tudo do Premium, no nível mais alto',
+            'Tudo do Premium, com prioridade máxima',
             'Selo 👑 Pro',
-            'Prioridade máxima entre os resultados compatíveis',
-            'Destaque especial para vagas com entrada imediata',
-            'Estatísticas avançadas e relatório do período',
-            'Atendimento prioritário no WhatsApp',
+            'Passa à frente de Premium e Destaque nos resultados',
+            'Atendimento prioritário no WhatsApp, direto comigo',
             'Até 2 divulgações nas redes do Achei República',
         ],
         botao: 'Destacar por até 30 dias',
