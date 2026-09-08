@@ -179,16 +179,28 @@ async function buscarCep(cep, campos) {
 /* ---------------------------------------------------------------------
    Para onde ir depois de entrar
    --------------------------------------------------------------------- */
-function destinoDepoisDoLogin() {
-    const pedido = new URLSearchParams(location.search).get('destino');
-    /* Só caminho interno: link de fora vindo pela URL viraria um jeito
-     * bonito de mandar a pessoa para uma página falsa. */
-    if (pedido && pedido.startsWith('/') && !pedido.startsWith('//')) return pedido;
+function interno(caminho) {
+    /* Só caminho interno: "//outrosite.com" é um endereço absoluto
+     * disfarçado de caminho, e aceitá-lo viraria um jeito bonito de
+     * mandar a pessoa para uma página falsa com a nossa cara. */
+    return !!caminho && caminho.startsWith('/') && !caminho.startsWith('//');
+}
 
-    /* painel/anuncios.html nunca existiu: quem entrava caia num 404 do
-     * GitHub Pages, que não é nem página do site. Até o painel das
-     * vagas existir, a volta é para anunciar.html — o único lugar onde
-     * quem está logado tem o que fazer: publicar e tirar do ar os
-     * próprios anúncios. */
-    return '../anunciar.html';
+function destinoDepoisDoLogin() {
+    /* 1. O que a pessoa escolheu no próprio formulário. */
+    const escolhido = document.querySelector('input[name="destino"]:checked');
+    if (escolhido && interno(escolhido.value)) return '..' + escolhido.value;
+
+    /* 2. O que quem mandou o link pediu. */
+    const pedido = new URLSearchParams(location.search).get('destino');
+    if (interno(pedido)) return pedido;
+
+    /* 3. A vaga, que é a razão de o site existir.
+     *
+     * Aqui devolvia '../anunciar.html' — os CLASSIFICADOS. Foi escrito
+     * quando o painel de vagas ainda não existia, como remendo para não
+     * cair num 404, e ficou. O efeito: quem entrava para cuidar da
+     * própria república aterrissava numa tela de vender geladeira, e
+     * tinha todo o direito de achar que entrou na conta errada. */
+    return '../cadastrar-vaga.html';
 }

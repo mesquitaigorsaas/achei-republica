@@ -83,6 +83,38 @@
 
         <p class="conta-esqueci"><a href="recuperar-senha.html">Esqueci minha senha</a></p>
 
+        <!-- Para onde a pessoa vai depois de entrar.
+
+             A mesma conta serve as duas coisas: anunciar uma vaga na
+             república e anunciar um móvel nos classificados. Sem esta
+             pergunta, o login escolhia sozinho — e escolhia errado, que
+             é como quem vinha cuidar da própria vaga caía numa tela de
+             vender geladeira e achava que tinha entrado na conta de
+             outra pessoa.
+
+             Fica marcada a vaga: é a razão de o site existir. Trocar é
+             um clique, e a escolha não some — quem errar volta pelo
+             menu, que leva aos dois. -->
+        <fieldset class="destino-login">
+          <legend>Depois de entrar, quero cuidar</legend>
+
+          <label class="relacao-opcao">
+            <input type="radio" name="destino" value="/cadastrar-vaga.html" checked />
+            <span>
+              <b>Da minha vaga</b>
+              <span>Publicar, editar ou tirar do ar a vaga da república.</span>
+            </span>
+          </label>
+
+          <label class="relacao-opcao">
+            <input type="radio" name="destino" value="/anunciar.html" />
+            <span>
+              <b>Dos meus classificados</b>
+              <span>Móvel, item ou doação que eu anunciei.</span>
+            </span>
+          </label>
+        </fieldset>
+
         <button type="submit" class="btn btn-azul" id="botaoEntrar">Entrar</button>
       </form>
 
