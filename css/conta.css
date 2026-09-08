@@ -342,7 +342,11 @@
 .janela {
     position: fixed;
     inset: 0;
-    z-index: 60;
+    /* Mesmo motivo da .planos-confirmar: com 60 esta caixa ficava atrás
+       do cabeçalho, que é grudado no alto com 80. Hoje ela não abre mais
+       (o login virou página), mas fica corrigida — meio conserto é o que
+       faz o próximo passar horas achando que é altura. */
+    z-index: 220;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -975,9 +979,19 @@
    quando a caixa é baixinha, e traiçoeiro quando ela é alta: qualquer
    pixel a mais some pelas DUAS bordas, e a de cima leva o título junto.
    Ancorada no alto, o que sobra vai para a rolagem de dentro, onde a
-   pessoa alcança. */
+   pessoa alcança.
+
+   O z-index 220 não é chute. O cabeçalho é grudado no alto com 80, e
+   com 60 esta caixa era DESENHADA ATRÁS DELE: o título não estava
+   cortado nem rolado, estava embaixo da barra branca. Parecia defeito
+   de altura, e por isso enganou por três tentativas.
+
+   A escala do projeto, de trás para a frente: cabeçalho 80, setinha 90,
+   questionário 200, denúncia 210. Pagamento vem por último de
+   propósito — é a única tela em que ficar meio escondido custa dinheiro
+   de verdade. */
 .planos-confirmar {
-    position: fixed; inset: 0; z-index: 60;
+    position: fixed; inset: 0; z-index: 220;
     display: flex; align-items: flex-start; justify-content: center;
     padding: 18px;
     background: rgba(20,32,43,.55);
