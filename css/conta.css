@@ -327,9 +327,23 @@
 .btn-perigo { color: #a4343a; border-color: #e8c4c4; }
 .btn-perigo:hover { background: #fdf0ee; border-color: #a4343a; }
 
+/* Quatro botões numa linha só não cabem em 375px, e o .btn é
+   white-space: nowrap -- "Aluguei, tirar do ar" não encolhe. O flex:1
+   sozinho não resolvia: ele reparte o espaço que existe, e quando o
+   conteúdo não cabe, o que sobra ESTOURA para fora da tela. A página
+   inteira ficava mais larga que o celular, e dava para rolar de lado —
+   o rodapé escuro terminava no meio do nada.
+
+   Dois por linha, e o texto podendo quebrar dentro do botão. */
 @media (max-width: 520px) {
-    .meu-item-acoes { width: 100%; }
-    .meu-item-acoes .btn { flex: 1; }
+    .meu-item-acoes { width: 100%; flex-wrap: wrap; }
+    .meu-item-acoes .btn {
+        flex: 1 1 calc(50% - 4px);
+        min-width: 0;
+        white-space: normal;
+        text-align: center;
+        line-height: 1.3;
+    }
 }
 
 /* ---------------------------------------------------------------------
