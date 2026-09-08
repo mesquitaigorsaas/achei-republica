@@ -383,6 +383,7 @@ function confirmar(plano, botao) {
     const fechar = () => {
         janela.remove();
         document.body.style.overflow = '';
+        document.documentElement.classList.remove('com-janela');
         botao.focus();
     };
 
@@ -410,6 +411,18 @@ function confirmar(plano, botao) {
 
     document.body.appendChild(janela);
     document.body.style.overflow = 'hidden';
+
+    /* Cinto e suspensório, e não desconfiança do z-index: enquanto a
+       caixa está aberta, o cabeçalho DESCE de camada por classe no
+       <html>. z-index só compara elementos dentro do mesmo contexto de
+       empilhamento, e basta um ancestral ganhar transform, filter ou
+       opacity um dia para o 220 daqui virar 220 dentro de uma caixinha
+       que inteira vale menos que a barra do topo. Esta linha não tem
+       esse pressuposto.
+
+       E resolve outra coisa junto: com o cabeçalho atrás da cortina,
+       ninguém mais clica em "Sair" sem querer no meio de um pagamento. */
+    document.documentElement.classList.add('com-janela');
 
     /* O preventScroll não é preciosismo. Desde que a caixa passou a
        rolar por dentro (para caber em tela baixa), focar um botão que

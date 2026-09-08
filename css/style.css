@@ -1885,3 +1885,25 @@ a.contato:hover { border-color: var(--azul-linha); transform: translateY(-3px); 
 /* Na página da vaga o selo entra na fileira de etiquetas, sem posição
    absoluta — lá ele é uma etiqueta entre as outras, não um adesivo. */
 .vaga-selos .selo-destaque { position: static; }
+
+
+/* =====================================================================
+   ENQUANTO UMA CAIXA ESTÁ ABERTA
+
+   O cabeçalho é grudado no alto e vive numa camada alta, para passar por
+   cima da página que rola por baixo dele. Numa caixa de pagamento isso
+   se inverte: ele passa a ser o que atrapalha, escondendo o topo dela
+   atrás de uma barra branca.
+
+   Baixar a camada por classe, e não confiar só no z-index da caixa,
+   porque z-index compara elementos dentro do MESMO contexto de
+   empilhamento. Basta um ancestral ganhar transform, filter ou opacity
+   um dia para o número da caixa passar a valer só dentro dela.
+
+   Sem pointer-events também: com o cabeçalho atrás da cortina, ninguém
+   clica em "Sair" no meio de um pagamento sem ter querido.
+   ===================================================================== */
+.com-janela .topo {
+    z-index: 1;
+    pointer-events: none;
+}
