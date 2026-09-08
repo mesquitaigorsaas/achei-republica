@@ -913,9 +913,8 @@ if (nota) {
    conta de rolagem: menos elegante, e funciona igual em todo navegador
    que existe.
 
-   O clique também deixou de ser só o href="#topo". Âncora para um
-   cabeçalho grudado no alto às vezes não sai do lugar, porque o alvo já
-   está na tela; rolar até zero na mão nunca falha. */
+   O clique é tratado abaixo, junto com os outros links que prometem o
+   topo. */
 const subir = document.querySelector('.subir');
 const dobra = document.querySelector('.heroi');
 
@@ -928,9 +927,38 @@ if (subir) {
     window.addEventListener('scroll', conferirSetinha, { passive: true });
     window.addEventListener('resize', conferirSetinha);
     conferirSetinha();
-
-    subir.addEventListener('click', evento => {
-        evento.preventDefault();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
 }
+
+
+/* ---------------------------------------------------------------------
+   Tudo que promete o topo
+
+   São quatro: a logo, o "Busque repúblicas" do menu, o mesmo link no
+   rodapé e a setinha. O href="#topo" sozinho não leva ninguém a lugar
+   nenhum, e a razão é sutil: o id mora no cabeçalho, que é
+   position:sticky e portanto está SEMPRE colado no alto da tela.
+   "Role até ele" resolve para "role até onde você já está".
+
+   Medido antes do conserto: rolagem em 3000, clique no menu, rolagem
+   continua em 3000. Nada se movia, e o menu parecia quebrado.
+
+   A setinha já tinha esse remédio desde antes; faltava valer para os
+   outros três. Rolar até zero na mão nunca falha.
+
+   O href continua no HTML de propósito: sem JavaScript ele ao menos
+   leva ao topo numa recarga, e o clique do meio ainda abre em aba nova.
+   --------------------------------------------------------------------- */
+document.addEventListener('click', evento => {
+    const link = evento.target.closest('a[href="#topo"]');
+    if (!link) return;
+
+    evento.preventDefault();
+
+    /* Quem pediu menos animação no sistema recebe o salto seco. O CSS
+       já respeita isso no scroll-behavior; o scrollTo não respeita
+       sozinho, e ficaria um caso escapando pelo meio. */
+    const suave = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+        ? 'auto' : 'smooth';
+
+    window.scrollTo({ top: 0, behavior: suave });
+});
