@@ -112,17 +112,17 @@ function montarFaculdades() {
    O destaque NUNCA escolhe QUEM aparece. Isso já foi decidido duas
    etapas antes: a ficha corta, o painel de filtros corta, e o que
    sobrou é a lista dos elegíveis. Uma casa que não aceita pet não
-   entra na busca de quem marcou "aceita pet" nem pagando Pro.
+   entra na busca de quem marcou "aceita pet" nem pagando Premium.
 
    O destaque escolhe, dentro dos elegíveis, QUEM VEM ANTES — e mesmo
    isso com trava:
 
    A TRAVA DA FAIXA. Depois do questionário cada cartão tem uma nota de
-   0 a 100. Comparar só o peso do plano deixaria um Pro de 40% na
+   0 a 100. Comparar só o peso do plano deixaria um Premium de 40% na
    frente de um grátis de 95%, e a lista viraria propaganda. Então a
    comparação é por FAIXA de dez pontos: o destaque só desempata entre
-   casas que combinam praticamente igual. Um Pro de 71 passa na frente
-   de um grátis de 79 (mesma faixa dos 70). Um Pro de 51 não passa —
+   casas que combinam praticamente igual. Um Premium de 71 passa na frente
+   de um grátis de 79 (mesma faixa dos 70). Um Premium de 51 não passa —
    fica onde a nota dele manda.
 
    Dez pontos é a distância em que a diferença de compatibilidade deixa
@@ -253,6 +253,9 @@ function aplicarFicha() {
         lista = lista.filter(window.passaNoPainel);
     }
 
+    const corte = guardarGratisParaOFiltro(lista);
+    lista = corte.lista;
+
     daCidade.forEach(c => { c.hidden = !lista.includes(c); });
 
     /* O destaque entra por ÚLTIMO, sobre o que sobrou dos cortes — e
@@ -275,7 +278,53 @@ function aplicarFicha() {
         document.getElementById('vazioCadastrar').hidden = true;
     }
 
-    atualizarContagem(lista.length);
+    atualizarContagem(lista.length, corte.guardadas);
+}
+
+
+/* ---------------------------------------------------------------------
+   A VITRINE CRUA É DOS PAGOS
+
+   Na tela que a pessoa vê ao escolher a cidade — sem ficha, sem filtro,
+   sem questionário — aparecem só os anúncios pagos. Os gratuitos ficam
+   guardados para quem disser o que procura.
+
+   A REGRA SE LIGA SOZINHA, e isso é o essencial. Ela só vale numa
+   cidade que JÁ tem pelo menos um anúncio pago. Onde não há nenhum,
+   nada é escondido — senão Alfenas, que hoje tem um anúncio e ele é
+   gratuito, abriria vazia para todo estudante que chegasse, e um site
+   vazio não atrai a república que a gente quer que pague.
+
+   POR QUE SÓ NA VITRINE CRUA, e nunca depois de um clique:
+
+   Clicar numa ficha ou marcar um filtro é a pessoa dizendo o que quer,
+   e a lista passa a ser uma resposta ao que ela pediu. Esconder casa
+   dentro de uma resposta é a lista mentindo — e em "Menor preço" seria
+   escancarado: a lista ordenada por preço sem as mais baratas se
+   desmonta em três segundos na cabeça de quem lê.
+
+   E o número escondido é DITO, na contagem. Guardar sem avisar seria
+   sonegar oferta de quem procura; avisando, vira o empurrão para as
+   cinco perguntas — que é onde este site é bom.
+   --------------------------------------------------------------------- */
+function vitrineCrua() {
+    if (fichaAtiva !== 'combinam') return false;
+    if (respondeu) return false;
+    if (typeof window.painelTemFiltro === 'function' && window.painelTemFiltro()) return false;
+    return true;
+}
+
+function guardarGratisParaOFiltro(lista) {
+    if (!vitrineCrua()) return { lista, guardadas: 0 };
+
+    const pagos = lista.filter(c => Number(c.dataset.peso || 0) > 0);
+
+    // Cidade sem nenhum pago mostra tudo. Também é por aqui que os seis
+    // cartões de exemplo continuam aparecendo: eles não têm peso, e onde
+    // eles estão não há pago nenhum.
+    if (!pagos.length) return { lista, guardadas: 0 };
+
+    return { lista: pagos, guardadas: lista.length - pagos.length };
 }
 
 fichas.forEach(ficha => {
@@ -442,11 +491,24 @@ function trocarCidade() {
     }
 }
 
-function atualizarContagem(quantas) {
+function atualizarContagem(quantas, guardadas) {
     barraConta.classList.toggle('vazia', quantas === 0);
     barraConta.innerHTML = quantas === 0
         ? `<span class="bolinha"></span>Nenhuma república com esse filtro`
         : `<span class="bolinha"></span><b>${quantas}</b>&nbsp;${quantas === 1 ? 'república' : 'repúblicas'} com vaga aberta`;
+
+    /* O que está guardado é dito. Uma lista curta sem explicação é lida
+       como "a cidade tem pouca coisa" — e a pessoa fecha a aba em vez de
+       responder as cinco perguntas, que é justamente o que faria as
+       outras aparecerem. */
+    if (guardadas > 0) {
+        const mais = document.createElement('span');
+        mais.className = 'conta-mais';
+        mais.textContent = guardadas === 1
+            ? '+1 aparece quando você filtra ou responde as 5 perguntas'
+            : `+${guardadas} aparecem quando você filtra ou responde as 5 perguntas`;
+        barraConta.appendChild(mais);
+    }
 }
 
 /* ---------------------------------------------------------------------

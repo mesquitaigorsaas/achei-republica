@@ -62,45 +62,44 @@ const ENTREGA = {
         objetivo: 'Aumentar a visibilidade',
         periodo: 'Até 30 dias de destaque',
         itens: [
-            'Selo ⭐ Destaque no anúncio',
-            'Moldura e cor que separam sua vaga das outras',
+            'Selo 🥈 Destaque no anúncio',
+            'Moldura prateada, que separa sua vaga das outras',
             'Passa à frente de anúncios equivalentes nos resultados',
             'Mais exposição para quem filtrou o que você tem',
         ],
         botao: 'Destacar por até 30 dias',
     },
     premium: {
-        objetivo: 'Mais exposição + recursos',
+        objetivo: 'Máxima exposição',
         periodo: 'Até 30 dias de destaque',
-        etiqueta: '🔥 MAIS ESCOLHIDO',
+        /* "Mais completo" e não "mais escolhido": ninguém escolheu nada
+           ainda, e inventar comportamento de outros clientes é a mesma
+           mentira dos recursos que não existiam. Completo é verificável
+           — é o de cima da lista. */
+        etiqueta: '🥇 MAIS COMPLETO',
         itens: [
             'Tudo do Destaque, com evidência maior',
-            'Selo 🔥 Premium',
-            'Prioridade acima do plano Destaque nos resultados',
+            'Selo 🥇 Premium e moldura dourada',
+            'Prioridade máxima entre os anúncios compatíveis',
             'Estatísticas completas: de onde vieram as visitas',
             'Quantos chegaram pelos filtros e pelo questionário',
         ],
         botao: 'Destacar por até 30 dias',
     },
-    pro: {
-        objetivo: 'Máxima exposição',
-        periodo: 'Até 30 dias de destaque',
-        etiqueta: 'MAIOR EXPOSIÇÃO',
-        /* O que sobrou aqui é o que o site FAZ, mais duas coisas que
-           você faz à mão. Saíram três promessas que não tinham código
-           atrás: área especial na página da cidade, faixa de entrada
-           imediata e relatório do período. As estatísticas do Pro são
-           as mesmas do Premium — não existe um nível a mais, e dizer
-           "avançadas" era vender diferença que não há. */
-        itens: [
-            'Tudo do Premium, com prioridade máxima',
-            'Selo 👑 Pro',
-            'Passa à frente de Premium e Destaque nos resultados',
-            'Atendimento prioritário no WhatsApp, direto comigo',
-            'Até 2 divulgações nas redes do Achei República',
-        ],
-        botao: 'Destacar por até 30 dias',
-    },
+    /* O Pro saiu em 08/09/2026, e não por preço: quatro planos são uma
+       tabela, três são uma frase. Grátis, mais visível, mais visível
+       ainda — isso se explica no balcão sem papel na mão.
+
+       Ele já vinha esvaziando. Cinco promessas caíram em duas levas:
+       área especial na página da cidade, faixa de entrada imediata e
+       relatório do período nunca existiram; atendimento prioritário e
+       divulgação nas redes eram possíveis, mas dependiam de mão humana
+       — e promessa que depende de alguém lembrar não é recurso, é
+       dívida com o cliente. Sem elas, o Pro entregava sobre o Premium
+       só o selo e a ordem, por R$ 20. Não sustentava o próprio degrau.
+
+       O que era dele agora é do Premium: a prioridade máxima e o selo
+       de cima, que virou o ouro. */
 };
 
 

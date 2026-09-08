@@ -1063,7 +1063,20 @@ h1, h2, h3 { font-family: var(--display); line-height: 1.14; letter-spacing: -0.
     font-size: .92rem;
     color: var(--tinta-suave);
     display: flex; align-items: center; gap: 8px;
-    white-space: nowrap;
+    flex-wrap: wrap;   /* o "+N aparecem quando..." desce em vez de estourar */
+}
+
+/* Quantos anúncios estão guardados atrás do filtro. Discreto de
+   propósito: é informação honesta, não chamariz — quem quiser mais
+   casas descobre aqui que o caminho é responder as cinco perguntas. */
+.conta-mais {
+    font-size: .8rem;
+    font-weight: 600;
+    color: var(--azul-forte);
+    background: var(--azul-fraco);
+    border-radius: 999px;
+    padding: 3px 10px;
+    white-space: normal;
 }
 .barra-conta b { color: var(--tinta); font-weight: 800; }
 .barra-conta .bolinha {
@@ -1832,11 +1845,26 @@ a.contato:hover { border-color: var(--azul-linha); transform: translateY(-3px); 
     background: linear-gradient(180deg, var(--azul-fraco) 0%, #fff 120px);
 }
 
-/* Pro e Premium ganham a borda mais firme, na proporção do que custam.
-   Continua sendo borda: nada de sombra saltada, que faria o cartão
-   flutuar acima da lista e quebrar o alinhamento da grade. */
-.anuncio.destacado-premium { border-color: #f2b544; }
-.anuncio.destacado-pro     { border-color: #c9a227; border-width: 2px; }
+/* Prata e ouro, na proporção do que custam. Continua sendo borda: nada
+   de sombra saltada, que faria o cartão flutuar acima da lista e
+   quebrar o alinhamento da grade.
+
+   Dois metais dispensam legenda. A estrela e a chama de antes eram duas
+   coisas boas, e nada nelas dizia qual vinha primeiro — quem via as
+   duas na mesma lista não sabia que uma custava mais. */
+.anuncio.destacado-destaque {
+    border-color: #A9B4BF;
+    background: linear-gradient(180deg, #F4F6F9 0%, #fff 120px);
+}
+.anuncio.destacado-premium {
+    border-color: #C9A227; border-width: 2px;
+    background: linear-gradient(180deg, #FFFAF0 0%, #fff 120px);
+}
+
+/* O Pro foi aposentado em 08/09/2026 (16-tres-planos.sql). A regra fica
+   porque promoção antiga com esse plano continuaria pedindo a classe —
+   e um anúncio pago sem moldura nenhuma é o pior desfecho. */
+.anuncio.destacado-pro { border-color: #c9a227; border-width: 2px; }
 
 .selo-destaque {
     position: absolute; top: 44px; left: 12px;
@@ -1850,8 +1878,9 @@ a.contato:hover { border-color: var(--azul-linha); transform: translateY(-3px); 
        o canto direito é do estudante, e não se vende. */
 }
 
-.selo-destaque.selo-premium { border-color: #f2b544; color: #8a5b00; }
-.selo-destaque.selo-pro     { border-color: #c9a227; color: #7a5c00; background: #fffaf0; }
+.selo-destaque.selo-destaque { border-color: #A9B4BF; color: #4E5A66; background: #F7F9FB; }
+.selo-destaque.selo-premium  { border-color: #C9A227; color: #7A5C00; background: #FFFAF0; }
+.selo-destaque.selo-pro      { border-color: #c9a227; color: #7a5c00; background: #fffaf0; }
 
 /* Na página da vaga o selo entra na fileira de etiquetas, sem posição
    absoluta — lá ele é uma etiqueta entre as outras, não um adesivo. */

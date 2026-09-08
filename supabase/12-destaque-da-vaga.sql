@@ -73,16 +73,24 @@ create table if not exists planos (
 comment on table planos is
     'Catalogo de planos. E a autoridade sobre o preco: a funcao de pagamento le daqui, nunca do navegador.';
 
--- Os valores aqui são os de uma instalação NOVA. Premium e Pro nasceram
--- 3990 e 6990 e foram reajustados pelo 15-precos-de-setembro.sql, quando
--- saíram dos planos as promessas que o site não cumpria. Para mudar
--- preço num banco que já existe, use um arquivo pequeno como o 15 — não
--- este, que também cria as funções sensíveis.
-insert into planos (slug, nome, preco_centavos, dias, peso, selo, chamada, ordem) values
-    ('gratuito', 'Grátis',   0,    30, 0, null, 'Estar na plataforma',       1),
-    ('destaque', 'Destaque', 1990, 30, 1, '⭐', 'Aumentar a visibilidade',   2),
-    ('premium',  'Premium',  2990, 30, 2, '🔥', 'Mais exposição + recursos', 3),
-    ('pro',      'Pro',      4990, 30, 3, '👑', 'Máxima exposição',          4)
+-- Os valores aqui são os de uma instalação NOVA, e já vêm com as duas
+-- revisões de setembro embutidas: o 15-precos-de-setembro.sql baixou
+-- Premium e Pro (3990 e 6990 na origem), e o 16-tres-planos.sql
+-- aposentou o Pro e trocou os selos por prata e ouro.
+--
+-- O Pro continua na lista, nascendo com ativo = false: a coluna
+-- promocoes.plano tem chave estrangeira para cá, e um banco novo que
+-- receba histórico importado precisaria da linha de pé. Ele não aparece
+-- em tela nenhuma — todo o site busca com ativo = true.
+--
+-- Para mudar preço ou plano num banco que JÁ existe, use um arquivo
+-- pequeno como o 15 ou o 16, nunca este, que também cria as funções
+-- sensíveis.
+insert into planos (slug, nome, preco_centavos, dias, peso, selo, chamada, ordem, ativo) values
+    ('gratuito', 'Grátis',   0,    30, 0, null, 'Estar na plataforma',     1, true),
+    ('destaque', 'Destaque', 1990, 30, 1, '🥈', 'Aumentar a visibilidade', 2, true),
+    ('premium',  'Premium',  3990, 30, 2, '🥇', 'Máxima exposição',        3, true),
+    ('pro',      'Pro',      4990, 30, 3, '👑', 'Aposentado',              4, false)
 on conflict (slug) do update
     set nome = excluded.nome,
         preco_centavos = excluded.preco_centavos,
@@ -90,7 +98,8 @@ on conflict (slug) do update
         peso = excluded.peso,
         selo = excluded.selo,
         chamada = excluded.chamada,
-        ordem = excluded.ordem;
+        ordem = excluded.ordem,
+        ativo = excluded.ativo;
 
 
 -- ---------------------------------------------------------------------

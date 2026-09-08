@@ -710,8 +710,8 @@
     color: var(--tinta-suave);
 }
 
-.meu-item-plano.plano-destaque { color: var(--azul-forte); }
-.meu-item-plano.plano-premium  { color: #8a5b00; }
+.meu-item-plano.plano-destaque { color: #4E5A66; }
+.meu-item-plano.plano-premium  { color: #7A5C00; }
 .meu-item-plano.plano-pro      { color: #7a5c00; }
 
 /* Aguardando e pausado não são erro: são estados normais que a pessoa
@@ -817,8 +817,11 @@
 
 /* O "mais escolhido" ganha borda e sombra — e não uma cor berrante. A
    diferença tem que ser lida como recomendação, não como alarme. */
+/* Dourado, e não azul: o realce agora é do Premium, e o cartão tem de
+   combinar com o selo que a pessoa vai ver no próprio anúncio. Azul
+   aqui e ouro lá seriam dois planos na cabeça de quem compara. */
 .plano-realce {
-    border: 2px solid var(--azul);
+    border: 2px solid #C9A227;
     box-shadow: var(--sombra);
 }
 
@@ -830,7 +833,8 @@
     padding: 5px 13px; border-radius: 999px;
 }
 
-.plano-pro .plano-etiqueta { background: #7a5c00; }
+.plano-realce .plano-etiqueta { background: #7A5C00; }
+.plano-pro   .plano-etiqueta { background: #7a5c00; }
 
 .plano-nome {
     font-family: var(--display);
@@ -1161,3 +1165,39 @@
 /* Destaque no ar ganha uma faixa à esquerda. É a única linha da tela
    que representa dinheiro entrando agora. */
 .admin-linha.promocao-ativa { border-left: 3px solid var(--verde); padding-left: 13px; }
+
+
+/* ---------------------------------------------------------------------
+   PARA ONDE IR DEPOIS DE ENTRAR
+
+   A mesma conta serve a vaga da república e os classificados. Antes o
+   login decidia sozinho e decidia errado: quem vinha cuidar da própria
+   vaga caía na tela de vender móvel.
+
+   Reaproveita o .relacao-opcao do cadastro — é a mesma pergunta de
+   sempre (dois cartões de rádio, um deles marcado), e inventar um
+   segundo jeito de perguntar a mesma coisa é como se acumula interface.
+   --------------------------------------------------------------------- */
+.destino-login {
+    border: 0;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.destino-login legend {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--tinta);
+    padding: 0;
+    margin-bottom: 2px;
+}
+
+/* Mais baixos que os do cadastro: aqui é uma escolha secundária, e dois
+   cartões altos empurrariam o botão Entrar para fora da primeira tela
+   de celular. */
+.destino-login .relacao-opcao { padding: 11px 14px; }
+.destino-login .relacao-opcao b { font-size: 14.5px; }
+.destino-login .relacao-opcao span span { font-size: 12.5px; }

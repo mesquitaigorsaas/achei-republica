@@ -168,6 +168,18 @@ if (painelFiltrosEl && typeof MARCAS !== 'undefined') {
         [...painelFiltrosEl.querySelectorAll(`input[data-filtro="${grupo}"]:checked`)]
             .map(c => c.value);
 
+    /* Alguém mexeu em alguma coisa aqui dentro?
+
+       O script.js usa isto para saber se a pessoa está na vitrine crua
+       ou já disse o que quer. Os selects têm value vazio na opção
+       "Todos"/"Todas" (veja o aviso do montarDosAnuncios acima), então
+       value preenchido é escolha de verdade. */
+    window.painelTemFiltro = function () {
+        if (painelFiltrosEl.querySelector('input[type="checkbox"]:checked')) return true;
+        return [...painelFiltrosEl.querySelectorAll('select, input[type="number"], input[type="date"]')]
+            .some(campo => campo.value);
+    };
+
     window.passaNoPainel = function (cartao) {
         // Exemplo não é casa de verdade: filtrar um anúncio que ninguém
         // pode visitar só faria a lista sumir sem motivo.

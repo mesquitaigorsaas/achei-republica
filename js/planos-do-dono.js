@@ -60,27 +60,23 @@ const ENTREGA = {
         objetivo: 'Mais visibilidade',
         itens: [
             'Tudo do plano Grátis',
-            'Selo e moldura que separam sua vaga',
+            'Selo 🥈 e moldura prateada no anúncio',
             'Passa à frente de anúncios equivalentes',
         ],
     },
     premium: {
-        objetivo: 'Mais exposição e mais dados',
-        etiqueta: 'Mais escolhido',
+        objetivo: 'Máxima exposição',
+        /* "Mais completo", não "mais escolhido": ninguém escolheu nada
+           ainda. Completo é verificável — é o de cima da lista. */
+        etiqueta: 'Mais completo',
         itens: [
             'Tudo do Destaque, com evidência maior',
-            'Prioridade acima do plano Destaque',
+            'Selo 🥇 e moldura dourada, prioridade máxima',
             'De onde vieram as visitas do seu anúncio',
         ],
     },
-    pro: {
-        objetivo: 'Máxima exposição',
-        itens: [
-            'Tudo do Premium, com prioridade máxima',
-            'Atendimento prioritário no WhatsApp',
-            'Até 2 divulgações nas nossas redes',
-        ],
-    },
+    /* O Pro saiu em 08/09/2026: quatro planos são uma tabela, três são
+       uma frase. Ver o cabeçalho do ENTREGA em js/destaque.js. */
 };
 
 

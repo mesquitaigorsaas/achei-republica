@@ -23,9 +23,17 @@
    que mude o que é cobrado.
    ===================================================================== */
 
+/* Prata e ouro, e não estrela e fogo. Dois metais dizem "um vale mais
+   que o outro" sem precisar de legenda — a estrela e a chama eram duas
+   coisas boas, e nada nelas explicava qual vinha primeiro.
+
+   O 'pro' fica na lista mesmo depois de aposentado (16-tres-planos.sql
+   o desligou): se um dia houver promoção antiga com esse plano, ela
+   ainda precisa saber se desenhar. Apagar daqui deixaria o selo em
+   branco num anúncio que alguém pagou. */
 const SELO_DO_PLANO = {
-    destaque: '⭐',
-    premium: '🔥',
+    destaque: '🥈',
+    premium: '🥇',
     pro: '👑',
 };
 
