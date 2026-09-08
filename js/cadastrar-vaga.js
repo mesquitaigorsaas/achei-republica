@@ -58,6 +58,13 @@ let limiteDaConta = 1;
    faz e o que a página carrega na abertura. */
 let editandoId = new URLSearchParams(location.search).get('id');
 
+/* O plano que a pessoa escolheu no painel da home, se ela veio de lá.
+   O destaque se contrata PARA UMA VAGA, e na home ela ainda não tinha
+   nenhuma — então a escolha viaja no endereço e só é cobrada aqui no
+   fim, quando a vaga existe. Nada aqui decide preço: isto é só a
+   lembrança de um clique. */
+const planoEscolhido = (new URLSearchParams(location.search).get('plano') || '').trim();
+
 
 /* ---------------------------------------------------------------------
    Recados
@@ -465,10 +472,49 @@ form.addEventListener('submit', async evento => {
         await carregarParaEditar(editandoId, true);
     } else {
         limparFormulario();
+        if (seguirParaODestaque(vaga)) return;
     }
 
     carregarMinhas();
 });
+
+
+/* ---------------------------------------------------------------------
+   Ela veio da home escolhendo um plano pago
+
+   A vaga acabou de nascer, então agora existe a que destacar. Leva para
+   o pagamento com o plano e a vaga já escolhidos — a pessoa não repete
+   nada do que já decidiu lá atrás.
+
+   Duas saídas que NÃO levam ao pagamento, e as duas de propósito:
+
+   - anúncio em revisão: a cobrança recusa vaga não publicada, e está
+     certa. Vender evidência para um anúncio que não está sendo mostrado
+     é vender o que não existe. Aqui a pessoa fica sabendo disso em vez
+     de bater num erro do outro lado.
+   - plano gratuito ou lixo no endereço: não há o que cobrar.
+
+   Devolve true quando assumiu a navegação, para quem chamou parar.
+   --------------------------------------------------------------------- */
+function seguirParaODestaque(vaga) {
+    if (!planoEscolhido || planoEscolhido === 'gratuito') return false;
+
+    if (vaga.status !== 'publicada') {
+        aviso('Salvo, e em revisão. O destaque ' + planoEscolhido + ' fica guardado para '
+            + 'quando o anúncio for liberado — a gente não cobra por um anúncio '
+            + 'que ainda não está aparecendo.', 'certo');
+        return false;
+    }
+
+    aviso('Vaga no ar. Levando você para o pagamento do destaque...', 'certo');
+
+    setTimeout(() => {
+        location.href = 'planos.html?vaga=' + encodeURIComponent(vaga.id)
+                      + '&plano=' + encodeURIComponent(planoEscolhido);
+    }, 1200);
+
+    return true;
+}
 
 
 /* As tabelas filhas vão depois da principal, e cada uma pode falhar

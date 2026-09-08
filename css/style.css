@@ -657,12 +657,14 @@ h1, h2, h3 { font-family: var(--display); line-height: 1.14; letter-spacing: -0.
 /* ---------- Chamada do dono ---------- */
 /* Marketplace morre por falta de oferta, não de procura. Esta seção é
    para o outro lado: quem tem vaga vazia e paga aluguel do mesmo jeito. */
+/* O painel deixou de ser um convite e virou a oferta inteira: é onde o
+   botão "Anunciar vaga" do cabeçalho aterrissa, e por isso o convite, o
+   que se ganha e o que custa vivem empilhados aqui. */
 .dono {
     background: var(--azul);
     color: #fff;
     border-radius: 28px;
     padding: 54px 46px;
-    display: grid; grid-template-columns: 1.15fr .85fr; gap: 40px; align-items: center;
     position: relative; overflow: hidden;
 }
 .dono::before {
@@ -671,14 +673,171 @@ h1, h2, h3 { font-family: var(--display); line-height: 1.14; letter-spacing: -0.
     background: rgba(255,255,255,.12); filter: blur(70px);
     top: -160px; right: -70px; pointer-events: none;
 }
-@media (max-width: 840px) { .dono { grid-template-columns: 1fr; padding: 38px 26px; } }
+@media (max-width: 840px) { .dono { padding: 38px 22px; } }
 
 .dono > * { position: relative; }
+
+.dono-abertura {
+    display: grid; grid-template-columns: 1.15fr .85fr; gap: 40px; align-items: center;
+    margin-bottom: 34px;
+}
+@media (max-width: 840px) { .dono-abertura { grid-template-columns: 1fr; gap: 26px; } }
+
 .dono h2 { font-size: clamp(1.55rem, 3.5vw, 2.1rem); font-weight: 800; margin-bottom: 12px; }
-.dono p { color: rgba(255,255,255,.86); margin-bottom: 24px; }
+.dono p { color: rgba(255,255,255,.86); }
 .dono ul { display: grid; gap: 11px; list-style: none; }
 .dono li { display: flex; gap: 10px; align-items: flex-start; font-size: .95rem; color: rgba(255,255,255,.94); }
 .dono li .ok { font-weight: 900; }
+
+
+/* ---------- Os quatro planos ---------- */
+/* Quatro colunas no computador, duas no tablet, uma no celular. Nunca
+   uma fileira que rola de lado: comparar preço arrastando o dedo é
+   exatamente o trabalho que este painel existe para poupar. */
+.dono-planos {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    align-items: stretch;
+}
+@media (max-width: 1000px) { .dono-planos { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px)  { .dono-planos { grid-template-columns: 1fr; } }
+
+.dono-planos-falhou {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    gap: 16px;
+}
+
+.dono-esperando {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: rgba(255,255,255,.8);
+    font-size: .9rem;
+    padding: 18px 0;
+}
+
+.dplano {
+    display: flex;
+    flex-direction: column;
+    background: rgba(255,255,255,.1);
+    border: 1px solid rgba(255,255,255,.22);
+    border-radius: 20px;
+    padding: 20px 18px 18px;
+    position: relative;
+}
+
+/* O Premium recebe o fundo branco inteiro, e é a única diferença de
+   peso visual do painel: quatro cartões igualmente gritados não
+   recomendam nada. */
+.dplano-realce {
+    background: #fff;
+    border-color: #fff;
+    box-shadow: 0 20px 44px -22px rgba(0,0,0,.55);
+}
+
+.dplano-etiqueta {
+    position: absolute;
+    top: -10px; left: 18px;
+    font-size: .66rem; font-weight: 800;
+    letter-spacing: .06em; text-transform: uppercase;
+    background: var(--tinta);
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 999px;
+}
+
+.dplano-nome {
+    font-family: var(--display);
+    font-size: 1.02rem; font-weight: 700;
+    margin-bottom: 2px;
+}
+
+.dplano-objetivo {
+    font-size: .8rem;
+    color: rgba(255,255,255,.78);
+    margin-bottom: 12px;
+}
+
+.dplano-preco {
+    font-family: var(--display);
+    font-size: 1.5rem; font-weight: 800;
+    letter-spacing: -.02em;
+    line-height: 1.1;
+}
+
+.dplano-periodo {
+    font-size: .72rem; font-weight: 600;
+    color: rgba(255,255,255,.72);
+    margin-bottom: 14px;
+}
+
+.dplano-itens {
+    display: grid; gap: 7px;
+    list-style: none;
+    margin-bottom: 18px;
+}
+.dplano-itens li {
+    font-size: .8rem; line-height: 1.42;
+    color: rgba(255,255,255,.92);
+    padding-left: 16px;
+    position: relative;
+    display: block;
+}
+.dplano-itens li::before {
+    content: '✓';
+    position: absolute; left: 0;
+    font-weight: 900;
+    color: rgba(255,255,255,.7);
+}
+
+/* O cartão branco inverte tudo o que estava escrito em cima de azul. */
+.dplano-realce .dplano-nome     { color: var(--tinta); }
+.dplano-realce .dplano-objetivo { color: var(--tinta-suave); }
+.dplano-realce .dplano-preco    { color: var(--azul-forte); }
+.dplano-realce .dplano-periodo  { color: var(--tinta-suave); }
+.dplano-realce .dplano-itens li { color: var(--tinta); }
+.dplano-realce .dplano-itens li::before { color: var(--azul); }
+
+/* Grudado no fim do cartão, e não logo abaixo do último item: com
+   listas de alturas diferentes, quatro botões em quatro alturas
+   diferentes fazem a fileira parecer desmontada. */
+.dplano-botao {
+    margin-top: auto;
+    width: 100%;
+    padding: 12px 18px;
+    font-size: .9rem;
+}
+.dplano-realce .dplano-botao { background: var(--azul); color: #fff; }
+.dplano-realce .dplano-botao:hover { background: var(--azul-forte); }
+.dplano-botao:disabled { opacity: .65; cursor: default; }
+
+.dono-recado {
+    margin-top: 16px;
+    background: rgba(255,255,255,.16);
+    border: 1px solid rgba(255,255,255,.3);
+    border-radius: var(--raio);
+    padding: 12px 15px;
+    font-size: .88rem;
+    color: #fff;
+}
+.dono-recado[hidden] { display: none; }
+
+/* A parte que faz a pessoa clicar sem medo de estar assinando alguma
+   coisa — que é o medo real de quem já foi pego por renovação
+   automática de outro serviço qualquer. */
+.dono-pe {
+    margin-top: 22px;
+    font-size: .84rem; line-height: 1.55;
+    color: rgba(255,255,255,.82);
+}
+.dono-pe b { color: #fff; }
+.dono-pe a {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    white-space: nowrap;
+    color: #fff;
+}
 
 /* ---------- Rodapé ---------- */
 .rodape { background: var(--tinta); color: #92a3b2; padding: 44px 0; font-size: .89rem; }

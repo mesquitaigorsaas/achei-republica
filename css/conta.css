@@ -1038,6 +1038,67 @@
 
 
 /* ---------------------------------------------------------------------
+   O FORMULÁRIO DE PAGAMENTO
+
+   Ele é do Mercado Pago e traz o próprio visual — o que se faz aqui é
+   só a moldura em volta e o que vem depois de pagar. Mexer no que está
+   dentro do #caixaDoBrick é briga perdida: aquilo é reconstruído por
+   eles a cada mudança de forma de pagamento.
+   --------------------------------------------------------------------- */
+.planos-pagar-alvo {
+    font-size: .88rem; line-height: 1.5;
+    color: var(--tinta-suave);
+    margin-bottom: 16px;
+}
+
+.planos-pagar-erro {
+    background: #fdf0ee; color: #8f2c19; border: 1px solid #f3c9c1;
+    border-radius: var(--raio);
+    padding: 12px 14px;
+    font-size: .88rem; line-height: 1.5;
+    margin-bottom: 14px;
+}
+.planos-pagar-erro[hidden] { display: none; }
+
+/* Fora da fileira de ações e apagado: nesta tela a decisão já foi
+   tomada, e "Cancelar" competindo em peso com o pagar seria empurrar
+   para a desistência. */
+.planos-pagar-desistir {
+    width: 100%;
+    justify-content: center;
+    margin-top: 14px;
+}
+
+.planos-confirmar-caixa .btn[href] {
+    width: 100%;
+    justify-content: center;
+    margin-top: 16px;
+}
+
+.planos-pix-qr {
+    width: 232px; height: 232px;
+    margin: 18px auto 0;
+    border: 1px solid var(--linha);
+    border-radius: var(--raio);
+}
+
+.planos-pix-copiar { width: 100%; justify-content: center; margin-top: 14px; }
+
+.planos-pix-texto {
+    width: 100%;
+    margin-top: 10px;
+    padding: 10px 12px;
+    font-size: 12px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    word-break: break-all;
+    border: 1px solid var(--linha);
+    border-radius: var(--raio);
+    resize: vertical;
+    min-height: 84px;
+}
+
+
+/* ---------------------------------------------------------------------
    Telas pequenas
 
    O estudante é mobile-first, mas quem lê ESTA página é a república —

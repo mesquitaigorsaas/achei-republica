@@ -5,8 +5,9 @@
    entre um preço que o servidor decide e um preço que o cliente
    informa.
 
-   O QUE ENTRA:  { republica_id, plano }   e o token de quem está logado
-   O QUE SAI:    { url }                   o endereço do Mercado Pago
+   O QUE ENTRA:  { republica_id, plano, metodo, dados }
+                 e o token de quem está logado
+   O QUE SAI:    { status, aprovado, pix_qr_base64, pix_copia_e_cola }
 
    Repare no que NÃO entra: o valor. O navegador manda o APELIDO do
    plano ('premium'), nunca o preço. Quem lê 3990 é esta função, na
@@ -14,6 +15,23 @@
    console compraria o Premium por um centavo — e a cobrança seria
    legítima do ponto de vista do Mercado Pago, porque foi a nossa
    própria função que pediu.
+
+   ---------------------------------------------------------------------
+   POR QUE COBRAMOS AQUI, EM VEZ DE MANDAR PARA O MERCADO PAGO
+
+   A primeira versão criava uma "preferência" e jogava a pessoa no
+   checkout deles. Funciona, e custa uma coisa cara: ela sai do site,
+   encara uma tela pedindo login do Mercado Pago antes de qualquer
+   campo, e boa parte desiste ali.
+
+   Agora o formulário é do Mercado Pago mas mora na NOSSA página (o
+   Payment Brick). O número do cartão nunca passa por aqui: o navegador
+   o troca por um token direto com eles, usando a chave PÚBLICA. Esta
+   função só vê esse token, que serve para uma cobrança e nada mais.
+
+   O que chega em "dados" é o que o formulário deles preencheu. Dois
+   campos que vêm de lá são IGNORADOS de propósito: o valor e a quem
+   pertence a compra. Os dois são decididos aqui.
 
    O TOKEN DO MERCADO PAGO nunca aparece aqui em texto. Ele vive nos
    segredos do projeto:
@@ -34,10 +52,6 @@ const ORIGENS_PERMITIDAS = [
     'http://localhost:5500',
     'http://127.0.0.1:5500',
 ];
-
-/* O endereço para onde a pessoa volta depois de pagar. O painel dela é
-   o cadastro de vagas — é lá que o destaque vai aparecer aceso. */
-const VOLTA_PARA = 'https://acheirepublica.com.br/cadastrar-vaga.html';
 
 function cabecalhos(origem: string | null) {
     const permitida = origem && ORIGENS_PERMITIDAS.includes(origem) ? origem : ORIGENS_PERMITIDAS[0];
@@ -102,7 +116,16 @@ Deno.serve(async (req) => {
         return responder({ erro: 'Entre na sua conta para destacar uma vaga.' }, 401, origem);
     }
 
-    let corpo: { republica_id?: string; plano?: string };
+    /* "dados" é o pacote que o Payment Brick monta no navegador: o
+       token do cartão, a bandeira, o e-mail do pagador. Não é conferido
+       campo a campo aqui porque quem o valida é o Mercado Pago — e
+       porque nada dentro dele decide preço nem dono. */
+    let corpo: {
+        republica_id?: string;
+        plano?: string;
+        metodo?: string;
+        dados?: Record<string, unknown>;
+    };
     try {
         corpo = await req.json();
     } catch {
@@ -111,9 +134,15 @@ Deno.serve(async (req) => {
 
     const republicaId = (corpo.republica_id || '').trim();
     const plano = (corpo.plano || '').trim();
+    const metodo = (corpo.metodo || '').trim();
+    const doForm = (corpo.dados || {}) as Record<string, any>;
 
     if (!republicaId || !plano) {
         return responder({ erro: 'Informe a vaga e o plano.' }, 400, origem);
+    }
+
+    if (!metodo) {
+        return responder({ erro: 'Escolha a forma de pagamento.' }, 400, origem);
     }
 
     /* O grátis não passa por aqui. Ele não é uma compra de R$ 0 — é a
@@ -209,73 +238,102 @@ Deno.serve(async (req) => {
     }
 
     /* -----------------------------------------------------------------
-       A preferência no Mercado Pago
+       A COBRANÇA
 
        external_reference é o fio que amarra tudo: é o id da promoção
        daqui, e é o que volta na notificação. Sem ele, o dinheiro chega
        e não há como saber qual vaga acender.
+
+       transaction_amount vem de dadosPlano, lido da tabela linhas
+       acima. NUNCA de "doForm" — é a única linha deste arquivo que não
+       pode mudar sem alguém pensar duas vezes.
        ----------------------------------------------------------------- */
     const urlDoAviso = `${Deno.env.get('SUPABASE_URL')}/functions/v1/mercado-pago-avisa`;
 
-    const preferencia = {
-        items: [{
-            id: dadosPlano.slug,
-            title: `Destaque ${dadosPlano.nome} — ${vaga.nome}`,
-            description: `Até ${dadosPlano.dias} dias de destaque. Pagamento único, sem renovação.`,
-            quantity: 1,
-            currency_id: 'BRL',
-            unit_price: dadosPlano.preco_centavos / 100,
-        }],
-        payer: { email: user.email },
+    const cobranca: Record<string, unknown> = {
+        transaction_amount: dadosPlano.preco_centavos / 100,
+        description: `Destaque ${dadosPlano.nome} — ${vaga.nome} (até ${dadosPlano.dias} dias)`,
+        payment_method_id: doForm.payment_method_id,
+
+        /* O e-mail do formulário é aceito porque o Mercado Pago exige um
+           pagador e quem paga pode não ser o dono da conta daqui — mas o
+           dono da COMPRA é sempre user.id, gravado na promoção. */
+        payer: doForm.payer,
+
         external_reference: promocao.id,
         notification_url: urlDoAviso,
         statement_descriptor: 'ACHEIREPUBLICA',
-        back_urls: {
-            success: `${VOLTA_PARA}?pagamento=aprovado`,
-            pending: `${VOLTA_PARA}?pagamento=pendente`,
-            failure: `${VOLTA_PARA}?pagamento=falhou`,
-        },
-        auto_return: 'approved',
-        /* Nada de parcelamento em compra de R$ 19,90: doze vezes de um
-           real e meio custa mais em taxa do que traz em conversão. */
-        payment_methods: { installments: 1 },
     };
 
-    const resposta = await fetch('https://api.mercadopago.com/checkout/preferences', {
+    /* Cartão precisa do token e de uma parcela; Pix não usa nenhum dos
+       dois, e mandar campo de cartão numa cobrança Pix faz o Mercado
+       Pago recusar o pedido inteiro.
+
+       Uma parcela sempre: doze vezes de um real e meio, num destaque de
+       R$ 19,90, custa mais em taxa do que traz em conversão. */
+    if (metodo === 'credit_card' || metodo === 'debit_card') {
+        cobranca.token = doForm.token;
+        cobranca.installments = 1;
+        if (doForm.issuer_id) cobranca.issuer_id = doForm.issuer_id;
+        if (doForm.payment_method_option_id) {
+            cobranca.payment_method_option_id = doForm.payment_method_option_id;
+        }
+    }
+
+    const resposta = await fetch('https://api.mercadopago.com/v1/payments', {
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
-            /* Se a pessoa clicar duas vezes, o Mercado Pago devolve a
-               MESMA preferência em vez de criar duas cobranças. */
+            /* Clique duplo, ou a rede repetindo o pedido, não viram duas
+               cobranças: a chave é a promoção, que é nova a cada compra. */
             'X-Idempotency-Key': promocao.id,
         },
-        body: JSON.stringify(preferencia),
+        body: JSON.stringify(cobranca),
     });
 
-    const criada = await resposta.json();
+    const criada = await resposta.json().catch(() => null);
 
-    if (!resposta.ok || !criada.id) {
-        console.error('Mercado Pago recusou a preferência:', criada);
+    if (!resposta.ok || !criada || !criada.id) {
+        console.error('Mercado Pago recusou a cobrança:', JSON.stringify(criada));
         await comoServidor.from('promocoes')
-            .update({ status: 'recusada', observacao: 'Falha ao criar a cobrança no Mercado Pago.' })
+            .update({ status: 'recusada', observacao: 'Falha ao cobrar no Mercado Pago.' })
             .eq('id', promocao.id);
-        return responder({ erro: 'Não consegui abrir o pagamento. Tente de novo em instantes.' }, 502, origem);
+        return responder({
+            erro: 'Não consegui concluir o pagamento. Confira os dados e tente de novo.',
+        }, 502, origem);
     }
+
+    const situacao = String(criada.status || '');
 
     await comoServidor.from('pagamentos').insert({
         promocao_id: promocao.id,
         provedor: 'mercado_pago',
         valor_centavos: dadosPlano.preco_centavos,
-        status: 'criado',
-        bruto: { preferencia_id: criada.id },
+        status: situacao,
+        bruto: { pagamento_id: criada.id, status: situacao, metodo },
     });
 
-    /* init_point é produção; sandbox_init_point é o ambiente de teste.
-       Enquanto o token for de teste, só o segundo funciona — e é por
-       isso que os dois vão na resposta. */
+    /* -----------------------------------------------------------------
+       E o destaque, acende aqui?
+
+       Não. Mesmo com "approved" na mão, quem acende é o webhook, que
+       pergunta de volta ao Mercado Pago o que realmente aconteceu.
+
+       Parece exagero — a resposta veio da API deles, autenticada com o
+       nosso token. Mas o caminho fica um só, e um caminho só é um
+       caminho que se entende: no Pix, "approved" não chega nesta
+       resposta de jeito nenhum (o dinheiro cai depois), então a
+       notificação teria de existir mesmo assim. Dois lugares acendendo
+       destaque é onde nasce o destaque aceso duas vezes.
+       ----------------------------------------------------------------- */
+    const pix = criada.point_of_interaction?.transaction_data ?? null;
+
     return responder({
-        url: criada.init_point || criada.sandbox_init_point,
         promocao_id: promocao.id,
+        status: situacao,
+        aprovado: situacao === 'approved',
+        pix_qr_base64: pix?.qr_code_base64 ?? null,
+        pix_copia_e_cola: pix?.qr_code ?? null,
     }, 200, origem);
 });

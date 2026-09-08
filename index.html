@@ -35,11 +35,11 @@
       </button>
 
       <nav class="menu" id="menu">
-        <a href="#cidade">Busque repúblicas</a>
+        <a href="#topo">Busque repúblicas</a>
         <a href="#como">Como funciona</a>
         <a href="#quem-somos">Quem somos</a>
         <a href="#contato">Contato</a>
-        <a href="cadastrar-vaga.html" class="btn btn-azul">Tenho uma vaga</a>
+        <a href="#anunciar" class="btn btn-azul">Anunciar vaga</a>
       </nav>
     </div>
   </div>
@@ -667,24 +667,50 @@
 
 <!-- =====================================================================
      LADO DO DONO — sem oferta não existe marketplace
+
+     É aqui que o botão "Anunciar vaga" do cabeçalho aterrissa. Por isso
+     a seção não termina no convite: ela precisa responder, sem exigir
+     outro clique, a única pergunta de quem tem uma vaga vazia — isso
+     vai me custar quanto?
+
+     Os quatro planos são montados pelo js/planos-do-dono.js. Os preços
+     NÃO estão escritos aqui, e a razão não é organização: preço no HTML
+     é preço que o navegador conhece, e que pode divergir do que a
+     cobrança pratica no dia em que um valor for reajustado no banco.
      ===================================================================== -->
 <section class="secao" id="anunciar">
   <div class="wrap">
     <div class="dono">
-      <div>
-        <h2>Tem vaga sobrando na sua república?</h2>
-        <p>
-          Vaga vazia é aluguel saindo do seu bolso. Cadastre em cinco minutos
-          e apareça para quem está procurando exatamente o que você tem.
-        </p>
-        <a href="cadastrar-vaga.html" class="btn btn-branco">Cadastrar minha vaga de graça</a>
+
+      <div class="dono-abertura">
+        <div>
+          <h2>Tem vaga sobrando na sua república?</h2>
+          <p>
+            Vaga vazia é aluguel saindo do seu bolso. Cadastre em cinco minutos
+            e apareça para quem está procurando exatamente o que você tem.
+          </p>
+        </div>
+        <ul>
+          <li><span class="ok">✓</span>Cadastrar a vaga é grátis — o destaque é opcional</li>
+          <li><span class="ok">✓</span>Aluno chega já sabendo se combina — menos visita à toa</li>
+          <li><span class="ok">✓</span>Você fala direto com quem se interessou</li>
+          <li><span class="ok">✓</span>Some da lista sozinho quando a vaga é preenchida</li>
+        </ul>
       </div>
-      <ul>
-        <li><span class="ok">✓</span>Grátis enquanto Alfenas estiver no começo</li>
-        <li><span class="ok">✓</span>Aluno chega já sabendo se combina — menos visita à toa</li>
-        <li><span class="ok">✓</span>Você fala direto com quem se interessou</li>
-        <li><span class="ok">✓</span>Some da lista sozinho quando a vaga é preenchida</li>
-      </ul>
+
+      <div class="dono-planos" id="donoPlanos" aria-live="polite">
+        <p class="dono-esperando">Carregando os planos...</p>
+      </div>
+
+      <p class="dono-recado" id="donoRecado" role="alert" hidden></p>
+
+      <p class="dono-pe">
+        <b>Pagamento único.</b> Não é assinatura e não renova sozinho. O
+        destaque muda a ordem <b>entre anúncios parecidos com o seu</b> — ele
+        nunca coloca sua vaga na frente de quem procura outra coisa.
+        <a href="planos.html">Ver tudo sobre os planos</a>
+      </p>
+
     </div>
   </div>
 </section>
@@ -727,11 +753,11 @@
     <div class="rodape-inner">
       <a href="#topo"><img src="img/logoHorizontal.png" alt="Achei República" width="880" height="191" /></a>
       <nav class="rodape-links">
-        <a href="#cidade">Busque repúblicas</a>
+        <a href="#topo">Busque repúblicas</a>
         <a href="#como">Como funciona</a>
         <a href="#quem-somos">Quem somos</a>
         <a href="#contato">Contato</a>
-        <a href="cadastrar-vaga.html">Tenho uma vaga</a>
+        <a href="cadastrar-vaga.html">Anunciar vaga</a>
         <a href="planos.html">Destaque sua vaga</a>
       </nav>
     </div>
@@ -846,6 +872,7 @@
 <script src="js/vitrine.js" defer></script>
 <script src="js/filtros.js" defer></script>
 <script src="js/denuncia.js" defer></script>
+<script src="js/planos-do-dono.js" defer></script>
 
 </body>
 </html>

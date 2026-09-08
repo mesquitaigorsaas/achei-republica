@@ -6,8 +6,13 @@ o site é HTML estático — qualquer pessoa lê o código-fonte.
 
 | Função | O que faz |
 |---|---|
-| `criar-pagamento` | Recebe *qual vaga* e *qual plano*, lê o preço no banco, cria a promoção apagada e abre a cobrança. |
+| `criar-pagamento` | Recebe *qual vaga*, *qual plano* e o que o formulário preencheu; lê o preço no banco, cria a promoção apagada e **cobra**. |
 | `mercado-pago-avisa` | Recebe o aviso de pagamento, **pergunta de volta** ao Mercado Pago se foi mesmo aprovado, e só então acende o destaque. |
+
+O formulário de cartão e Pix fica **dentro da nossa página** (o Payment
+Brick do Mercado Pago), e não no site deles. O número do cartão nunca
+passa pelo nosso servidor: o navegador o troca por um token direto com
+o Mercado Pago, usando a chave pública, e é o token que a função usa.
 
 ---
 
@@ -45,10 +50,31 @@ Onde achar cada uma, no painel do Mercado Pago
 (*Seus negócios → Configurações → Gerenciar credenciais*):
 
 - **Access token**: em *Credenciais de produção*. Começa com `APP_USR-`.
-  Enquanto estiver testando, use o de *Credenciais de teste* — aí só o
-  `sandbox_init_point` funciona, e nenhum dinheiro de verdade se move.
+  Enquanto estiver testando, use o de *Credenciais de teste* — nenhum
+  dinheiro de verdade se move.
 - **Webhook secret**: em *Webhooks → Configurar notificações*, na
   "assinatura secreta" que aparece ao criar a notificação.
+
+### E a chave PÚBLICA, que vai no site
+
+Esta não é segredo — ela precisa estar no navegador, é com ela que o
+formulário troca o número do cartão por um token. Cole em
+`js/mercado-pago-config.js`, no lugar do `COLE_AQUI...`:
+
+```
+window.CONFIG_MERCADO_PAGO = {
+    chavePublica: 'TEST-xxxxxxxx-xxxx-...'
+};
+```
+
+**As duas têm de ser do mesmo par.** Chave pública de teste com access
+token de teste; produção com produção. Misturadas, o Mercado Pago
+recusa o token do cartão sem dizer por quê, e a mensagem que sobra na
+tela é um genérico "confira os dados".
+
+Enquanto estiver escrito `COLE_AQUI`, o site não abre o formulário: ele
+diz que o destaque ainda não está disponível. É de propósito — pedir o
+cartão inteiro para falhar no fim é pior do que avisar antes.
 
 `SUPABASE_URL`, `SUPABASE_ANON_KEY` e `SUPABASE_SERVICE_ROLE_KEY` já
 existem sozinhas dentro das funções — não precisa configurar.

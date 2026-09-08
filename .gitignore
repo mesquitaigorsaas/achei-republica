@@ -25,3 +25,6 @@ desktop.ini
 # =====================================================================
 ArquivosOutros/
 Como será o Achei República.txt
+
+# Rastro do Supabase CLI, nao e do projeto
+supabase/.temp/
