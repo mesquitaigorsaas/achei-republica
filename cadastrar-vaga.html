@@ -241,24 +241,29 @@
             <fieldset class="bloco-caixa">
               <legend class="bloco-titulo">Distância até a faculdade</legend>
 
+              <!-- Até três faculdades, cada uma com o próprio tempo.
+
+                   Uma casa no Coração Eucarístico está perto da PUC CE e
+                   do CEFET Nova Suíça; obrigar a escolher uma joga fora
+                   metade dos estudantes que ela serve. E o tempo anda
+                   junto da faculdade porque "20 minutos" não quer dizer
+                   nada sem dizer de qual. -->
+              <div id="faculdadesEscolhidas" class="faculdades-lista"></div>
+
+              <button type="button" class="btn btn-linha mais-faculdade" id="maisFaculdade" hidden>
+                + Outra faculdade
+              </button>
+
+              <small class="conta-linha-fina" id="dicaFaculdade">
+                Escolha a cidade primeiro.
+              </small>
+
+              <!-- "Indo como" é da casa, não de cada faculdade: quem vai
+                   a pé para uma normalmente vai a pé para a outra, e
+                   repetir a pergunta três vezes cansaria sem informar. -->
               <div class="campo">
-                <label for="faculdade">Qual faculdade fica mais perto</label>
-                <select id="faculdade"></select>
-                <small class="conta-linha-fina" id="dicaFaculdade">
-                  Escolha a cidade primeiro.
-                </small>
-              </div>
-
-              <div class="dupla">
-                <div class="campo">
-                  <label for="minutos">Quantos minutos</label>
-                  <input type="number" id="minutos" min="1" max="120" step="1" placeholder="8" />
-                </div>
-
-                <div class="campo">
-                  <label for="modo">Indo como</label>
-                  <select id="modo"></select>
-                </div>
+                <label for="modo">Indo como</label>
+                <select id="modo"></select>
               </div>
             </fieldset>
 

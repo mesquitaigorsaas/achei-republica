@@ -1229,3 +1229,56 @@
 .destino-login .relacao-opcao { padding: 11px 14px; }
 .destino-login .relacao-opcao b { font-size: 14.5px; }
 .destino-login .relacao-opcao span span { font-size: 12.5px; }
+
+
+/* ---------------------------------------------------------------------
+   ATÉ TRÊS FACULDADES, CADA UMA COM O SEU TEMPO
+
+   Faculdade e minutos na mesma linha porque são uma resposta só: "20
+   minutos" não quer dizer nada sem dizer de qual. Separados em campos
+   distantes, a pessoa preenche o tempo pensando na outra faculdade.
+
+   O ✕ fica fora do fluxo dos campos, com largura fixa, para as linhas
+   ficarem alinhadas entre si mesmo quando a de cima não tem botão.
+   --------------------------------------------------------------------- */
+.faculdades-lista { display: flex; flex-direction: column; gap: 10px; }
+
+.faculdade-linha {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 96px 38px;
+    gap: 10px;
+    align-items: center;
+}
+
+.faculdade-linha .campo { gap: 0; }
+
+.tirar-faculdade {
+    width: 38px; height: 44px;
+    display: grid; place-items: center;
+    background: none; border: 0; border-radius: var(--raio);
+    color: var(--tinta-fraca);
+    font-size: 15px;
+    cursor: pointer;
+}
+.tirar-faculdade:hover { background: #fdf0ee; color: #a4343a; }
+.tirar-faculdade:focus-visible { outline: 2px solid var(--azul); outline-offset: 1px; }
+.tirar-faculdade[hidden] { display: none; }
+
+/* Some o botão, mas guarda o espaço: sem isto a primeira linha fica mais
+   larga que as outras e a coluna dos minutos dança. */
+.faculdade-linha:has(.tirar-faculdade[hidden]) { grid-template-columns: minmax(0, 1fr) 96px 38px; }
+
+.mais-faculdade {
+    align-self: flex-start;
+    margin-top: 12px;
+    padding: 10px 16px;
+    font-size: 14px;
+}
+.mais-faculdade[hidden] { display: none; }
+
+@media (max-width: 520px) {
+    /* No celular a linha vira duas: o seletor da faculdade em cima,
+       porque o nome do campus é longo, e minutos + ✕ embaixo. */
+    .faculdade-linha { grid-template-columns: 1fr 38px; }
+    .faculdade-linha .campo:first-child { grid-column: 1 / -1; }
+}

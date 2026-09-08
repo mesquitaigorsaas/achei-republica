@@ -25,7 +25,6 @@ const form = document.getElementById('formVaga');
 const resto = document.getElementById('resto');
 const botaoPublicar = document.getElementById('botaoPublicar');
 const selCidade = document.getElementById('cidade');
-const selFaculdade = document.getElementById('faculdade');
 const dicaFaculdade = document.getElementById('dicaFaculdade');
 const selModo = document.getElementById('modo');
 const listaMinhas = document.getElementById('minhasVagas');
@@ -94,6 +93,12 @@ function traduzirErro(erro) {
     if (m.includes('password')) return 'A senha precisa de pelo menos 6 caracteres.';
     if (m.includes('no_ar_tem_endereco')) return 'Anúncio no ar precisa de rua e número.';
     if (m.includes('moradores_plausivel')) return 'Quantos moram tem que ser entre 0 e 30.';
+    // Do gatilho do 18-varias-faculdades.sql. Não deveria chegar aqui —
+    // a tela já não deixa passar de três —, mas o banco é quem manda, e
+    // erro do banco em inglês na cara de quem anuncia é o pior desfecho.
+    if (m.includes('limite_de_faculdades')) {
+        return 'Uma vaga pode indicar no máximo três faculdades. Tire uma para pôr outra.';
+    }
     // A etiqueta vem do gatilho do 10-um-anuncio-por-conta.sql.
     if (m.includes('limite_de_anuncios')) {
         return 'Sua conta já tem anúncio no ar. Tire o atual do ar, ou me chame '
@@ -246,6 +251,125 @@ async function carregarCidades() {
     return true;
 }
 
+/* =====================================================================
+   ATÉ TRÊS FACULDADES, CADA UMA COM O SEU TEMPO
+
+   Uma casa no Coração Eucarístico está perto da PUC CE e do CEFET Nova
+   Suíça. Obrigar o anunciante a escolher uma joga fora metade dos
+   estudantes que a casa serve — e em Alfenas isso nunca apareceu porque
+   lá faculdade e lugar eram a mesma coisa.
+
+   O TETO É TRÊS, e não é economia de tela: quem marca oito está dizendo
+   "estou perto de tudo", que é o mesmo que não dizer nada, e vira o
+   jeito mais barato de aparecer em toda busca sem pagar destaque. O
+   banco também recusa a quarta, pelo gatilho do 18-varias-faculdades.
+   ===================================================================== */
+const MAX_FACULDADES = 3;
+
+const listaFaculdades = document.getElementById('faculdadesEscolhidas');
+const botaoMaisFaculdade = document.getElementById('maisFaculdade');
+
+// As faculdades da cidade escolhida: [{ id, nome, sigla }]
+let faculdadesDaCidade = [];
+
+function linhasDeFaculdade() {
+    return [...listaFaculdades.querySelectorAll('.faculdade-linha')];
+}
+
+/* O que está escolhido agora, sem repetição e sem linha em branco. */
+function faculdadesEscolhidas() {
+    const vistas = new Set();
+
+    return linhasDeFaculdade().map(linha => {
+        const id = linha.querySelector('.rf-faculdade').value;
+        const min = linha.querySelector('.rf-minutos').value;
+        return { faculdade_id: id, minutos: min === '' ? null : Number(min) };
+    }).filter(f => {
+        if (!f.faculdade_id || vistas.has(f.faculdade_id)) return false;
+        vistas.add(f.faculdade_id);
+        return true;
+    });
+}
+
+function montarLinha(escolhida, minutos) {
+    const linha = document.createElement('div');
+    linha.className = 'faculdade-linha';
+
+    const campoFac = document.createElement('div');
+    campoFac.className = 'campo';
+
+    const sel = document.createElement('select');
+    sel.className = 'rf-faculdade';
+    sel.setAttribute('aria-label', 'Faculdade perto da casa');
+
+    const vazia = document.createElement('option');
+    vazia.value = '';
+    vazia.textContent = 'Escolha a faculdade';
+    sel.appendChild(vazia);
+
+    faculdadesDaCidade.forEach(f => {
+        const o = document.createElement('option');
+        o.value = f.id;
+        o.textContent = `${f.sigla} — ${f.nome}`;
+        sel.appendChild(o);
+    });
+
+    if (escolhida && faculdadesDaCidade.some(f => f.id === escolhida)) sel.value = escolhida;
+    campoFac.appendChild(sel);
+
+    const campoMin = document.createElement('div');
+    campoMin.className = 'campo campo-minutos';
+
+    const min = document.createElement('input');
+    min.type = 'number';
+    min.className = 'rf-minutos';
+    min.min = '1';
+    min.max = '240';
+    min.step = '1';
+    min.placeholder = 'min';
+    min.setAttribute('aria-label', 'Minutos até esta faculdade');
+    if (minutos !== null && minutos !== undefined) min.value = minutos;
+    campoMin.appendChild(min);
+
+    /* A primeira linha não tem "tirar": deixar a pessoa esvaziar tudo e
+       ficar olhando um bloco sem nada é pior do que ela simplesmente não
+       escolher faculdade nenhuma no seletor. */
+    const tirar = document.createElement('button');
+    tirar.type = 'button';
+    tirar.className = 'tirar-faculdade';
+    tirar.textContent = '✕';
+    tirar.setAttribute('aria-label', 'Tirar esta faculdade');
+    tirar.addEventListener('click', () => {
+        linha.remove();
+        arrumarBotaoMais();
+    });
+
+    linha.append(campoFac, campoMin, tirar);
+    return linha;
+}
+
+function arrumarBotaoMais() {
+    const quantas = linhasDeFaculdade().length;
+
+    botaoMaisFaculdade.hidden = !faculdadesDaCidade.length || quantas >= MAX_FACULDADES;
+
+    // O ✕ só aparece a partir da segunda linha.
+    linhasDeFaculdade().forEach((linha, i) => {
+        linha.querySelector('.tirar-faculdade').hidden = i === 0;
+    });
+}
+
+botaoMaisFaculdade.addEventListener('click', () => {
+    if (linhasDeFaculdade().length >= MAX_FACULDADES) return;
+    listaFaculdades.appendChild(montarLinha());
+    arrumarBotaoMais();
+});
+
+
+/* Recarrega as faculdades da cidade e redesenha as linhas.
+
+   "manter" é a lista que veio do banco na edição:
+   [{ faculdade_id, minutos }]. Sem ela, começa com uma linha vazia. */
 async function carregarFaculdades(manter) {
     const { data } = await banco
         .from('faculdades')
@@ -253,35 +377,33 @@ async function carregarFaculdades(manter) {
         .eq('cidade_id', selCidade.value)
         .order('sigla');
 
-    const nenhuma = !data || !data.length;
+    faculdadesDaCidade = data || [];
+    listaFaculdades.replaceChildren();
 
-    selFaculdade.replaceChildren();
-
-    // Cidade sem faculdade cadastrada: o campo some em vez de virar um
+    // Cidade sem faculdade cadastrada: o bloco some em vez de virar um
     // seletor vazio que a pessoa abre e fecha sem entender.
-    selFaculdade.hidden = nenhuma;
-    if (nenhuma) {
+    if (!faculdadesDaCidade.length) {
+        botaoMaisFaculdade.hidden = true;
         dicaFaculdade.textContent =
             'Ainda não temos faculdade cadastrada nesta cidade — pode deixar em branco.';
         return;
     }
 
-    const vazia = document.createElement('option');
-    vazia.value = '';
-    vazia.textContent = 'Escolha';
-    selFaculdade.appendChild(vazia);
+    const guardadas = (manter || []).slice(0, MAX_FACULDADES);
 
-    data.forEach(f => {
-        const o = document.createElement('option');
-        o.value = f.id;
-        o.textContent = `${f.sigla} — ${f.nome}`;
-        selFaculdade.appendChild(o);
-    });
+    if (guardadas.length) {
+        guardadas.forEach(g => listaFaculdades.appendChild(
+            montarLinha(g.faculdade_id, g.minutos)));
+    } else {
+        listaFaculdades.appendChild(montarLinha());
+    }
 
-    if (manter && data.some(f => f.id === manter)) selFaculdade.value = manter;
+    arrumarBotaoMais();
 
     dicaFaculdade.textContent =
-        'Metade da nota de compatibilidade sai daqui. Quem sabe o caminho é você.';
+        'Metade da nota de compatibilidade sai daqui. Marque só as que a casa '
+      + 'realmente serve — dizer que está perto de tudo faz o estudante '
+      + 'desconfiar da lista inteira.';
 }
 
 selCidade.addEventListener('change', () => carregarFaculdades());
@@ -398,7 +520,15 @@ form.addEventListener('submit', async evento => {
 
     const campos = {
         cidade_id: selCidade.value,
-        faculdade_id: selFaculdade.hidden ? null : (selFaculdade.value || null),
+        /* A PRIMEIRA das faculdades escolhidas continua sendo gravada
+           aqui, na coluna antiga, junto com o tempo dela lá embaixo.
+
+           Não é redundância esquecida: o site no ar ainda lê estas duas
+           colunas, e apagá-las agora derrubaria a vitrine no segundo em
+           que este código subisse. Elas saem num arquivo próprio, depois
+           que a leitura pela tabela nova estiver publicada — a ordem
+           está escrita no fim do 18-varias-faculdades.sql. */
+        faculdade_id: (faculdadesEscolhidas()[0] || {}).faculdade_id || null,
         nome: document.getElementById('nome').value.trim(),
         bairro: document.getElementById('bairro').value.trim(),
         cep: document.getElementById('cep').value.replace(/\D/g, '') || null,
@@ -414,7 +544,7 @@ form.addEventListener('submit', async evento => {
         preco: Number(document.getElementById('preco').value) || 0,
         caucao: Number(document.getElementById('caucao').value) || 0,
         vagas: Number(document.getElementById('vagas').value) || 1,
-        minutos: Number(document.getElementById('minutos').value) || null,
+        minutos: (faculdadesEscolhidas()[0] || {}).minutos ?? null,
         modo: selModo.value,
         disponivel_em: document.getElementById('disponivel').value || null,
         whatsapp: document.getElementById('whatsapp').value.replace(/\D/g, '')
@@ -530,6 +660,21 @@ async function salvarOsPedacos(vagaId) {
     if (editandoId) {
         await banco.from('republica_marcas').delete().eq('republica_id', vagaId);
         await banco.from('republica_cursos').delete().eq('republica_id', vagaId);
+        await banco.from('republica_faculdades').delete().eq('republica_id', vagaId);
+    }
+
+    /* As faculdades da vaga. Reescritas por inteiro na edição, como as
+       marcas — são três linhas, e comparar o que mudou daria o mesmo
+       resultado com três vezes mais código.
+
+       O apagar vem antes de qualquer insert, e não junto: o gatilho do
+       banco recusa a quarta linha, e sem limpar antes uma edição que
+       troca as três faculdades esbarraria no próprio teto. */
+    const faculdades = faculdadesEscolhidas();
+    if (faculdades.length) {
+        const { error } = await banco.from('republica_faculdades')
+            .insert(faculdades.map(f => ({ republica_id: vagaId, ...f })));
+        if (error) falhas.push('as faculdades');
     }
 
     const marcas = marcasEscolhidas();
@@ -622,6 +767,16 @@ function limparFormulario() {
     acender(caixaTipo, '');
     acender(caixaComposicao, '');
     acender(caixaPerfil, 'mista');
+
+    /* O form.reset() zera os campos, mas não tira as linhas de faculdade
+       acrescentadas — elas são DOM criado na hora, e o reset não conhece.
+       Sem isto, o próximo anúncio nasceria com as três faculdades do
+       anterior já na tela, e a pessoa salvaria as do vizinho sem
+       perceber. */
+    listaFaculdades.replaceChildren();
+    if (faculdadesDaCidade.length) listaFaculdades.appendChild(montarLinha());
+    arrumarBotaoMais();
+
     resto.hidden = true;
 }
 
@@ -676,12 +831,22 @@ async function carregarParaEditar(id, silencioso) {
     por('preco', data.preco === null ? '' : Number(data.preco));
     por('caucao', data.caucao === null ? '' : Number(data.caucao));
     por('vagas', data.vagas);
-    por('minutos', data.minutos);
     por('disponivel', data.disponivel_em);
     por('whatsapp', data.whatsapp ? mascararTelefone(data.whatsapp) : '');
 
     selCidade.value = data.cidade_id;
-    await carregarFaculdades(data.faculdade_id);
+    /* As faculdades vêm da tabela própria, e não do data.faculdade_id.
+
+       Aquela coluna ainda existe, mas guarda só a PRIMEIRA das três —
+       carregar por ela perderia a segunda e a terceira ao abrir para
+       editar, e a pessoa salvaria por cima achando que não tinha mexido
+       em nada. É o tipo de perda que ninguém percebe na hora. */
+    const { data: faculdadesDaVaga } = await banco
+        .from('republica_faculdades')
+        .select('faculdade_id, minutos')
+        .eq('republica_id', id);
+
+    await carregarFaculdades(faculdadesDaVaga || []);
     selModo.value = data.modo || 'pe';
 
     por('cursos', (data.republica_cursos || []).map(c => c.curso).join(', '));
