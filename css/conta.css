@@ -967,9 +967,14 @@
    voltar vem primeiro na leitura, à esquerda: desistir tem que ser o
    caminho mais fácil, não o mais escondido.
    --------------------------------------------------------------------- */
+/* Do topo para baixo, e não centralizado. Centralizar é mais bonito
+   quando a caixa é baixinha, e traiçoeiro quando ela é alta: qualquer
+   pixel a mais some pelas DUAS bordas, e a de cima leva o título junto.
+   Ancorada no alto, o que sobra vai para a rolagem de dentro, onde a
+   pessoa alcança. */
 .planos-confirmar {
     position: fixed; inset: 0; z-index: 60;
-    display: flex; align-items: center; justify-content: center;
+    display: flex; align-items: flex-start; justify-content: center;
     padding: 18px;
     background: rgba(20,32,43,.55);
 }

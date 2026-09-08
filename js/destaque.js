@@ -411,7 +411,14 @@ function confirmar(plano, botao) {
 
     document.body.appendChild(janela);
     document.body.style.overflow = 'hidden';
-    janela.querySelector('[data-pagar]').focus();
+
+    /* O preventScroll não é preciosismo. Desde que a caixa passou a
+       rolar por dentro (para caber em tela baixa), focar um botão que
+       está lá embaixo ARRASTA a caixa até ele — e o título "Confirmar
+       o destaque" sumia cortado na borda de cima. O foco continua no
+       Pagar, para quem navega pelo teclado; quem rola é ninguém. */
+    janela.querySelector('[data-pagar]').focus({ preventScroll: true });
+    janela.querySelector('.planos-confirmar-caixa').scrollTop = 0;
 }
 
 
@@ -507,6 +514,10 @@ async function pagar(plano, botao, fechar, janela) {
 function mostrarFormulario(janela, plano, tokenDaSessao) {
     const caixa = janela.querySelector('.planos-confirmar-caixa');
     janela.dataset.pagando = '1';
+    /* O formulário do Mercado Pago é mais alto que a confirmação, e ele
+       mesmo dá foco a um campo ao montar. Sem isto, a caixa nasce rolada
+       e o "Pagar R$ 19,90" do título fica fora da tela. */
+    caixa.scrollTop = 0;
 
     caixa.innerHTML = `
         <h2>Pagar ${emReais(plano.preco_centavos)}</h2>
