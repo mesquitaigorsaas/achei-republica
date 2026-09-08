@@ -534,7 +534,15 @@ document.getElementById('botaoSair').addEventListener('click', async () => {
     if (data.session) {
         entrar();
     } else {
-        verificando.hidden = true;
-        abrirJanela();
+        /* Uma porta de entrada só, para o site inteiro. Esta página
+           tinha o próprio formulário num pop-up; agora quem não está
+           logado vai para a página de login, que já pergunta se a
+           pessoa veio cuidar da vaga ou dos classificados — e volta
+           para cá porque o destino viaja no endereço.
+
+           replace() e não href: a página que exige login não fica no
+           histórico, senão o "voltar" depois de entrar devolveria a
+           pessoa para a tela que a mandou embora. */
+        location.replace('auth/login.html?destino=%2Fanunciar.html');
     }
 })();

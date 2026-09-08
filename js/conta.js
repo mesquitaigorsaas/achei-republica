@@ -186,6 +186,21 @@ function interno(caminho) {
     return !!caminho && caminho.startsWith('/') && !caminho.startsWith('//');
 }
 
+/* Quem chegou aqui empurrado por uma página já respondeu a pergunta com
+   o clique que deu lá atrás. O ?destino= então vem marcado, e a pessoa
+   só precisa mexer nele se quiser ir para o outro lugar.
+
+   O rádio continua sendo quem manda na hora de ir: se ela trocar depois
+   de a página abrir, é a troca que vale. */
+(function marcarDestinoPedido() {
+    const pedido = new URLSearchParams(location.search).get('destino');
+    if (!pedido) return;
+
+    const radio = document.querySelector(
+        `input[name="destino"][value="${CSS.escape(pedido)}"]`);
+    if (radio) radio.checked = true;
+})();
+
 function destinoDepoisDoLogin() {
     /* 1. O que a pessoa escolheu no próprio formulário. */
     const escolhido = document.querySelector('input[name="destino"]:checked');

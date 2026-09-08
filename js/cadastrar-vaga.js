@@ -388,11 +388,11 @@ form.addEventListener('submit', async evento => {
     evento.preventDefault();
     limparRecados();
 
-    /* Quem fechou o pop-up com o Cancelar continua vendo o formulário
-       inteiro por trás dele. Sem esta linha, enviar dali estouraria num
-       "usuario is null" e a pessoa veria a página não fazer nada. */
+    /* Sessão que expirou enquanto a pessoa preenchia. Sem esta linha,
+       enviar estouraria num "usuario is null" e a página não faria
+       nada -- o pior desfecho para quem acabou de digitar tudo. */
     if (!usuario) {
-        abrirJanela();
+        mandarParaOLogin();
         return;
     }
 
@@ -1012,6 +1012,28 @@ function faixaDeNumeros(vaga) {
 /* ---------------------------------------------------------------------
    Entrar, criar conta, sair
    --------------------------------------------------------------------- */
+/* UMA PORTA DE ENTRADA SÓ
+
+   Esta página tinha o próprio formulário de login, num pop-up por cima
+   do conteúdo. Dois problemas, e o segundo é o grave:
+
+   - a caixa era mais alta que a tela num notebook, e o título dela
+     ficava cortado atrás do cabeçalho;
+   - quem clicava em "Sair" era recebido por ela imediatamente, porque a
+     página, deslogada, exige login. O efeito era um laço: sair não
+     levava a lugar nenhum, e parecia que o botão não funcionava.
+
+   Agora quem não está logado vai para a página de login — a mesma para
+   o site inteiro, onde já se pergunta se a pessoa veio cuidar da vaga
+   ou dos classificados.
+
+   replace() e não href: a página que exige login não deve ficar no
+   histórico. Sem isso, o "voltar" do navegador, depois de entrar,
+   devolveria a pessoa para a tela que a mandou embora. */
+function mandarParaOLogin() {
+    location.replace('auth/login.html?destino=%2Fcadastrar-vaga.html');
+}
+
 function abrirJanela() {
     janela.hidden = false;
     document.body.style.overflow = 'hidden';
@@ -1138,7 +1160,10 @@ campoCep.addEventListener('blur', () => buscarCep(campoCep.value, {
 const botaoSair = document.getElementById('botaoSair');
 botaoSair.addEventListener('click', async () => {
     await banco.auth.signOut();
-    location.reload();
+    /* Para a home, e não recarregar: esta página exige login, então
+       recarregá-la deslogado devolvia a pessoa para o login. Sair tem
+       de terminar em algum lugar onde dê para ficar. */
+    location.replace('index.html');
 });
 
 
@@ -1152,9 +1177,7 @@ async function entrar() {
     tela.hidden = false;
 
     if (!data.session) {
-        // Sem conta a pessoa vê a página inteira e o pop-up por cima:
-        // ela entende o que vai preencher antes de decidir se cadastra.
-        abrirJanela();
+        mandarParaOLogin();
         return;
     }
 
