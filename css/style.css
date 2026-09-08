@@ -129,6 +129,26 @@ h1, h2, h3 { font-family: var(--display); line-height: 1.14; letter-spacing: -0.
 .menu a { font-size: .93rem; font-weight: 600; color: var(--tinta-suave); transition: color .18s; }
 .menu a:hover { color: var(--azul-forte); }
 
+/* O "Entrar" vem depois do botão azul e de propósito não compete com
+   ele: o que este site precisa vender é anunciar. Entrar é serviço para
+   quem já é de casa — tem de estar à mão, não em evidência.
+
+   Ele nasce com [hidden] no HTML e só aparece quando o js/conta-no-menu
+   sabe se a pessoa está logada. Meio segundo de nada é melhor do que
+   meio segundo dizendo "Entrar" para quem já entrou. */
+.menu-conta { color: var(--tinta); font-weight: 700; }
+.menu-conta[hidden] { display: none; }
+
+@media (max-width: 1029px) {
+    /* No celular o menu vira uma pilha; uma linha separando a conta do
+       resto evita que "Sair" pareça mais um item de navegação. */
+    .menu-conta {
+        border-top: 1px solid var(--linha);
+        padding-top: 14px;
+        width: 100%;
+    }
+}
+
 .menu-botao {
     display: none;
     flex-direction: column;
