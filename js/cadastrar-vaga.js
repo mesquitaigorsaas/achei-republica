@@ -1278,7 +1278,7 @@ function conferirLimite(ativos) {
     if (estourou && usuario) {
         const texto = 'Olá! Sou anunciante no Achei República (' + usuario.email
             + ') e tenho mais de uma república. Posso anunciar a segunda?';
-        pedido.href = 'https://wa.me/5531999347032?text=' + encodeURIComponent(texto);
+        pedido.href = 'https://wa.me/5531983036983?text=' + encodeURIComponent(texto);
     }
 }
 
