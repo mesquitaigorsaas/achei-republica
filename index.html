@@ -678,9 +678,14 @@
      é preço que o navegador conhece, e que pode divergir do que a
      cobrança pratica no dia em que um valor for reajustado no banco.
      ===================================================================== -->
-<section class="secao" id="anunciar">
+<section class="secao">
   <div class="wrap">
-    <div class="dono">
+    <!-- O id fica no PAINEL, e não na seção que o embrulha. Mirando na
+         seção, a parada da âncora somava os 86px de respiro dela aos
+         98px reservados para o cabeçalho: o quadro azul nascia 105px
+         abaixo da barra, com uma faixa de branco no meio que se lê como
+         página mal carregada. -->
+    <div class="dono" id="anunciar">
 
       <div class="dono-abertura">
         <div>

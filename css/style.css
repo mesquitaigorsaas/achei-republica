@@ -1093,9 +1093,14 @@ h1, h2, h3 { font-family: var(--display); line-height: 1.14; letter-spacing: -0.
 /* O cabeçalho tem 68px e fica fixo no alto. Sem esta folga, todo link de
    âncora — os do menu e a troca de cidade — para com o título escondido
    atrás da barra. */
-#como, #republicas, #cidades, #anunciar, #cidade, #quem-somos, #contato {
+#como, #republicas, #cidades, #cidade, #quem-somos, #contato {
     scroll-margin-top: 98px;
 }
+
+/* O #anunciar sai da lista acima porque ele não é uma seção: é o painel
+   azul dentro dela. Não precisa somar o respiro da seção, então a folga
+   é só a do cabeçalho (79px) mais um dedo de ar. */
+#anunciar { scroll-margin-top: 95px; }
 
 /* Botão dentro do menu: o texto tem de ser branco.
    Sem esta regra, o seletor .menu a (0-1-1) vence .btn-azul (0-1-0) na
