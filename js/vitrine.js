@@ -298,4 +298,49 @@ function botaoDenunciar() {
 }
 
 
+/* ---------------------------------------------------------------------
+   AS FACULDADES DE CADA CIDADE
+
+   O questionário pergunta "onde você estuda?" e essa resposta é metade
+   da nota de compatibilidade — é dela que sai o trajeto. Até aqui as
+   opções estavam escritas à mão no js/script.js: UNIFAL, UNIFENAS e
+   IFSULDEMINAS. Com Alfenas sendo o mundo inteiro, funcionava. Com Belo
+   Horizonte na lista, perguntar a um estudante da UFMG se ele faz
+   UNIFAL não é um detalhe de texto: é a pergunta central do site feita
+   errado.
+
+   Vem tudo de uma vez, e não uma consulta por cidade escolhida: são
+   poucas dezenas de linhas, e o resto da página já funciona assim — a
+   vitrine também carrega todas as repúblicas e filtra no navegador.
+   Uma consulta a cada troca de cidade seria uma espera onde hoje não
+   há nenhuma.
+
+   Se a busca falhar, o objeto fica vazio e o questionário simplesmente
+   pula a pergunta da faculdade. Perder uma pergunta é ruim; travar o
+   questionário numa tela sem opção e sem botão seria pior.
+   --------------------------------------------------------------------- */
+window.FACULDADES_POR_CIDADE = {};
+
+async function buscarFaculdades() {
+    if (!bancoVitrine) return;
+
+    const { data, error } = await bancoVitrine
+        .from('faculdades')
+        .select('sigla, cidades ( slug )')
+        .order('sigla');
+
+    if (error || !data) {
+        console.error('Falhou ao carregar as faculdades:', error);
+        return;
+    }
+
+    data.forEach(f => {
+        const cidade = (f.cidades || {}).slug;
+        if (!cidade || !f.sigla) return;
+        (window.FACULDADES_POR_CIDADE[cidade] ||= []).push(f.sigla);
+    });
+}
+
+
 buscarRepublicas();
+buscarFaculdades();

@@ -470,8 +470,8 @@ function trocarCidade() {
 
     if (!escolheu) {
         barraConta.classList.add('vazia');
-        barraConta.innerHTML = `<span class="bolinha"></span>14 cidades do Sul de Minas`;
-        chapeuDobra.innerHTML = `<span class="pisca"></span>Sul de Minas · Alfenas no ar`;
+        barraConta.innerHTML = `<span class="bolinha"></span>15 cidades universitárias de Minas Gerais`;
+        chapeuDobra.innerHTML = `<span class="pisca"></span>Minas Gerais · Alfenas no ar`;
     } else if (temAnuncio) {
         atualizarContagem(daCidade.length);
         chapeuDobra.innerHTML = `<span class="pisca"></span>${nome}, MG · no ar`;
@@ -604,11 +604,22 @@ const PERGUNTAS = [
         chave: 'uni',
         titulo: 'Onde você estuda?',
         dica: 'É daqui que a gente mede o trajeto até cada república.',
-        opcoes: [
-            { valor: 'UNIFAL', rotulo: 'UNIFAL' },
-            { valor: 'UNIFENAS', rotulo: 'UNIFENAS' },
-            { valor: 'IFSULDEMINAS', rotulo: 'IFSULDEMINAS' },
-        ],
+        /* Vazio de propósito. As opções vêm da CIDADE escolhida, e são
+           preenchidas em perguntasDaVez() toda vez que o questionário
+           abre.
+
+           Aqui estavam UNIFAL, UNIFENAS e IFSULDEMINAS escritas à mão.
+           Funcionou enquanto Alfenas era o mundo inteiro; com Belo
+           Horizonte na lista, perguntar a um estudante da UFMG se ele
+           faz UNIFAL quebra o cálculo de trajeto, que é metade da nota
+           de compatibilidade.
+
+           E havia um erro mais antigo escondido nessa lista: o
+           IFSULDEMINAS estava oferecido em Alfenas, mas não existe no
+           banco como faculdade de Alfenas — quem o escolhesse não
+           casaria com casa nenhuma. Vindo do banco, a pergunta e a
+           resposta passam a ser a mesma lista. */
+        opcoes: [],
     },
     {
         chave: 'curso',
@@ -683,15 +694,42 @@ let passo = 0;
 const resposta = {};
 let focoAnterior = null;
 
-function desenharPasso() {
-    const p = PERGUNTAS[passo];
+/* As perguntas DESTA rodada. Não é a constante PERGUNTAS direto porque
+   a lista muda com a cidade: as faculdades são as de lá, e a pergunta
+   inteira some numa cidade que ainda não tem faculdade cadastrada.
 
-    quizConta.textContent = `Pergunta ${passo + 1} de ${PERGUNTAS.length}`;
+   Preenchida no abrirQuiz(), e não uma vez no carregamento, porque a
+   pessoa troca de cidade com o site já aberto. */
+let perguntas = PERGUNTAS;
+
+/* Monta a rodada para a cidade escolhida.
+
+   A pergunta da faculdade só entra se houver faculdade. Uma pergunta com
+   zero opções seria uma tela que não deixa continuar — e o botão
+   "Continuar" nasce desabilitado esperando uma escolha impossível. */
+function perguntasDaVez() {
+    const daCidade = (window.FACULDADES_POR_CIDADE || {})[selCidade.value] || [];
+
+    return PERGUNTAS.filter(p => p.chave !== 'uni' || daCidade.length)
+        .map(p => p.chave !== 'uni' ? p : {
+            ...p,
+            /* Duas colunas quando a lista é longa: BH tem dezenove
+               campi, e dezenove botões de largura inteira viram uma
+               rolagem que ninguém lê até o fim. */
+            colunas: daCidade.length > 6 ? 2 : 1,
+            opcoes: daCidade.map(sigla => ({ valor: sigla, rotulo: sigla })),
+        });
+}
+
+function desenharPasso() {
+    const p = perguntas[passo];
+
+    quizConta.textContent = `Pergunta ${passo + 1} de ${perguntas.length}`;
     quizPergunta.textContent = p.titulo;
     quizDica.textContent = p.dica;
-    quizBarra.style.width = ((passo + 1) / PERGUNTAS.length * 100) + '%';
+    quizBarra.style.width = ((passo + 1) / perguntas.length * 100) + '%';
     quizVoltar.hidden = passo === 0;
-    quizSeguir.textContent = passo === PERGUNTAS.length - 1 ? 'Ver minhas repúblicas' : 'Continuar';
+    quizSeguir.textContent = passo === perguntas.length - 1 ? 'Ver minhas repúblicas' : 'Continuar';
 
     quizOpcoes.className = 'quiz-opcoes' + (p.colunas === 2 ? ' multi' : '');
     quizOpcoes.innerHTML = '';
@@ -730,12 +768,14 @@ function desenharPasso() {
 
 // A última pergunta aceita nenhuma resposta; as outras não seguem em branco.
 function conferirSeguir() {
-    const p = PERGUNTAS[passo];
+    const p = perguntas[passo];
     quizSeguir.disabled = p.multi ? false : resposta[p.chave] === undefined;
 }
 
 function abrirQuiz() {
     focoAnterior = document.activeElement;
+    // A rodada se monta agora: a cidade pode ter mudado desde a última vez.
+    perguntas = perguntasDaVez();
     passo = 0;
     quiz.hidden = false;
     document.body.style.overflow = 'hidden';
@@ -750,7 +790,7 @@ function fecharQuiz() {
 }
 
 quizSeguir.addEventListener('click', () => {
-    if (passo < PERGUNTAS.length - 1) {
+    if (passo < perguntas.length - 1) {
         passo++;
         desenharPasso();
         quiz.querySelector('.quiz-caixa').scrollTop = 0;
