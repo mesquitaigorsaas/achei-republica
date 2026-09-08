@@ -38,6 +38,9 @@
    diz que o destaque ainda não está disponível, em vez de abrir um
    formulário que não vai completar.
    ===================================================================== */
+/* Aplicação "achei-republica" (Checkout Bricks), conta do Igor — a
+   mesma do Achei Músico, com aplicação separada de propósito: webhook
+   é configurado por aplicação, e juntas as duas se avisariam cruzado. */
 window.CONFIG_MERCADO_PAGO = {
-    chavePublica: 'COLE_AQUI_A_CHAVE_PUBLICA_DO_MERCADO_PAGO'
+    chavePublica: 'APP_USR-a723ac14-6ed6-4d35-ad9c-07d800f8b81f'
 };
