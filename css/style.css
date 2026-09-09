@@ -1785,6 +1785,10 @@ a.contato:hover { border-color: var(--azul-linha); transform: translateY(-3px); 
 
 .vaga-mapa-link { margin-top: 12px; }
 
+/* Um botão de trajeto por faculdade, lado a lado. Empilhados, três
+   deles fariam a seção "Onde fica" parecer um menu. */
+.vaga-trajetos { display: flex; flex-wrap: wrap; gap: 10px; }
+
 /* O botão de denunciar da página inteira. No cartão da vitrine ele é
    uma bandeirinha flutuante no canto da foto, porque lá não cabe frase.
    Aqui cabe, e a frase funciona melhor: a pessoa precisa entender o que

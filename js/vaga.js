@@ -555,6 +555,50 @@ function ondeFica(vaga, cidade) {
         abrir.rel = 'noopener';
         abrir.textContent = 'Abrir no Google Maps';
         corpo.appendChild(abrir);
+
+        /* O TRAJETO ATÉ CADA FACULDADE
+
+           Um link por faculdade, e o Maps abre com a rota a pé já
+           traçada: sai daqui, chega lá, quantos minutos são de verdade.
+
+           Isto existe porque o tempo que aparece nos quadrinhos lá em
+           cima é DECLARADO pelo anunciante, e ninguém confere. Quem tem
+           pressa de alugar pode escrever 10 onde são 20. O link entrega
+           a conferência a quem mais precisa dela — o estudante, antes de
+           atravessar a cidade para ver o quarto.
+
+           Abrir o Maps não custa nada. Perguntar ao Google, pelo código,
+           quanto tempo leva o trajeto é uma API cobrada por consulta, e
+           é por isso que a resposta aparece no aplicativo dele e não
+           nesta página.
+
+           O destino é o nome da faculdade mais a cidade. O dia em que a
+           tabela faculdades tiver endereço ou coordenada — as colunas
+           lat e lng estão lá desde o 01-esquema.sql, vazias — este
+           trecho passa a usar a coordenada e para de depender de o
+           Google adivinhar o nome. */
+        const pertoDe = (vaga.republica_faculdades || [])
+            .filter(r => r && r.faculdades && r.faculdades.sigla);
+
+        const trilha = document.createElement('div');
+        trilha.className = 'vaga-trajetos';
+        if (pertoDe.length) corpo.appendChild(trilha);
+
+        pertoDe.forEach(r => {
+            const destino = [r.faculdades.nome || r.faculdades.sigla, cidade.nome, 'MG']
+                .filter(Boolean).join(', ');
+
+            const rota = document.createElement('a');
+            rota.className = 'btn btn-linha vaga-mapa-link';
+            rota.href = 'https://www.google.com/maps/dir/?api=1'
+                + '&origin=' + encodeURIComponent(busca)
+                + '&destination=' + encodeURIComponent(destino)
+                + '&travelmode=walking';
+            rota.target = '_blank';
+            rota.rel = 'noopener';
+            rota.textContent = `Trajeto até a ${r.faculdades.sigla}`;
+            trilha.appendChild(rota);
+        });
     }
 
     return bloco('Onde fica', corpo);
