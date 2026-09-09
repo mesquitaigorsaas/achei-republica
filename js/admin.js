@@ -109,8 +109,8 @@ async function carregarRevisao() {
     document.getElementById('contaRevisao').textContent = (data || []).length;
 
     if (!data || !data.length) {
-        lista.innerHTML = '<p class="conta-linha-fina">Nada esperando decisão. '
-            + 'A fila vazia é o estado normal — ela só enche quando a triagem separa alguma coisa.</p>';
+        listaVazia(lista, 'Nada esperando decisão. A fila vazia é o estado normal — '
+            + 'ela só enche quando a triagem separa alguma coisa.');
         return;
     }
 
@@ -118,31 +118,38 @@ async function carregarRevisao() {
         const caixa = document.createElement('div');
         caixa.className = 'admin-linha';
 
-        const topo = document.createElement('div');
-        topo.className = 'admin-linha-topo';
+        caixa.append(
+            identidade(item.nome, [
+                etiqueta('Em revisão', 'ouro'),
+                etiquetaDoPlano(item),
+                item.denuncias > 0
+                    ? etiqueta(item.denuncias + ' denúncia(s)', 'vermelha') : null,
+                quando(item.criada_em)
+            ], [
+                item.anunciante,
+                telefoneLegivel(item.telefone),
+                item.relacao === 'moro' ? 'mora na casa'
+                    : item.relacao === 'dono' ? 'dono do imóvel'
+                    : item.relacao === 'responsavel' ? 'responsável' : null,
+                item.cidade,
+                `${item.anuncios_da_pessoa} anúncio(s) somando as contas parecidas`
+            ]),
 
-        const nome = document.createElement('b');
-        nome.textContent = item.nome;
-
-        const quando = document.createElement('small');
-        quando.textContent = dataCurta(item.criada_em);
-
-        topo.append(nome, quando);
-
-        const quem = document.createElement('p');
-        quem.className = 'admin-dado';
-        quem.textContent = [
-            item.anunciante,
-            telefoneLegivel(item.telefone),
-            item.relacao === 'moro' ? 'mora na casa'
-                : item.relacao === 'dono' ? 'dono do imóvel'
-                : item.relacao === 'responsavel' ? 'responsável' : null,
-            item.cidade,
-            `${item.anuncios_da_pessoa} anúncio(s) somando as contas parecidas`,
-            item.denuncias > 0 ? `${item.denuncias} denúncia(s)` : null
-        ].filter(Boolean).join(' · ');
-
-        caixa.append(topo, quem);
+            acoes(
+                botaoZap(item.telefone, `Olá, ${item.anunciante || ''}! Aqui é do Achei `
+                    + `República, sobre o seu anúncio "${item.nome}".`),
+                botaoAbrirVaga(item.id),
+                botaoDeAcao('Liberar', 'btn-azul', async () => {
+                    await mudarStatus(item.id, 'publicada', 'Anúncio liberado.');
+                }),
+                botaoQuePergunta('Recusar', 'btn-linha admin-recusar',
+                    `Recusar "${item.nome}"? Ele sai da busca. O dono continua `
+                    + 'enxergando o anúncio dele e pode corrigir.', async () => {
+                    await mudarStatus(item.id, 'recusada',
+                        'Anúncio recusado. Ele sai da busca e o dono continua enxergando o dele.');
+                })
+            )
+        );
 
         /* A descrição inteira, e não um resumo: é nela que mora a palavra
            de imobiliária que trouxe o anúncio para cá. Cortar em três
@@ -154,28 +161,6 @@ async function carregarRevisao() {
             caixa.appendChild(texto);
         }
 
-        const acoes = document.createElement('div');
-        acoes.className = 'admin-acoes';
-
-        const ver = document.createElement('a');
-        ver.className = 'btn btn-linha';
-        ver.href = `../vaga.html?id=${item.id}`;
-        ver.target = '_blank';
-        ver.rel = 'noopener';
-        ver.textContent = 'Abrir a vaga';
-
-        acoes.append(
-            ver,
-            botaoDeAcao('Liberar', 'btn-azul', async () => {
-                await mudarStatus(item.id, 'publicada', 'Anúncio liberado.');
-            }),
-            botaoDeAcao('Recusar', 'btn-linha admin-recusar', async () => {
-                await mudarStatus(item.id, 'recusada',
-                    'Anúncio recusado. Ele sai da busca e o dono continua enxergando o dele.');
-            })
-        );
-
-        caixa.appendChild(acoes);
         return caixa;
     }));
 }
@@ -210,6 +195,137 @@ function botaoDeAcao(rotulo, classe, aoClicar) {
     return b;
 }
 
+/* Pergunta antes do que tira alguma coisa do ar.
+
+   Numa lista de linhas parecidas, com os botões todos do mesmo
+   tamanho, um clique errado é fácil demais. */
+function botaoQuePergunta(rotulo, classe, pergunta, aoClicar) {
+    return botaoDeAcao(rotulo, classe, async () => {
+        if (window.confirm(pergunta)) await aoClicar();
+    });
+}
+
+
+/* ---------------------------------------------------------------------
+   As peças de uma linha
+
+   As quatro listas mostram coisas diferentes com a mesma forma: quem é
+   à esquerda, em que pé está no meio, o que fazer à direita.
+   --------------------------------------------------------------------- */
+function etiqueta(texto, tom) {
+    const e = document.createElement('span');
+    e.className = 'admin-etiqueta etq-' + (tom || 'neutra');
+    e.textContent = texto;
+    return e;
+}
+
+function quando(iso) {
+    const s = document.createElement('span');
+    s.className = 'admin-quando';
+    s.textContent = dataCurta(iso);
+    return s;
+}
+
+/* O bloco da esquerda: um título com selos ao lado e uma linha fina de
+   dados embaixo. Os nulos caem fora sozinhos. */
+function identidade(titulo, selos, dados) {
+    const bloco = document.createElement('div');
+    bloco.className = 'admin-identidade';
+
+    const nome = document.createElement('p');
+    nome.className = 'admin-nome';
+    nome.append(titulo);
+    selos.filter(Boolean).forEach(s => nome.appendChild(s));
+
+    const linha = document.createElement('p');
+    linha.className = 'admin-dado';
+    linha.textContent = dados.filter(Boolean).join(' · ');
+
+    bloco.append(nome, linha);
+    return bloco;
+}
+
+/* O BOTÃO DE FALAR
+
+   O telefone já estava escrito na linha, mas chamar a pessoa dava
+   trabalho: copiar, tirar o traço, montar o link. Agora é um clique, e
+   a mensagem já vai escrita dizendo de onde vem o contato.
+
+   Telefone torto não vira botão. Um link de wa.me com número quebrado
+   abre uma conversa com ninguém, e isso é pior do que não ter botão:
+   parece que funcionou. */
+const DESENHO_ZAP = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.47 14'
+    + '.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.'
+    + '2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.'
+    + '02-.46.13-.61.14-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15'
+    + '-.67-1.61-.92-2.21-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 '
+    + '1.02-1.04 2.48s1.06 2.88 1.21 3.08c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.6'
+    + '3.71.22 1.36.19 1.87.12.57-.09 1.76-.72 2.01-1.41.25-.7.25-1.29.17-1.42-.07-.1'
+    + '3-.27-.2-.57-.35M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L'
+    + '2 22l5.25-1.38a9.87 9.87 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65'
+    + '-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2"/></svg>';
+
+function botaoZap(telefone, mensagem) {
+    const d = (telefone || '').replace(/\D/g, '');
+    if (d.length < 10 || d.length > 11) return null;
+
+    const a = document.createElement('a');
+    a.className = 'btn admin-zap';
+    a.href = 'https://wa.me/55' + d + '?text=' + encodeURIComponent(mensagem);
+    a.target = '_blank';
+    a.rel = 'noopener';
+    a.title = 'Falar no WhatsApp';
+    a.innerHTML = DESENHO_ZAP;
+    a.append('Falar');
+    return a;
+}
+
+function botaoAbrirVaga(id) {
+    const a = document.createElement('a');
+    a.className = 'btn btn-linha';
+    a.href = '../vaga.html?id=' + id;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    a.textContent = 'Abrir a vaga';
+    return a;
+}
+
+function acoes(...botoes) {
+    const div = document.createElement('div');
+    div.className = 'admin-acoes';
+    botoes.filter(Boolean).forEach(b => div.appendChild(b));
+    return div;
+}
+
+/* A ETIQUETA DE PLANO
+
+   Grátis, Destaque ou Premium — e o que vale é o destaque VIGENTE, não
+   o que já foi pago um dia. destaqueValendo() vem do planos.js e
+   devolve nulo quando a data passou, então uma vaga com destaque
+   vencido aparece como Grátis, que é o que ela é hoje na busca.
+
+   Quando o campo não veio na consulta, a etiqueta some em vez de dizer
+   "Grátis". É o caso de quem ainda não rodou o 20-plano-no-painel.sql:
+   inventar "Grátis" ali marcaria de graça uma vaga premium. */
+function etiquetaDoPlano(vaga) {
+    if (!('destaque' in vaga)) return null;
+
+    const plano = destaqueValendo(vaga);
+    if (!plano) return etiqueta('Grátis', 'neutra');
+
+    return etiqueta(
+        ((SELO_DO_PLANO[plano] || '') + ' ' + (NOME_DO_PLANO[plano] || plano)).trim(),
+        'ouro');
+}
+
+function listaVazia(lista, frase) {
+    lista.replaceChildren();
+    const p = document.createElement('p');
+    p.className = 'admin-vazio';
+    p.textContent = frase;
+    lista.appendChild(p);
+}
+
 
 /* ---------------------------------------------------------------------
    Denúncias
@@ -234,7 +350,7 @@ async function carregarDenuncias() {
     document.getElementById('contaDenuncias').textContent = (data || []).length;
 
     if (!data || !data.length) {
-        lista.innerHTML = '<p class="conta-linha-fina">Nenhuma denúncia até agora.</p>';
+        listaVazia(lista, 'Nenhuma denúncia até agora.');
         return;
     }
 
@@ -242,26 +358,34 @@ async function carregarDenuncias() {
         const caixa = document.createElement('div');
         caixa.className = 'admin-linha';
 
-        const topo = document.createElement('div');
-        topo.className = 'admin-linha-topo';
+        caixa.append(
+            identidade(MOTIVOS[d.motivo] || d.motivo, [
+                d.ativa ? etiqueta('No ar', 'verde') : etiqueta('Fora do ar', 'neutra'),
+                etiquetaDoPlano(d),
+                d.status !== 'publicada'
+                    ? etiqueta(d.status.replace('_', ' '), 'ouro') : null,
+                quando(d.criada_em)
+            ], [
+                d.republica, d.cidade, d.anunciante, telefoneLegivel(d.telefone)
+            ]),
 
-        const motivo = document.createElement('b');
-        motivo.textContent = MOTIVOS[d.motivo] || d.motivo;
-
-        const quando = document.createElement('small');
-        quando.textContent = dataCurta(d.criada_em);
-
-        topo.append(motivo, quando);
-
-        const sobre = document.createElement('p');
-        sobre.className = 'admin-dado';
-        sobre.textContent = [
-            d.republica, d.cidade, d.anunciante, telefoneLegivel(d.telefone),
-            d.ativa ? 'no ar' : 'fora do ar',
-            d.status !== 'publicada' ? d.status.replace('_', ' ') : null
-        ].filter(Boolean).join(' · ');
-
-        caixa.append(topo, sobre);
+            acoes(
+                botaoZap(d.telefone, `Olá, ${d.anunciante || ''}! Aqui é do Achei `
+                    + `República, sobre o anúncio "${d.republica}".`),
+                botaoAbrirVaga(d.republica_id),
+                d.ativa
+                    ? botaoQuePergunta('Tirar do ar', 'btn-linha admin-recusar',
+                        `Tirar "${d.republica}" do ar? O anúncio some da busca `
+                        + 'na hora. O dono consegue publicar de novo.', async () => {
+                        const { error: e } = await banco.from('republicas')
+                            .update({ ativa: false }).eq('id', d.republica_id);
+                        if (e) return aviso('Não consegui tirar do ar: ' + e.message);
+                        aviso('Anúncio fora do ar.', 'certo');
+                        carregarTudo();
+                    })
+                    : null
+            )
+        );
 
         if (d.detalhe) {
             const texto = document.createElement('p');
@@ -270,28 +394,6 @@ async function carregarDenuncias() {
             caixa.appendChild(texto);
         }
 
-        const acoes = document.createElement('div');
-        acoes.className = 'admin-acoes';
-
-        const ver = document.createElement('a');
-        ver.className = 'btn btn-linha';
-        ver.href = `../vaga.html?id=${d.republica_id}`;
-        ver.target = '_blank';
-        ver.rel = 'noopener';
-        ver.textContent = 'Abrir a vaga';
-        acoes.appendChild(ver);
-
-        if (d.ativa) {
-            acoes.appendChild(botaoDeAcao('Tirar do ar', 'btn-linha admin-recusar', async () => {
-                const { error: e } = await banco.from('republicas')
-                    .update({ ativa: false }).eq('id', d.republica_id);
-                if (e) return aviso('Não consegui tirar do ar: ' + e.message);
-                aviso('Anúncio fora do ar.', 'certo');
-                carregarTudo();
-            }));
-        }
-
-        caixa.appendChild(acoes);
         return caixa;
     }));
 }
@@ -300,6 +402,10 @@ async function carregarDenuncias() {
 /* ---------------------------------------------------------------------
    Anunciantes
    --------------------------------------------------------------------- */
+/* A lista inteira fica aqui depois de carregada. O filtro peneira esta
+   cópia em vez de ir ao banco a cada letra digitada. */
+let anunciantes = [];
+
 async function carregarAnunciantes() {
     const { data, error } = await banco.rpc('admin_anunciantes');
     const lista = document.getElementById('listaAnunciantes');
@@ -309,44 +415,56 @@ async function carregarAnunciantes() {
         return;
     }
 
-    document.getElementById('contaAnunciantes').textContent = (data || []).length;
+    anunciantes = data || [];
+    document.getElementById('contaAnunciantes').textContent = anunciantes.length;
+    desenharAnunciantes();
+}
 
-    if (!data || !data.length) {
-        lista.innerHTML = '<p class="conta-linha-fina">Nenhuma conta de anunciante ainda.</p>';
+function anuncianteCombina(a, situacao, termo) {
+    const passaSituacao =
+          situacao === ''            ? true
+        : situacao === 'no_ar'       ? a.anuncios_no_ar > 0
+        : situacao === 'sem_anuncio' ? a.anuncios_no_total === 0
+        : situacao === 'liberado'    ? a.limite_anuncios > 1
+        : situacao === 'denunciado'  ? a.denuncias > 0
+        : situacao === 'bloqueado'   ? a.bloqueado
+        : true;
+
+    if (!passaSituacao) return false;
+    if (!termo) return true;
+
+    if ([a.nome, a.email].filter(Boolean).join(' ').toLowerCase().includes(termo)) {
+        return true;
+    }
+
+    /* O telefone se compara só pelos dígitos: quem procura escreve
+       "31 99934" e o que está gravado é 31999347032. Três dígitos é o
+       mínimo para a busca não casar com meio mundo. */
+    const digitos = termo.replace(/\D/g, '');
+    return digitos.length >= 3
+        && (a.telefone || '').replace(/\D/g, '').includes(digitos);
+}
+
+function desenharAnunciantes() {
+    const lista = document.getElementById('listaAnunciantes');
+    const situacao = document.getElementById('filtroSituacao').value;
+    const termo = document.getElementById('filtroTermo').value.trim().toLowerCase();
+
+    if (!anunciantes.length) {
+        listaVazia(lista, 'Nenhuma conta de anunciante ainda.');
         return;
     }
 
-    lista.replaceChildren(...data.map(a => {
+    const visiveis = anunciantes.filter(a => anuncianteCombina(a, situacao, termo));
+
+    if (!visiveis.length) {
+        listaVazia(lista, 'Nenhuma conta com esse filtro.');
+        return;
+    }
+
+    lista.replaceChildren(...visiveis.map(a => {
         const caixa = document.createElement('div');
         caixa.className = 'admin-linha' + (a.bloqueado ? ' bloqueado' : '');
-
-        const topo = document.createElement('div');
-        topo.className = 'admin-linha-topo';
-
-        const nome = document.createElement('b');
-        nome.textContent = a.nome || '(sem nome)';
-
-        const selos = document.createElement('small');
-        selos.textContent = [
-            a.admin ? 'ADMIN' : null,
-            a.bloqueado ? 'BLOQUEADO' : null
-        ].filter(Boolean).join(' · ');
-
-        topo.append(nome, selos);
-
-        const dados = document.createElement('p');
-        dados.className = 'admin-dado';
-        dados.textContent = [
-            a.email, telefoneLegivel(a.telefone),
-            `${a.anuncios_no_ar} no ar de ${a.anuncios_no_total}`,
-            `teto ${a.limite_anuncios}`,
-            a.denuncias > 0 ? `${a.denuncias} denúncia(s)` : null
-        ].filter(Boolean).join(' · ');
-
-        caixa.append(topo, dados);
-
-        const acoes = document.createElement('div');
-        acoes.className = 'admin-acoes';
 
         /* O teto é um número, e não um "liberado sim/não": quem tem três
            repúblicas de verdade recebe 3. A diferença aparece no dia em
@@ -356,27 +474,60 @@ async function carregarAnunciantes() {
         });
         menos.disabled = a.limite_anuncios <= 1;
 
-        acoes.append(
-            botaoDeAcao('+1 no teto', 'btn-linha', async () => {
-                await mudarTeto(a.id, Math.min(50, a.limite_anuncios + 1));
-            }),
-            menos,
-            botaoDeAcao(a.bloqueado ? 'Desbloquear' : 'Bloquear',
-                'btn-linha' + (a.bloqueado ? '' : ' admin-recusar'), async () => {
-                const { error: e } = await banco.from('perfis')
-                    .update({ bloqueado: !a.bloqueado }).eq('id', a.id);
-                if (e) return aviso('Não consegui mudar: ' + e.message);
-                aviso(a.bloqueado
-                    ? 'Conta desbloqueada.'
-                    : 'Conta bloqueada. Ela não publica mais, e os anúncios que já existem continuam.',
-                    'certo');
-                carregarTudo();
-            })
+        caixa.append(
+            identidade(a.nome || '(sem nome)', [
+                a.bloqueado ? etiqueta('Bloqueado', 'vermelha')
+                    : a.anuncios_no_ar > 0 ? etiqueta('No ar', 'verde')
+                    : etiqueta('Sem anúncio', 'neutra'),
+                a.admin ? etiqueta('Admin', 'azul') : null,
+                a.denuncias > 0 ? etiqueta(a.denuncias + ' denúncia(s)', 'vermelha') : null
+            ], [
+                a.email,
+                telefoneLegivel(a.telefone),
+                `${a.anuncios_no_ar} no ar de ${a.anuncios_no_total}`,
+                `teto ${a.limite_anuncios}`
+            ]),
+
+            acoes(
+                botaoZap(a.telefone,
+                    `Olá, ${a.nome || ''}! Aqui é do Achei República.`),
+                botaoDeAcao('+1 no teto', 'btn-linha', async () => {
+                    await mudarTeto(a.id, Math.min(50, a.limite_anuncios + 1));
+                }),
+                menos,
+                a.bloqueado
+                    ? botaoDeAcao('Desbloquear', 'btn-linha', async () => {
+                        await mudarBloqueio(a, false);
+                    })
+                    : botaoQuePergunta('Bloquear', 'btn-linha admin-recusar',
+                        `Bloquear a conta de ${a.nome || a.email}? Ela para de publicar. `
+                        + 'Os anúncios que já existem continuam no ar.', async () => {
+                        await mudarBloqueio(a, true);
+                    })
+            )
         );
 
-        caixa.appendChild(acoes);
         return caixa;
     }));
+}
+
+async function mudarBloqueio(a, bloquear) {
+    const { error } = await banco.from('perfis')
+        .update({ bloqueado: bloquear }).eq('id', a.id);
+    if (error) return aviso('Não consegui mudar: ' + error.message);
+    aviso(bloquear
+        ? 'Conta bloqueada. Ela não publica mais, e os anúncios que já existem continuam.'
+        : 'Conta desbloqueada.', 'certo');
+    carregarTudo();
+}
+
+/* O filtro trabalha enquanto se digita. O botão continua ali para quem
+   espera apertar alguma coisa, e não faz mais do que já foi feito. */
+const filtroAnunciantes = document.getElementById('filtroAnunciantes');
+if (filtroAnunciantes) {
+    filtroAnunciantes.addEventListener('submit', e => e.preventDefault());
+    filtroAnunciantes.addEventListener('input', desenharAnunciantes);
+    filtroAnunciantes.addEventListener('change', desenharAnunciantes);
 }
 
 async function mudarTeto(id, novo) {
@@ -428,47 +579,50 @@ async function carregarPromocoes() {
     document.getElementById('contaPromocoes').textContent = ativas.length;
 
     if (!data || !data.length) {
-        lista.innerHTML = '<p class="conta-linha-fina">Nenhum destaque contratado ainda.</p>';
+        listaVazia(lista, 'Nenhum destaque contratado ainda.');
         return;
     }
+
+    const TOM_DA_SITUACAO = {
+        ativa: 'verde',
+        aguardando: 'ouro',
+        expirada: 'neutra',
+        cancelada: 'vermelha',
+        recusada: 'vermelha'
+    };
 
     lista.replaceChildren(...data.map(p => {
         const caixa = document.createElement('div');
         caixa.className = 'admin-linha';
         if (p.status === 'ativa') caixa.classList.add('promocao-ativa');
 
-        const topo = document.createElement('div');
-        topo.className = 'admin-linha-topo';
-
-        const nome = document.createElement('b');
-        nome.textContent = `${SELO_DO_PLANO[p.plano] || ''} ${NOME_DO_PLANO[p.plano] || p.plano}`
-            + ` — ${p.republica}`;
-
-        const situacao = document.createElement('small');
-        situacao.textContent = (SITUACAO_DA_PROMOCAO[p.status] || p.status).toUpperCase();
-
-        topo.append(nome, situacao);
-
-        const dados = document.createElement('p');
-        dados.className = 'admin-dado';
-        dados.textContent = [
+        caixa.appendChild(identidade(p.republica, [
+            etiqueta(((SELO_DO_PLANO[p.plano] || '') + ' '
+                + (NOME_DO_PLANO[p.plano] || p.plano)).trim(), 'ouro'),
+            etiqueta(SITUACAO_DA_PROMOCAO[p.status] || p.status,
+                TOM_DA_SITUACAO[p.status] || 'neutra'),
+            // A vaga fora do ar com destaque pago é o caso que gera
+            // telefonema: "paguei e sumiu". Fica em vermelho na linha.
+            p.status === 'ativa' && !p.vaga_no_ar
+                ? etiqueta('Vaga fora do ar', 'vermelha') : null
+        ], [
             emReais(p.preco_centavos),
             p.anunciante,
             telefoneLegivel(p.telefone),
             p.comeca_em ? `de ${dataCurtaBR(p.comeca_em)} a ${dataCurtaBR(p.termina_em)}` : null,
             p.status === 'ativa' ? frasedeDiasRestantes(p.termina_em) : null,
-            // A vaga fora do ar com destaque pago é o caso que gera
-            // telefonema: "paguei e sumiu". Fica escrito na linha.
-            p.status === 'ativa' && !p.vaga_no_ar ? 'VAGA FORA DO AR — destaque pausado' : null,
             p.metodo || null,
             p.referencia ? `pagamento ${p.referencia}` : null
-        ].filter(Boolean).join(' · ');
-
-        caixa.append(topo, dados);
+        ]));
 
         if (p.status === 'ativa' || p.status === 'aguardando') {
             const acoes = document.createElement('div');
             acoes.className = 'admin-acoes';
+
+            const falar = botaoZap(p.telefone,
+                `Olá, ${p.anunciante || ''}! Aqui é do Achei República, sobre o `
+                + `destaque da vaga "${p.republica}".`);
+            if (falar) acoes.appendChild(falar);
 
             acoes.appendChild(botaoDeAcao('Cancelar destaque', 'btn-linha admin-recusar', async () => {
                 const motivo = prompt(

@@ -666,32 +666,91 @@
 }
 .aba.ativa .aba-conta { background: rgba(255, 255, 255, .25); }
 
+/* O painel é mais largo que os formulários do site.
+
+   As caixas de conta têm 720px porque um formulário longo demais fica
+   difícil de ler. Aqui é o contrário: com 720px as ações caem para uma
+   segunda linha em cada registro, e a lista volta a ficar alta. */
+.admin-cabeca,
+.conta-caixa.larga.admin-secao,
+#painel .abas { max-width: 1080px; margin-left: auto; margin-right: auto; }
+
 .admin-secao { margin-top: 18px; }
 
+/* A LINHA
+
+   Uma linha por cadastro, e não um cartão empilhado: quem é à
+   esquerda, em que pé está no meio, o que fazer à direita. Ler dez
+   registros vira correr o olho por uma coluna, e não rolar dez telas.
+
+   Os botões antigos ocupavam a largura inteira, um embaixo do outro.
+   Três anunciantes já enchiam a tela e nenhuma decisão ficava perto da
+   outra. */
 .admin-linha {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 14px;
     border: 1px solid var(--linha);
     border-radius: 12px;
-    padding: 14px 16px;
-    margin-bottom: 12px;
+    padding: 12px 16px;
+    margin-bottom: 10px;
 }
 .admin-linha.bloqueado { background: #fdf1f0; border-color: #f0c9c4; }
 
-.admin-linha-topo {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 4px;
-}
-.admin-linha-topo b { font-size: 15.5px; }
-.admin-linha-topo small { color: var(--tinta-fraca); font-size: 12px; white-space: nowrap; }
+.admin-identidade { flex: 1 1 240px; min-width: 0; }
 
-.admin-dado { font-size: 13px; color: var(--tinta-suave); line-height: 1.5; }
+.admin-nome {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.35;
+}
+.admin-quando {
+    color: var(--tinta-fraca);
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* A ETIQUETA
+
+   Situação é a primeira pergunta de quem abre esta tela, então ela é
+   cor e não texto corrido no meio de uma frase. */
+.admin-etiqueta {
+    flex-shrink: 0;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .03em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+.etq-verde    { background: #e4f8ee; color: #0b7a47; }
+.etq-ouro     { background: #fdf3d9; color: #8a6300; }
+.etq-vermelha { background: #fdeceb; color: #b03a2e; }
+.etq-azul     { background: var(--azul-fraco); color: var(--azul-forte); }
+.etq-neutra   { background: rgba(20, 32, 43, .07); color: var(--tinta-suave); }
+
+.admin-dado {
+    margin-top: 2px;
+    font-size: 13px;
+    color: var(--tinta-suave);
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
 
 /* A descrição inteira, e não um resumo: é nela que mora a palavra de
    imobiliária que trouxe o anúncio para a fila. */
+/* A descrição ocupa a linha inteira, embaixo. É texto para ler, e não
+   dado para bater o olho. */
 .admin-texto {
-    margin-top: 8px;
+    flex-basis: 100%;
+    margin-top: 2px;
     padding: 10px 12px;
     border-radius: 10px;
     background: var(--nevoa);
@@ -701,15 +760,89 @@
     white-space: pre-wrap;
 }
 
-.admin-acoes { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-.admin-acoes .btn { font-size: 13px; padding: 8px 14px; }
+.admin-acoes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0;
+}
+/* A largura volta a ser a do texto.
+
+   A regra .conta-caixa .btn manda todo botão destas caixas ocupar a
+   linha inteira, e é ela que empilhava as ações uma embaixo da outra.
+   Aqui os botões convivem em fila, então a largura é a do rótulo. */
+.admin-acoes .btn {
+    width: auto;
+    min-height: 36px;
+    padding: 0 12px;
+    font-size: 13px;
+    border-radius: 10px;
+    box-shadow: none;
+}
 
 /* Vermelho só no que tira alguma coisa do ar. */
 .admin-recusar { border-color: #e6b8b2; color: #b03a2e; }
 .admin-recusar:hover { background: #b03a2e; border-color: #b03a2e; color: #fff; }
 
+/* O verde do WhatsApp, e não o azul do site: este é o único botão da
+   linha que sai daqui e vai falar com uma pessoa. */
+.admin-zap {
+    gap: 6px;
+    border: 1.5px solid rgba(37, 211, 102, .5);
+    background: #fff;
+    color: #128c4a;
+}
+.admin-zap:hover { background: #25d366; border-color: #25d366; color: #fff; }
+.admin-zap svg { width: 14px; height: 14px; fill: currentColor; flex-shrink: 0; }
+
+/* A BARRA DE FILTRO
+
+   Fica antes da lista porque a pergunta vem antes: "quem está
+   bloqueado?", "cadê o Fulano?". */
+/* O seletor carrega o .conta-caixa de propósito. Sem ele, a regra
+   ".conta-caixa form" lá de cima é mais específica e transforma esta
+   barra numa coluna encostada à direita. */
+.conta-caixa form.admin-filtros {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+.admin-filtros label { display: flex; flex-direction: column; gap: 4px; }
+.admin-filtros label.cresce { flex: 1 1 200px; }
+.admin-filtros span {
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--tinta-fraca);
+}
+.admin-filtros select,
+.admin-filtros input {
+    min-height: 42px;
+    padding: 0 12px;
+    border: 1px solid var(--linha);
+    border-radius: 11px;
+    background: #fff;
+    font: inherit;
+    font-size: 14.5px;
+    color: var(--tinta);
+}
+.admin-filtros .btn { width: auto; min-height: 42px; padding: 0 20px; border-radius: 11px; }
+
+.admin-vazio {
+    padding: 40px 20px;
+    border: 1px solid var(--linha);
+    border-radius: 14px;
+    background: var(--nevoa);
+    text-align: center;
+    color: var(--tinta-suave);
+}
+
 @media (max-width: 560px) {
-    .admin-acoes .btn { flex: 1 1 auto; justify-content: center; }
+    .admin-acoes { flex-basis: 100%; }
 }
 
 /* =====================================================================

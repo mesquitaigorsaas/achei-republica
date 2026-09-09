@@ -151,6 +151,29 @@
           teto dela. Bloquear impede novos anúncios sem apagar os que já
           existem.
         </p>
+
+        <!-- O filtro peneira o que já veio, sem ir ao banco de novo: a
+             lista inteira cabe numa consulta só, e esperar servidor
+             para escrever um nome seria lento à toa. -->
+        <form class="admin-filtros" id="filtroAnunciantes">
+          <label>
+            <span>Situação</span>
+            <select id="filtroSituacao">
+              <option value="">Todos</option>
+              <option value="no_ar">Com anúncio no ar</option>
+              <option value="sem_anuncio">Sem anúncio</option>
+              <option value="liberado">Teto liberado</option>
+              <option value="denunciado">Com denúncia</option>
+              <option value="bloqueado">Bloqueados</option>
+            </select>
+          </label>
+          <label class="cresce">
+            <span>Buscar por nome, e-mail ou telefone</span>
+            <input type="search" id="filtroTermo" autocomplete="off" />
+          </label>
+          <button type="submit" class="btn btn-azul">Filtrar</button>
+        </form>
+
         <div id="listaAnunciantes"></div>
       </section>
 
