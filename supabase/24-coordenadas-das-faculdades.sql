@@ -3,12 +3,6 @@
 --
 -- Rode DEPOIS do 23-mais-faculdades-bh.sql.
 --
--- ATENÇÃO: ESTE ARQUIVO AINDA NÃO ESTÁ PRONTO PARA RODAR.
--- Faltam três faculdades (a lista está no fim) e uma precisa de
--- conferência. Rodar assim não estraga nada — as três ficam com lat e
--- lng nulos, exatamente como estão hoje —, mas a conta de distância vai
--- ignorá-las até alguém completar.
---
 -- ---------------------------------------------------------------------
 -- POR QUE ISTO EXISTE
 --
@@ -16,7 +10,7 @@
 -- confere. Quem tem pressa de alugar escreve 10 onde são 20, e isso
 -- sobe a casa na busca — o trajeto vale 20 dos 100 pontos da nota.
 --
--- Testado em 09/09/2026 no único anúncio real do site: ele declara 10
+-- Medido em 09/09/2026 no único anúncio real do site: ele declara 10
 -- minutos até a UNIFENAS, e o Google responde 22 minutos a pé, 1,5 km.
 -- Não é hipótese.
 --
@@ -35,17 +29,35 @@
 -- ---------------------------------------------------------------------
 -- DE ONDE VIERAM OS NÚMEROS
 --
--- Geocodificados em 09/09/2026 no Nominatim (OpenStreetMap), a partir
--- dos endereços que já estavam nos comentários do 17 e do 23. Serviço
--- gratuito, sem chave.
+-- Geocodificados em 09/09/2026 no Nominatim (OpenStreetMap), gratuito e
+-- sem chave, a partir dos endereços que já estavam nos comentários do 17
+-- e do 23. Os que faltavam foram conferidos no site de cada instituição
+-- antes de virar coordenada.
 --
--- Cada linha abaixo diz o que o serviço encontrou:
+-- Cada linha diz o que o serviço encontrou:
 --
---   EXATO ..... casou o número da porta, ou o próprio prédio da
---               instituição pelo nome.
+--   EXATO ..... casou o número da porta, ou o próprio prédio pelo nome.
 --   NA RUA .... casou a rua e o bairro, sem o número. O erro é de um
 --               quarteirão, e para ordenar casa por distância isso não
---               muda nada.
+--               muda a ordem.
+--
+-- QUATRO ARMADILHAS que apareceram no caminho, todas resolvidas, e
+-- escritas aqui porque quem for acrescentar a próxima vai tropeçar nas
+-- mesmas:
+--
+--   Newton Silva Lobo — o comentário do 17 dizia "Rua Silva Lobo". É
+--   AVENIDA Silva Lobo. Nenhuma busca achava.
+--
+--   UEMG Guignard — o mapa grafa a rua como "Ascanio Bulamarqui", e o
+--   endereço oficial é "Ascânio Burlamarque". Buscar pelo nome do
+--   prédio resolveu. Pelo CEP teria dado 3,8 km de erro: o CEP cai no
+--   meio da faixa, não na porta.
+--
+--   Una Linha Verde — o número que eu tinha (12001) devolvia a FAMINAS,
+--   outra instituição. O certo é 11157.
+--
+--   UniBH Lourdes — entrou no 17 sem endereço nenhum. É Rua Rio de
+--   Janeiro, 1323.
 --
 -- Coordenada não é endereço: para o link de trajeto no Maps o site
 -- continua usando o nome da faculdade, que o Google resolve melhor.
@@ -53,7 +65,7 @@
 
 update faculdades f set lat = v.lat, lng = v.lng
   from (values
-    -- EXATO
+    -- EXATO — casou a porta ou o prédio
     ('UFMG Pampulha',            -19.863092, -43.959800),
     ('UFMG Saúde',               -19.924195, -43.929410),
     ('CEFET Nova Suíça',         -19.930082, -43.976228),
@@ -65,17 +77,21 @@ update faculdades f set lat = v.lat, lng = v.lng
     ('FUMEC',                    -19.943563, -43.925382),
     ('Ciências Médicas MG',      -19.924082, -43.931111),
     ('UEMG Design',              -19.930727, -43.938236),
+    ('UEMG Guignard',            -19.955097, -43.920406),
     ('UEMG Cidade Jardim',       -19.939656, -43.948122),
     ('Estácio Floresta',         -19.915391, -43.931884),
     ('Estácio Prado',            -19.922721, -43.960078),
     ('Arnaldo Anchieta',         -19.946237, -43.927422),
     ('Santa Casa BH',            -19.924736, -43.925600),
+    ('Una Linha Verde',          -19.826720, -43.944113),
+    ('UniBH Cristiano Machado',  -19.874893, -43.925231),
     ('UNIFAL',                   -21.420087, -45.949059),
     ('UNIFENAS',                 -21.446213, -45.947953),
 
-    -- NA RUA
+    -- NA RUA — rua e bairro certos, sem o número
     ('PUC Barreiro',             -19.982534, -44.031356),
     ('UniBH Estoril',            -19.968850, -43.955957),
+    ('UniBH Lourdes',            -19.935646, -43.943226),
     ('Una Aimorés',              -19.926904, -43.944168),
     ('Una Guajajaras',           -19.924629, -43.942790),
     ('Una Barreiro',             -19.975542, -44.018999),
@@ -83,56 +99,60 @@ update faculdades f set lat = v.lat, lng = v.lng
     ('Estácio Venda Nova',       -19.821125, -43.952860),
     ('Arnaldo Funcionários',     -19.928289, -43.927867),
     ('Arnaldo Pilar',            -20.000763, -43.972425),
-    ('UniBH Cristiano Machado',  -19.866754, -43.927591)
+    ('Newton Silva Lobo',        -19.940366, -43.967216)
   ) as v(sigla, lat, lng)
  where f.sigla = v.sigla;
 
 
 -- =====================================================================
--- O QUE FALTA — não rode nada disto sem conferir
+-- CONFERIR
 --
--- QUATRO PENDÊNCIAS, e nenhuma delas é chute que eu deva dar sozinho.
+-- 1. Ninguém pode ficar sem coordenada:
 --
--- 1. Newton Silva Lobo (Rua Silva Lobo, 1730, Nova Granada)
---    O Nominatim não achou a rua com esse nome em Nova Granada.
+--      select sigla, lat, lng from faculdades where lat is null;
 --
--- 2. UEMG Guignard (Rua Ascânio Burlamarque, 540, Mangabeiras)
---    Endereço vem do site oficial da UEMG, mas o serviço não conhece
---    a rua.
+--    Esperado: nenhuma linha. São 32 faculdades e 32 pares aqui em cima.
 --
--- 3. UniBH Lourdes
---    Nunca teve endereço escrito: entrou no 17 sem comentário.
+-- 2. Toda faculdade de BH tem que cair dentro da cidade. Este é o teste
+--    que pega geocodificação para o lugar errado, que é o erro caro:
+--    coordenada torta não dá erro em lugar nenhum, só ordena a busca
+--    errado para sempre.
 --
--- 4. Una Linha Verde — CONFERIR ANTES DE USAR
---    A busca por "Avenida Cristiano Machado, 12001" devolveu a FAMINAS,
---    que é outra instituição. Ou o número está errado, ou as duas
---    dividem o endereço. Fica de fora até alguém olhar.
+--      select f.sigla, f.lat, f.lng
+--        from faculdades f join cidades c on c.id = f.cidade_id
+--       where c.slug = 'belo-horizonte'
+--         and (f.lat not between -20.05 and -19.77
+--          or  f.lng not between -44.10 and -43.85);
 --
--- Como completar uma delas, depois de achar o endereço certo:
+--    Esperado: nenhuma linha.
 --
---   update faculdades set lat = -19.900000, lng = -43.900000
---    where sigla = 'UEMG Guignard'
---   returning sigla, lat, lng;
+-- 3. E as de Alfenas, pela mesma razão:
+--
+--      select f.sigla, f.lat, f.lng
+--        from faculdades f join cidades c on c.id = f.cidade_id
+--       where c.slug = 'alfenas'
+--         and (f.lat not between -21.50 and -21.38
+--          or  f.lng not between -46.00 and -45.90);
+--
+--    Esperado: nenhuma linha.
 --
 -- ---------------------------------------------------------------------
--- CONFERIR O QUE JÁ ENTROU
+-- PARA A PRÓXIMA FACULDADE QUE ENTRAR
 --
---   select f.sigla, f.lat, f.lng
---     from faculdades f join cidades c on c.id = f.cidade_id
---    where c.slug = 'belo-horizonte'
---    order by f.lat nulls first;
+-- Acrescente com coordenada desde o começo, senão ela nasce invisível
+-- para a conta de distância:
 --
--- As sem coordenada aparecem primeiro. Devem ser exatamente quatro.
+--   update faculdades set lat = -19.900000, lng = -43.900000
+--    where sigla = 'SIGLA NOVA'
+--   returning sigla, lat, lng;
 --
--- E um teste de sanidade: toda faculdade de BH tem que cair entre
--- -20,05 e -19,77 de latitude e entre -44,10 e -43,85 de longitude.
--- Qualquer uma fora disso foi geocodificada para a cidade errada.
+-- Para achar a coordenada sem sair do navegador, no console de qualquer
+-- página do site:
 --
---   select sigla, lat, lng from faculdades f
---     join cidades c on c.id = f.cidade_id
---    where c.slug = 'belo-horizonte'
---      and (lat not between -20.05 and -19.77
---       or  lng not between -44.10 and -43.85);
+--   fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1'
+--       + '&countrycodes=br&q=' + encodeURIComponent('Nome da faculdade, Cidade, MG'))
+--     .then(r => r.json()).then(j => console.log(j[0]));
 --
--- Esperado: nenhuma linha.
+-- Busque pelo NOME do prédio antes do endereço. Foi o que salvou a
+-- Guignard, e é o que erra menos: rua tem grafia divergente, prédio não.
 -- =====================================================================
