@@ -88,7 +88,8 @@ async function carregar() {
         minutos, modo, vagas, disponivel_em, whatsapp, ativa, status,
         composicao, moradores, cep, logradouro, numero, complemento,${extra}
         cidades ( nome, slug ),
-        faculdades ( sigla, nome ),
+        faculdades!faculdade_id ( sigla, nome ),
+        republica_faculdades ( minutos, faculdades ( sigla, nome ) ),
         republica_fotos ( caminho, ordem ),
         republica_marcas ( marca ),
         republica_cursos ( curso )`;
@@ -292,7 +293,31 @@ function cabecalho(vaga, cidade, faculdade) {
         ? numero(`R$ ${Number(vaga.caucao)}`, 'de caução')
         : numero('Sem caução', 'nada adiantado'));
 
-    if (vaga.minutos && faculdade) {
+    /* UM QUADRINHO POR FACULDADE
+
+       A casa pode estar perto de até três, e cada uma tem o tempo dela.
+       Mostrar só a primeira escondia justamente o motivo de o estudante
+       da segunda ter chegado nesta página.
+
+       Sem tempo cravado o quadrinho ainda aparece, dizendo "perto":
+       o dono pode não saber o número, e "perto da UFMG" é informação.
+
+       A coluna antiga entra como rede, para vaga cadastrada antes do
+       18-varias-faculdades.sql. */
+    const pertoDe = (vaga.republica_faculdades || [])
+        .filter(r => r && r.faculdades && r.faculdades.sigla);
+
+    if (pertoDe.length) {
+        pertoDe
+            .slice()
+            .sort((a, b) => (a.minutos == null ? 1e9 : a.minutos)
+                          - (b.minutos == null ? 1e9 : b.minutos))
+            .forEach(r => {
+                numeros.appendChild(numero(
+                    r.minutos ? `${r.minutos} min` : 'Perto',
+                    `${NOME_DO_MODO[vaga.modo] || 'a pé'} da ${r.faculdades.sigla}`));
+            });
+    } else if (vaga.minutos && faculdade) {
         numeros.appendChild(numero(
             `${vaga.minutos} min`,
             `${NOME_DO_MODO[vaga.modo] || 'a pé'} da ${faculdade.sigla}`));

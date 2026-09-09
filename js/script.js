@@ -43,6 +43,51 @@ const fichas = document.querySelectorAll('.ficha');
 const fichaFaculdade = document.getElementById('fichaFaculdade');
 const selFaculdade = document.getElementById('selFaculdade');
 
+
+/* ---------------------------------------------------------------------
+   AS FACULDADES DE UM CARTÃO
+
+   Uma casa pode estar perto de até três, cada uma com o tempo dela — em
+   Belo Horizonte isso é a regra, não a exceção: quem mora no Coração
+   Eucarístico está perto da PUC E do CEFET Nova Suíça.
+
+   No cartão isso vive em duas listas paralelas, separadas por vírgula:
+   data-uni="PUC Coração Eucarístico,CEFET Nova Suíça" e data-min="12,25".
+   A faculdade da posição 2 tem o tempo da posição 2. É o mesmo formato
+   de data-cursos e data-perfil, que já eram listas — e uma casa com uma
+   faculdade só é uma lista de um item, então os seis cartões de exemplo
+   escritos à mão no index.html continuam valendo sem mudar nada.
+
+   Estas duas funções são o único lugar que sabe desse formato. Quem
+   filtra e quem ordena pergunta a elas.
+   --------------------------------------------------------------------- */
+function unisDoCartao(cartao) {
+    return (cartao.dataset.uni || '')
+        .split(',').map(s => s.trim()).filter(Boolean);
+}
+
+/* Quantos minutos esta casa está DAQUELA faculdade.
+
+   Sem faculdade escolhida, vale a mais perto: é a promessa mais
+   generosa que a casa pode fazer, e é a que o dono faria.
+
+   Infinity para faculdade que a casa não lista, porque quem não é perto
+   não deve competir por posição com quem é. E 999 é "o dono não cravou
+   o número", a convenção que a vitrine já usava. */
+function minutosDoCartao(cartao, sigla) {
+    const unis = unisDoCartao(cartao);
+    const mins = (cartao.dataset.min || '').split(',').map(m => Number(m.trim()));
+
+    if (!sigla) {
+        const validos = mins.filter(Number.isFinite);
+        return validos.length ? Math.min(...validos) : 999;
+    }
+
+    const i = unis.indexOf(sigla);
+    if (i < 0) return Infinity;
+    return Number.isFinite(mins[i]) ? mins[i] : 999;
+}
+
 let fichaAtiva = 'combinam';
 // A ordem de partida da vitrine. Vira a ordem do questionário depois
 // que ele roda, para "Mais combinam" ter ao que voltar.
@@ -95,7 +140,7 @@ function montarFaculdades() {
        IFSULDEMINAS, UNIFAL e UNIFENAS. A ficha dizia que BH tem UNIFAL,
        e o mesmo valia, calado, para as outras treze cidades vazias. */
     const siglas = temReal
-        ? [...new Set(daCidade.map(c => c.dataset.uni))].sort()
+        ? [...new Set(daCidade.flatMap(unisDoCartao))].sort()
         : faculdadesDaCidade(selCidade.value).slice().sort();
 
     const escolhida = selFaculdade.value;
@@ -112,8 +157,8 @@ function montarFaculdades() {
     // diz nada — deixaria o IFSULDEMINAS, com uma casa só, na frente da
     // UNIFAL, com quatro.
     const maisCasas = siglas.slice().sort((a, b) =>
-        daCidade.filter(c => c.dataset.uni === b).length -
-        daCidade.filter(c => c.dataset.uni === a).length)[0];
+        daCidade.filter(c => unisDoCartao(c).includes(b)).length -
+        daCidade.filter(c => unisDoCartao(c).includes(a)).length)[0];
 
     selFaculdade.value =
         siglas.includes(escolhida) ? escolhida :
@@ -272,8 +317,13 @@ function aplicarFicha() {
             base.forEach(c => { if (c.dataset.exemplo) c.dataset.uni = alvo; });
         }
 
-        lista = base.filter(c => c.dataset.uni === alvo)
-                    .sort((a, b) => Number(a.dataset.min) - Number(b.dataset.min));
+        /* A casa entra se QUALQUER uma das faculdades dela for a
+           escolhida, e a ordem usa o tempo DAQUELA. Uma casa a 12
+           minutos da PUC e a 25 do CEFET aparece nas duas buscas, em
+           lugares diferentes de cada lista — que é o certo, porque são
+           trajetos diferentes. */
+        lista = base.filter(c => unisDoCartao(c).includes(alvo))
+                    .sort((a, b) => minutosDoCartao(a, alvo) - minutosDoCartao(b, alvo));
     } else if (fichaAtiva === 'preco') {
         lista = [...base].sort((a, b) => Number(a.dataset.preco) - Number(b.dataset.preco));
     } else if (fichaAtiva === 'pet') {
@@ -888,11 +938,17 @@ document.addEventListener('click', e => {
    separa isto de um número inventado.
    --------------------------------------------------------------------- */
 function pontuar(cartao) {
+    /* O trajeto é o da faculdade QUE A PESSOA RESPONDEU, e não o da
+       primeira que o dono cadastrou. Uma casa a 10 minutos da PUC e a
+       40 do CEFET não pode somar pontos de trajeto para quem estuda no
+       CEFET — o trajeto é metade da nota, e é a razão de o site
+       existir. Casa que não é perto da faculdade dela devolve Infinity
+       e não pontua. */
     const dados = {
-        uni: cartao.dataset.uni,
+        unis: unisDoCartao(cartao),
         cursos: (cartao.dataset.cursos || '').split(','),
         preco: Number(cartao.dataset.preco),
-        minutos: Number(cartao.dataset.min),
+        minutos: minutosDoCartao(cartao, resposta.uni),
         modo: cartao.dataset.modo === 'bike' ? 'de bike' : 'a pé',
         perfil: (cartao.dataset.perfil || '').split(','),
     };
@@ -901,9 +957,9 @@ function pontuar(cartao) {
     const motivos = [];
 
     // Faculdade — 25
-    if (dados.uni === resposta.uni) {
+    if (resposta.uni && dados.unis.includes(resposta.uni)) {
         pontos += 25;
-        motivos.push(`Fica do lado da ${dados.uni}`);
+        motivos.push(`Fica do lado da ${resposta.uni}`);
     }
 
     // Curso — 20

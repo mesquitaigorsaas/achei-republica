@@ -116,9 +116,15 @@ if (painelFiltrosEl && typeof MARCAS !== 'undefined') {
         const escolhido = sel.value;
         const slug = document.getElementById('selCidade').value;
 
+        /* data-uni é lista, porque a casa pode estar perto de até três
+           faculdades. O bairro não é. Achatar os dois do mesmo jeito
+           daria uma opção só, escrita com vírgulas no meio — e nenhuma
+           casa bateria com ela. */
         const valores = [...document.querySelectorAll('.anuncio')]
             .filter(c => !c.dataset.exemplo && c.dataset.cidade === slug)
-            .map(c => (c.dataset[atributo] || '').trim())
+            .flatMap(c => atributo === 'uni'
+                ? unisDoCartao(c)
+                : [(c.dataset[atributo] || '').trim()])
             .filter(Boolean);
 
         const unicos = [...new Set(valores)].sort((a, b) => a.localeCompare(b, 'pt-BR'));
@@ -202,13 +208,20 @@ if (painelFiltrosEl && typeof MARCAS !== 'undefined') {
         }
 
         if (selBairro && selBairro.value && cartao.dataset.bairro !== selBairro.value) return false;
-        if (selUni && selUni.value && cartao.dataset.uni !== selUni.value) return false;
+        // A casa serve se QUALQUER uma das faculdades dela for a
+        // escolhida. As funções vêm do script.js, que carrega antes.
+        if (selUni && selUni.value && !unisDoCartao(cartao).includes(selUni.value)) return false;
 
         if (selComo && selComo.value && cartao.dataset.modo !== selComo.value) return false;
 
+        /* O teto de tempo vale para a faculdade escolhida ali em cima.
+           Sem faculdade escolhida vale a mais perto — senão "até 10
+           minutos" recusaria uma casa a 8 da UFMG só porque ela também
+           fica a 30 da PUC. */
         if (selTempo && selTempo.value) {
             const teto = parseInt(selTempo.value, 10);
-            if (Number.isFinite(teto) && Number(cartao.dataset.min) > teto) return false;
+            const min = minutosDoCartao(cartao, selUni && selUni.value);
+            if (Number.isFinite(teto) && min > teto) return false;
         }
 
         const minimo = Number(document.getElementById('fMin').value);

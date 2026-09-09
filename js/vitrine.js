@@ -73,11 +73,20 @@ document.querySelectorAll('.anuncio[data-exemplo]').forEach(cartao => {
 
    Isto não é gambiarra de migração: é uma propriedade permanente de
    servir HTML de um lugar e dados de outro. */
+/* O "!faculdade_id" não é enfeite, e o comentário fica AQUI FORA porque
+   o que está entre as crases viaja inteiro para o servidor: comentário
+   dentro da string vira erro de sintaxe do PostgREST (PGRST100).
+
+   Desde que republica_faculdades entrou na consulta existem DOIS
+   caminhos de republicas até faculdades: a coluna antiga faculdade_id e
+   a tabela nova. Sem dizer por qual, o PostgREST devolve 400 (PGRST201)
+   e a vitrine inteira vem vazia — sem erro na tela, só sem casa. */
 const CAMPOS_BASE = `
     id, nome, bairro, preco, caucao, minutos, modo, tipo, perfil, vagas,
     disponivel_em,
     cidades ( slug ),
-    faculdades ( sigla ),
+    faculdades!faculdade_id ( sigla ),
+    republica_faculdades ( minutos, faculdades ( sigla ) ),
     republica_fotos ( caminho, ordem ),
     republica_marcas ( marca ),
     republica_cursos ( curso )`;
@@ -144,12 +153,36 @@ function montarCartao(vaga) {
     cartao.className = 'anuncio';
     cartao.dataset.id = vaga.id;
     cartao.dataset.cidade = (vaga.cidades || {}).slug || '';
-    cartao.dataset.uni = (vaga.faculdades || {}).sigla || '';
     cartao.dataset.cursos = cursos.join(',');
     cartao.dataset.preco = Number(vaga.preco);
     cartao.dataset.caucao = Number(vaga.caucao || 0);
-    cartao.dataset.min = vaga.minutos || 999;
     cartao.dataset.modo = vaga.modo || 'pe';
+
+    /* AS FACULDADES DA CASA
+
+       data-uni e data-min saem daqui como LISTAS paralelas, separadas
+       por vírgula: a faculdade da posição 2 tem o tempo da posição 2.
+       Mesmo formato de data-cursos e data-perfil, que já eram listas.
+
+       Uma casa perto de uma faculdade só vira uma lista de um item, e
+       por isso os cartões de exemplo escritos à mão no index.html
+       continuam valendo sem mudar uma linha.
+
+       999 é "não informou o tempo", a convenção que esta função já
+       usava. O anunciante pode dizer "é perto" sem cravar o número. */
+    const perto = (vaga.republica_faculdades || [])
+        .filter(r => r && r.faculdades && r.faculdades.sigla);
+
+    if (perto.length) {
+        cartao.dataset.uni = perto.map(r => r.faculdades.sigla).join(',');
+        cartao.dataset.min = perto.map(r => r.minutos == null ? 999 : r.minutos).join(',');
+    } else {
+        /* Vaga anterior ao 18-varias-faculdades.sql, ou banco que ainda
+           não tem a tabela. A coluna antiga continua sendo escrita com
+           a primeira faculdade, então ela serve de rede. */
+        cartao.dataset.uni = (vaga.faculdades || {}).sigla || '';
+        cartao.dataset.min = vaga.minutos || 999;
+    }
 
     /* Estes quatro são só para o painel de "Filtros completos". Não
        aparecem em lugar nenhum da tela — existem para o filtro ter o que
