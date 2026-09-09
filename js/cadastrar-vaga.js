@@ -225,7 +225,9 @@ function marcasEscolhidas() {
 async function carregarCidades() {
     const { data, error } = await banco
         .from('cidades')
-        .select('id, nome, slug')
+        // A UF entra para montar a busca de coordenada da casa: "Rua X,
+        // Alfenas, MG" acha; "Rua X, Alfenas" acha outra Alfenas.
+        .select('id, nome, slug, uf')
         .order('nome');
 
     if (error || !data || !data.length) {
@@ -504,6 +506,107 @@ function moldura(url, ehCapa, aoTirar, rotulo, soltarDepois) {
 
 
 /* ---------------------------------------------------------------------
+   ONDE A CASA FICA, EM NÚMEROS
+
+   Latitude e longitude para o site poder calcular a distância até a
+   faculdade em vez de acreditar no tempo que o anunciante digitou.
+   Guardado no cadastro, uma vez, e não a cada busca.
+
+   Nenhum dos dois serviços pede chave, e isso não é economia: o código
+   deste site é servido pelo GitHub Pages, então qualquer chave dentro
+   dele estaria à vista de quem abrir o código-fonte. É a mesma razão de
+   o mapa da página da vaga ser o embed sem chave.
+
+   DOIS CAMINHOS, PORQUE UM SÓ NÃO COBRE O BRASIL
+
+   O primeiro é o CEP na BrasilAPI, e é o melhor quando existe: CEP de
+   rua devolve o trecho certo. Só que cidade pequena costuma ter um CEP
+   geral terminado em -000 para o município inteiro, e aí não há
+   coordenada nenhuma para devolver. Alfenas é assim: 37130-000 volta
+   vazio, e Alfenas é a cidade principal deste site.
+
+   O segundo é o nome da rua no Nominatim, do OpenStreetMap. Ele resolve
+   justamente o caso que o CEP não resolve.
+
+   A busca vai SEM o número e SEM o bairro, de propósito. Com número,
+   quase nada é encontrado; com bairro, a busca falha quando o mapa
+   discorda do bairro que a pessoa escreveu — "Rua Geraldo Freitas da
+   Costa, Vila Teixeira, Alfenas" não acha nada, e sem o bairro acha.
+
+   A PRECISÃO É DE TRECHO DE RUA, não da porta, nos dois caminhos. Para
+   ordenar casas por distância isso basta: o erro é parecido para todas,
+   e a ordem não muda. Não serve para dizer "são 12 minutos" — dizer
+   isso continua sendo trabalho do Maps, no botão da página da vaga.
+   --------------------------------------------------------------------- */
+/* Sem acento e sem maiúscula, para comparar nome de cidade que veio de
+   três lugares diferentes escrito de três jeitos. */
+function achatar(s) {
+    return (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+}
+
+async function coordenadaDaCasa(campos, cidade) {
+    /* Prazo curto nos dois: isto roda com a pessoa olhando o botão
+       "Publicando...". Serviço lento não pode segurar o cadastro. */
+    const prazo = () => (AbortSignal.timeout ? AbortSignal.timeout(4000) : undefined);
+
+    /* Sem rua não há o que procurar. Sem esta linha, uma casa sem
+       logradouro cairia no CENTRO da cidade — e todas elas no mesmo
+       ponto, o que faria a ordem por distância virar sorteio. */
+    if (!campos.logradouro) return null;
+
+    const cidadeDita = achatar(cidade.nome);
+
+    const cep = (campos.cep || '').replace(/\D/g, '');
+    if (cep.length === 8) {
+        try {
+            const r = await fetch('https://brasilapi.com.br/api/cep/v2/' + cep,
+                { signal: prazo() });
+            if (r.ok) {
+                const j = await r.json();
+                const c = j && j.location && j.location.coordinates;
+
+                /* O CEP tem que ser DA CIDADE ESCOLHIDA. Um dígito
+                   trocado é um CEP válido de outro lugar: 99999999
+                   devolve uma coordenada no Paraná sem reclamar de
+                   nada, e a casa passaria a ser ordenada a 700 km da
+                   faculdade. Erro que não dá erro é o que mais custa. */
+                if (c && c.latitude && c.longitude
+                    && cidadeDita && achatar(j.city) === cidadeDita) {
+                    return { lat: Number(c.latitude), lng: Number(c.longitude) };
+                }
+            }
+        } catch (e) {
+            console.warn('CEP sem coordenada, tentando pelo nome da rua:', e);
+        }
+    }
+
+    /* A busca vai SEM o número e SEM o bairro, de propósito. Com
+       número, quase nada é encontrado. Com bairro, ela falha quando o
+       mapa discorda do bairro que a pessoa escreveu. */
+    const busca = [campos.logradouro, cidade.nome, cidade.uf].filter(Boolean).join(', ');
+
+    try {
+        const u = 'https://nominatim.openstreetmap.org/search?format=json&limit=1'
+                + '&countrycodes=br&q=' + encodeURIComponent(busca);
+        const r = await fetch(u, { headers: { Accept: 'application/json' }, signal: prazo() });
+        if (!r.ok) return null;
+
+        const j = await r.json();
+        if (!j.length) return null;
+
+        // Mesma desconfiança do CEP: se a resposta não fala da cidade
+        // escolhida, é outra rua de mesmo nome em outro lugar.
+        if (cidadeDita && !achatar(j[0].display_name).includes(cidadeDita)) return null;
+
+        return { lat: Number(j[0].lat), lng: Number(j[0].lon) };
+    } catch (e) {
+        console.warn('Não consegui a coordenada da casa:', e);
+        return null;
+    }
+}
+
+
+/* ---------------------------------------------------------------------
    Publicar ou salvar
    --------------------------------------------------------------------- */
 form.addEventListener('submit', async evento => {
@@ -561,6 +664,15 @@ form.addEventListener('submit', async evento => {
     if (campos.whatsapp.length < 10) return aviso('O WhatsApp precisa de DDD e número.');
 
     ocupado(botaoPublicar, true, editandoId ? 'Salvando...' : 'Publicando...');
+
+    /* A coordenada entra junto com o resto, e é ela que vai permitir o
+       site calcular a distância até a faculdade em vez de acreditar no
+       tempo que o anunciante digitou. Se não vier, a vaga é salva do
+       mesmo jeito: as colunas aceitam nulo, e ninguém perde um anúncio
+       porque um serviço de mapa estava fora do ar. */
+    const daCidade = cidades.find(c => c.id === selCidade.value) || {};
+    const ponto = await coordenadaDaCasa(campos, daCidade);
+    if (ponto) { campos.lat = ponto.lat; campos.lng = ponto.lng; }
 
     const { data: vaga, error } = editandoId
         ? await banco.from('republicas').update(campos)
