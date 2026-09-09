@@ -119,16 +119,21 @@ if (painelFiltrosEl && typeof MARCAS !== 'undefined') {
         const escolhido = sel.value;
         const slug = document.getElementById('selCidade').value;
 
-        /* data-uni é lista, porque a casa pode estar perto de até três
-           faculdades. O bairro não é. Achatar os dois do mesmo jeito
-           daria uma opção só, escrita com vírgulas no meio — e nenhuma
-           casa bateria com ela. */
-        const valores = [...document.querySelectorAll('.anuncio')]
-            .filter(c => !c.dataset.exemplo && c.dataset.cidade === slug)
-            .flatMap(c => atributo === 'uni'
-                ? unisDoCartao(c)
-                : [(c.dataset[atributo] || '').trim()])
-            .filter(Boolean);
+        /* O bairro sai dos anúncios: bairro que não tem casa nenhuma é
+           filtro que devolve lista vazia.
+
+           A FACULDADE sai do banco, e não dos anúncios. São coisas
+           diferentes: bairro é onde as casas estão, faculdade é de onde
+           a pessoa mede a distância — e ela pode querer medir a partir
+           de uma faculdade que nenhum anunciante marcou. Foi assim que
+           a UNIFAL sumiu do site em Alfenas: um anúncio só, marcado na
+           UNIFENAS, e quem estuda na UNIFAL não se encontrava. */
+        const valores = atributo === 'uni'
+            ? ((window.FACULDADES_POR_CIDADE || {})[slug] || []).slice()
+            : [...document.querySelectorAll('.anuncio')]
+                .filter(c => !c.dataset.exemplo && c.dataset.cidade === slug)
+                .map(c => (c.dataset[atributo] || '').trim())
+                .filter(Boolean);
 
         const unicos = [...new Set(valores)].sort((a, b) => a.localeCompare(b, 'pt-BR'));
 
@@ -211,9 +216,16 @@ if (painelFiltrosEl && typeof MARCAS !== 'undefined') {
         }
 
         if (selBairro && selBairro.value && cartao.dataset.bairro !== selBairro.value) return false;
-        // A casa serve se QUALQUER uma das faculdades dela for a
-        // escolhida. As funções vêm do script.js, que carrega antes.
-        if (selUni && selUni.value && !unisDoCartao(cartao).includes(selUni.value)) return false;
+        /* A faculdade deixou de EXCLUIR e virou o ponto de partida da
+           medida — é o que o rótulo "Distância a partir de" diz.
+
+           Antes ela cortava as casas cujo dono não tivesse marcado
+           aquela faculdade, e isso escondia casa a 900 metros só porque
+           o anunciante marcou outra. O que o dono marcou não diz nada
+           sobre onde a casa fica; a coordenada diz.
+
+           Quem quer cortar por proximidade usa o campo de distância
+           logo abaixo, que agora mede a partir daqui. */
 
         if (selComo && selComo.value && cartao.dataset.modo !== selComo.value) return false;
 

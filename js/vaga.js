@@ -561,26 +561,74 @@ function ondeFica(vaga, cidade) {
     corpo.appendChild(linha);
 
     if (vaga.logradouro) {
+        const pertoDe = (vaga.republica_faculdades || [])
+            .filter(r => r && r.faculdades && r.faculdades.sigla);
+
+        /* A MAIS PERTO ABRE O MAPA
+
+           O quadro embutido já vem com a rota a pé traçada até ela, em
+           vez de só marcar a casa com um alfinete. É a pergunta que a
+           pessoa tem na cabeça nesta altura da página: "isso aqui é
+           longe da minha faculdade?".
+
+           A mais perto, e não a primeira que o dono cadastrou: se a casa
+           serve três faculdades, a que melhor a vende é a mais próxima.
+           Sem coordenada para comparar, vale a ordem em que ela veio. */
+        const maisPerto = pertoDe
+            .map(r => ({
+                r,
+                km: distanciaEmKm(vaga.lat, vaga.lng, r.faculdades.lat, r.faculdades.lng)
+            }))
+            .sort((a, b) => (a.km === null ? 1e9 : a.km) - (b.km === null ? 1e9 : b.km))[0];
+
+        const destinoDoMapa = maisPerto
+            ? [maisPerto.r.faculdades.nome || maisPerto.r.faculdades.sigla, cidade.nome, 'MG']
+                .filter(Boolean).join(', ')
+            : null;
+
         const mapa = document.createElement('iframe');
         mapa.className = 'vaga-mapa';
-        mapa.src = 'https://www.google.com/maps?q=' + encodeURIComponent(busca) + '&output=embed';
+
+        /* Duas montagens do mesmo embed do Google, e nenhuma delas usa
+           chave de API — de propósito: o código deste site é servido
+           pelo GitHub Pages, chave nenhuma cabe aqui sem ficar à vista.
+
+           Com faculdade, saddr/daddr desenham a rota. Sem faculdade,
+           volta a ser o alfinete de sempre. */
+        mapa.src = destinoDoMapa
+            ? 'https://www.google.com/maps?saddr=' + encodeURIComponent(busca)
+              + '&daddr=' + encodeURIComponent(destinoDoMapa)
+              + '&dirflg=w&output=embed'
+            : 'https://www.google.com/maps?q=' + encodeURIComponent(busca) + '&output=embed';
+
         mapa.loading = 'lazy';
-        mapa.title = 'Mapa de ' + busca;
+        mapa.title = destinoDoMapa
+            ? 'Trajeto de ' + busca + ' até ' + destinoDoMapa
+            : 'Mapa de ' + busca;
         mapa.setAttribute('referrerpolicy', 'no-referrer-when-downgrade');
         mapa.setAttribute('allowfullscreen', '');
         corpo.appendChild(mapa);
 
-        /* O link além do mapa embutido: quem está no celular quer abrir
-           no aplicativo do Google Maps para traçar a rota, e o quadro
-           embutido não faz isso. */
-        const abrir = document.createElement('a');
-        abrir.className = 'btn btn-linha vaga-mapa-link';
-        abrir.href = 'https://www.google.com/maps/search/?api=1&query='
-            + encodeURIComponent(busca);
-        abrir.target = '_blank';
-        abrir.rel = 'noopener';
-        abrir.textContent = 'Abrir no Google Maps';
-        corpo.appendChild(abrir);
+        /* O "Abrir no Google Maps" saiu daqui.
+
+           Ele fazia o que os botões de trajeto abaixo já fazem, e pior:
+           abria o Maps só com o alfinete na casa, deixando a pessoa
+           montar a rota na mão. Dois botões para a mesma viagem, um
+           deles pela metade.
+
+           Ele volta, e só ele, quando a vaga não aponta faculdade
+           nenhuma — aí não há botão de trajeto, e sem este não sobraria
+           jeito de abrir o mapa no aplicativo. */
+        if (!pertoDe.length) {
+            const abrir = document.createElement('a');
+            abrir.className = 'btn btn-linha vaga-mapa-link';
+            abrir.href = 'https://www.google.com/maps/search/?api=1&query='
+                + encodeURIComponent(busca);
+            abrir.target = '_blank';
+            abrir.rel = 'noopener';
+            abrir.textContent = 'Abrir no Google Maps';
+            corpo.appendChild(abrir);
+        }
 
         /* O TRAJETO ATÉ CADA FACULDADE
 
@@ -603,9 +651,6 @@ function ondeFica(vaga, cidade) {
            lat e lng estão lá desde o 01-esquema.sql, vazias — este
            trecho passa a usar a coordenada e para de depender de o
            Google adivinhar o nome. */
-        const pertoDe = (vaga.republica_faculdades || [])
-            .filter(r => r && r.faculdades && r.faculdades.sigla);
-
         const trilha = document.createElement('div');
         trilha.className = 'vaga-trajetos';
         if (pertoDe.length) corpo.appendChild(trilha);

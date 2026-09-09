@@ -128,14 +128,44 @@ function kmDoCartao(cartao, sigla) {
     return Number.isFinite(km) ? km : null;
 }
 
+/* A distância de uma casa até uma faculdade, em três tentativas.
+
+   1. A MEDIDA GRAVADA no cartão, quando o anunciante marcou aquela
+      faculdade. É a que a vitrine já calculou.
+
+   2. A MEDIDA NA HORA, das coordenadas da casa até as da faculdade.
+      Serve para as faculdades que o anunciante NÃO marcou — e é o que
+      permite ao seletor oferecer a cidade inteira sem devolver lista
+      vazia. Distância é fato geográfico: não depende de o dono ter
+      lembrado de marcar.
+
+   3. O TEMPO DECLARADO, convertido a pé, só para quem marcou aquela
+      faculdade e não tem coordenada. É o combinado de não punir o
+      anunciante por falha nossa.
+
+   Infinity para o resto: quem não tem como ser medido não compete por
+   posição com quem tem. */
 function distanciaPara(cartao, sigla) {
     const medida = kmDoCartao(cartao, sigla);
     if (medida !== null) return medida;
+
+    const calculada = kmCalculadoNaHora(cartao, sigla);
+    if (calculada !== null) return calculada;
 
     const min = minutosDoCartao(cartao, sigla);
     if (!Number.isFinite(min)) return Infinity;
 
     return min / MINUTOS_POR_KM_A_PE;
+}
+
+function kmCalculadoNaHora(cartao, sigla) {
+    if (!sigla || typeof distanciaEmKm !== 'function') return null;
+
+    const cidade = cartao.dataset.cidade;
+    const f = ((window.COORDENADA_DA_FACULDADE || {})[cidade] || {})[sigla];
+    if (!f) return null;
+
+    return distanciaEmKm(cartao.dataset.lat, cartao.dataset.lng, f.lat, f.lng);
 }
 
 /* kmEscrito() e distanciaEmKm() vêm do js/distancia.js, carregado antes
@@ -182,20 +212,24 @@ function montarFaculdades() {
     // sem motivo nenhum.
     const { daCidade, temReal } = cartoesDaCidade(selCidade.value);
 
-    /* De onde sai a lista, e por que muda:
+    /* TODAS as faculdades da cidade, sempre, e não as que os anúncios
+       marcaram.
 
-       COM casa de verdade, sai dos anúncios. Oferecer uma faculdade que
-       não tem nenhuma república perto é oferecer um filtro que devolve
-       lista vazia.
+       Antes a lista saía dos anúncios quando havia algum, para nunca
+       oferecer um filtro que devolvesse lista vazia. O efeito colateral
+       apareceu em Alfenas: a cidade tem UNIFAL e UNIFENAS, o único
+       anúncio marcou a UNIFENAS, e a UNIFAL sumiu do seletor. Quem
+       estuda na UNIFAL abria o site e não se encontrava.
 
-       SEM casa nenhuma, sai do BANCO. Aqui a vitrine está mostrando os
-       seis cartões de exemplo, e eles trazem escrito no HTML as
-       faculdades de Alfenas — era isso que fazia Belo Horizonte oferecer
-       IFSULDEMINAS, UNIFAL e UNIFENAS. A ficha dizia que BH tem UNIFAL,
-       e o mesmo valia, calado, para as outras treze cidades vazias. */
-    const siglas = temReal
-        ? [...new Set(daCidade.flatMap(unisDoCartao))].sort()
-        : faculdadesDaCidade(selCidade.value).slice().sort();
+       O medo da lista vazia não vale mais, porque a distância agora é
+       medida pela coordenada: qualquer casa da cidade tem uma distância
+       até qualquer faculdade dela, tenha o anunciante marcado ou não.
+
+       As siglas dos anúncios entram na união por segurança — anúncio
+       antigo pode citar faculdade que saiu da tabela. */
+    const doBanco = faculdadesDaCidade(selCidade.value);
+    const dosAnuncios = temReal ? daCidade.flatMap(unisDoCartao) : [];
+    const siglas = [...new Set([...doBanco, ...dosAnuncios])].sort();
 
     const escolhida = selFaculdade.value;
     selFaculdade.innerHTML = '';
@@ -371,13 +405,23 @@ function aplicarFicha() {
             base.forEach(c => { if (c.dataset.exemplo) c.dataset.uni = alvo; });
         }
 
-        /* A casa entra se QUALQUER uma das faculdades dela for a
-           escolhida, e a ordem usa o tempo DAQUELA. Uma casa a 12
-           minutos da PUC e a 25 do CEFET aparece nas duas buscas, em
-           lugares diferentes de cada lista — que é o certo, porque são
-           trajetos diferentes. */
-        lista = base.filter(c => unisDoCartao(c).includes(alvo))
-                    .sort((a, b) => distanciaPara(a, alvo) - distanciaPara(b, alvo));
+        /* ORDENA, e não filtra.
+
+           "Perto da faculdade" é uma ficha de ordem, igual a "menor
+           preço" — e menor preço não esconde as casas caras, põe elas
+           embaixo. Aqui é o mesmo: a cidade inteira aparece, da mais
+           perto para a mais longe da faculdade escolhida.
+
+           Antes ela filtrava, deixando passar só as casas cujo dono
+           tivesse marcado aquela faculdade. Isso escondia da pessoa
+           casas que ficam a 900 metros da faculdade dela só porque o
+           anunciante marcou outra — e o que o dono marcou não diz nada
+           sobre onde a casa fica.
+
+           Uma casa a 800 m da PUC e a 3 km do CEFET aparece nas duas
+           listas, em lugares diferentes de cada uma. Que é o certo:
+           são trajetos diferentes. */
+        lista = [...base].sort((a, b) => distanciaPara(a, alvo) - distanciaPara(b, alvo));
     } else if (fichaAtiva === 'preco') {
         lista = [...base].sort((a, b) => Number(a.dataset.preco) - Number(b.dataset.preco));
     } else if (fichaAtiva === 'pet') {

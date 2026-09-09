@@ -155,6 +155,16 @@ function montarCartao(vaga) {
     cartao.dataset.cidade = (vaga.cidades || {}).slug || '';
     cartao.dataset.cursos = cursos.join(',');
     cartao.dataset.preco = Number(vaga.preco);
+
+    /* A coordenada da casa vai no cartão para o site poder medir a
+       distância até uma faculdade que o anunciante NÃO marcou. Sem
+       ela, "Perto da UNIFAL" só encontraria as casas cujo dono lembrou
+       de marcar a UNIFAL — e quem procura não tem nada a ver com o que
+       o dono marcou. */
+    if (vaga.lat != null && vaga.lng != null) {
+        cartao.dataset.lat = vaga.lat;
+        cartao.dataset.lng = vaga.lng;
+    }
     cartao.dataset.caucao = Number(vaga.caucao || 0);
     cartao.dataset.modo = vaga.modo || 'pe';
 
@@ -367,13 +377,14 @@ function botaoDenunciar() {
    questionário numa tela sem opção e sem botão seria pior.
    --------------------------------------------------------------------- */
 window.FACULDADES_POR_CIDADE = {};
+window.COORDENADA_DA_FACULDADE = {};
 
 async function buscarFaculdades() {
     if (!bancoVitrine) return;
 
     const { data, error } = await bancoVitrine
         .from('faculdades')
-        .select('sigla, cidades ( slug )')
+        .select('sigla, lat, lng, cidades ( slug )')
         .order('sigla');
 
     if (error || !data) {
@@ -384,7 +395,18 @@ async function buscarFaculdades() {
     data.forEach(f => {
         const cidade = (f.cidades || {}).slug;
         if (!cidade || !f.sigla) return;
+
         (window.FACULDADES_POR_CIDADE[cidade] ||= []).push(f.sigla);
+
+        /* A coordenada de cada faculdade fica à mão, por cidade e por
+           sigla, e não numa lista só: "IFSULDEMINAS" existe em mais de
+           uma cidade, e um mapa global pela sigla misturaria as duas.
+
+           É isto que permite medir a distância de QUALQUER casa até
+           QUALQUER faculdade da cidade — inclusive as que o anunciante
+           não marcou no anúncio dele. */
+        (window.COORDENADA_DA_FACULDADE[cidade] ||= {})[f.sigla] =
+            { lat: f.lat, lng: f.lng };
     });
 
     /* Refaz a tela agora que se sabe as faculdades.
