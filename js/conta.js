@@ -129,7 +129,23 @@ document.querySelectorAll('.olho').forEach(botao => {
    Formata enquanto digita, sem impedir apagar.
    --------------------------------------------------------------------- */
 function mascararTelefone(v) {
-    const d = v.replace(/\D/g, '').slice(0, 11);
+    let d = v.replace(/\D/g, '');
+
+    /* Quem copia o número de dentro do WhatsApp traz o 55 do Brasil na
+       frente. Telefone daqui tem 10 ou 11 dígitos, então 12 ou 13
+       começando com 55 só pode ser código de país — e ele sai.
+
+       Sem isto o corte de 11 logo abaixo lia o 55 como DDD e jogava
+       fora os dois últimos dígitos, calado: 5531983036983 virava
+       (55) 31983-0369, um telefone que não existe, e era isso que ia
+       parar no banco.
+
+       O 55 só sai quando sobra número demais, nunca de um telefone de
+       tamanho normal. DDD 55 é Santa Maria, no Rio Grande do Sul, e
+       (55) 99715-7131 tem os mesmos 11 dígitos de qualquer outro. */
+    if (d.length > 11 && d.startsWith('55')) d = d.slice(2);
+
+    d = d.slice(0, 11);
     if (d.length <= 2)  return d;
     if (d.length <= 6)  return `(${d.slice(0, 2)}) ${d.slice(2)}`;
     if (d.length <= 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;

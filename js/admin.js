@@ -133,7 +133,7 @@ async function carregarRevisao() {
         quem.className = 'admin-dado';
         quem.textContent = [
             item.anunciante,
-            item.telefone,
+            telefoneLegivel(item.telefone),
             item.relacao === 'moro' ? 'mora na casa'
                 : item.relacao === 'dono' ? 'dono do imóvel'
                 : item.relacao === 'responsavel' ? 'responsável' : null,
@@ -256,7 +256,7 @@ async function carregarDenuncias() {
         const sobre = document.createElement('p');
         sobre.className = 'admin-dado';
         sobre.textContent = [
-            d.republica, d.cidade, d.anunciante, d.telefone,
+            d.republica, d.cidade, d.anunciante, telefoneLegivel(d.telefone),
             d.ativa ? 'no ar' : 'fora do ar',
             d.status !== 'publicada' ? d.status.replace('_', ' ') : null
         ].filter(Boolean).join(' · ');
@@ -337,7 +337,7 @@ async function carregarAnunciantes() {
         const dados = document.createElement('p');
         dados.className = 'admin-dado';
         dados.textContent = [
-            a.email, a.telefone,
+            a.email, telefoneLegivel(a.telefone),
             `${a.anuncios_no_ar} no ar de ${a.anuncios_no_total}`,
             `teto ${a.limite_anuncios}`,
             a.denuncias > 0 ? `${a.denuncias} denúncia(s)` : null
@@ -454,7 +454,7 @@ async function carregarPromocoes() {
         dados.textContent = [
             emReais(p.preco_centavos),
             p.anunciante,
-            p.telefone,
+            telefoneLegivel(p.telefone),
             p.comeca_em ? `de ${dataCurtaBR(p.comeca_em)} a ${dataCurtaBR(p.termina_em)}` : null,
             p.status === 'ativa' ? frasedeDiasRestantes(p.termina_em) : null,
             // A vaga fora do ar com destaque pago é o caso que gera
@@ -517,6 +517,16 @@ if (botaoExpirar) {
 /* ---------------------------------------------------------------------
    Utilidades
    --------------------------------------------------------------------- */
+/* O telefone sai legível, mas só quando está inteiro.
+
+   Número torto aparece cru de propósito: foi vendo "(55) 31983-0369"
+   nesta lista que a gente descobriu que a máscara antiga engolia dois
+   dígitos. Formatar tudo esconderia a próxima. */
+function telefoneLegivel(t) {
+    const d = (t || '').replace(/\D/g, '');
+    return d.length === 10 || d.length === 11 ? mascararTelefone(d) : (t || '');
+}
+
 function dataCurta(iso) {
     if (!iso) return '';
     const d = new Date(iso);

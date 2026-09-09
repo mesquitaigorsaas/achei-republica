@@ -313,7 +313,12 @@ formCadastro.addEventListener('submit', async evento => {
 
     const dados = {
         nome:        valor('nome'),
-        telefone:    valor('telefone'),
+        /* Só os dígitos, como o resto do site já faz ao salvar telefone.
+           Guardar "(35) 99999-9999" deixava no banco um texto que não
+           vira link de wa.me e que precisa ser limpo toda vez que
+           alguém lê. O bonito é trabalho da máscara, na hora de
+           mostrar. */
+        telefone:    valor('telefone').replace(/\D/g, ''),
         email:       valor('email'),
         cep:         valor('cep'),
         logradouro:  valor('logradouro'),
@@ -335,8 +340,12 @@ formCadastro.addEventListener('submit', async evento => {
         recado('Escreva seu nome completo, com sobrenome.');
         return;
     }
-    if (dados.telefone.replace(/\D/g, '').length < 10) {
+    if (dados.telefone.length < 10) {
         recado('O WhatsApp está incompleto. Inclua o DDD.');
+        return;
+    }
+    if (dados.telefone.length > 11) {
+        recado('O WhatsApp tem número demais. Escreva só DDD e número, sem o 55 do Brasil.');
         return;
     }
     if (!relacaoEscolhida) {
