@@ -283,9 +283,7 @@ function faculdadesEscolhidas() {
     const vistas = new Set();
 
     return linhasDeFaculdade().map(linha => {
-        const id = linha.querySelector('.rf-faculdade').value;
-        const min = linha.querySelector('.rf-minutos').value;
-        return { faculdade_id: id, minutos: min === '' ? null : Number(min) };
+        return { faculdade_id: linha.querySelector('.rf-faculdade').value };
     }).filter(f => {
         if (!f.faculdade_id || vistas.has(f.faculdade_id)) return false;
         vistas.add(f.faculdade_id);
@@ -293,7 +291,19 @@ function faculdadesEscolhidas() {
     });
 }
 
-function montarLinha(escolhida, minutos) {
+/* O CAMPO DE MINUTOS SAIU DAQUI, e não voltou como opcional.
+
+   Ele era a única informação do anúncio que ninguém conferia, e valia
+   20 dos 100 pontos da nota de compatibilidade. Quem tinha pressa de
+   alugar escrevia 10 onde eram 20 e subia na busca de graça — medido no
+   anúncio real do site: declarava 10 minutos, o Google respondia 22.
+
+   A distância agora sai da conta entre a coordenada da casa e a da
+   faculdade, e é medida em quilômetro porque um quilômetro a pé e um
+   quilômetro de bike são o mesmo quilômetro.
+
+   Sobra a faculdade, que é escolha e não medida. */
+function montarLinha(escolhida) {
     const linha = document.createElement('div');
     linha.className = 'faculdade-linha';
 
@@ -319,20 +329,6 @@ function montarLinha(escolhida, minutos) {
     if (escolhida && faculdadesDaCidade.some(f => f.id === escolhida)) sel.value = escolhida;
     campoFac.appendChild(sel);
 
-    const campoMin = document.createElement('div');
-    campoMin.className = 'campo campo-minutos';
-
-    const min = document.createElement('input');
-    min.type = 'number';
-    min.className = 'rf-minutos';
-    min.min = '1';
-    min.max = '240';
-    min.step = '1';
-    min.placeholder = 'min';
-    min.setAttribute('aria-label', 'Minutos até esta faculdade');
-    if (minutos !== null && minutos !== undefined) min.value = minutos;
-    campoMin.appendChild(min);
-
     /* A primeira linha não tem "tirar": deixar a pessoa esvaziar tudo e
        ficar olhando um bloco sem nada é pior do que ela simplesmente não
        escolher faculdade nenhuma no seletor. */
@@ -346,7 +342,7 @@ function montarLinha(escolhida, minutos) {
         arrumarBotaoMais();
     });
 
-    linha.append(campoFac, campoMin, tirar);
+    linha.append(campoFac, tirar);
     return linha;
 }
 
@@ -371,7 +367,7 @@ botaoMaisFaculdade.addEventListener('click', () => {
 /* Recarrega as faculdades da cidade e redesenha as linhas.
 
    "manter" é a lista que veio do banco na edição:
-   [{ faculdade_id, minutos }]. Sem ela, começa com uma linha vazia. */
+   [{ faculdade_id }]. Sem ela, começa com uma linha vazia. */
 async function carregarFaculdades(manter) {
     const { data } = await banco
         .from('faculdades')
@@ -395,7 +391,7 @@ async function carregarFaculdades(manter) {
 
     if (guardadas.length) {
         guardadas.forEach(g => listaFaculdades.appendChild(
-            montarLinha(g.faculdade_id, g.minutos)));
+            montarLinha(g.faculdade_id)));
     } else {
         listaFaculdades.appendChild(montarLinha());
     }
@@ -647,7 +643,10 @@ form.addEventListener('submit', async evento => {
         preco: Number(document.getElementById('preco').value) || 0,
         caucao: Number(document.getElementById('caucao').value) || 0,
         vagas: Number(document.getElementById('vagas').value) || 1,
-        minutos: (faculdadesEscolhidas()[0] || {}).minutos ?? null,
+        /* "minutos" não entra mais. Na edição de anúncio antigo a chave
+           some do update e o valor guardado fica como está — o site
+           ainda o lê como rede, dizendo de quem é o número. Anúncio novo
+           nasce sem ele, e com a coordenada no lugar. */
         modo: selModo.value,
         disponivel_em: document.getElementById('disponivel').value || null,
         whatsapp: document.getElementById('whatsapp').value.replace(/\D/g, '')
@@ -672,7 +671,22 @@ form.addEventListener('submit', async evento => {
        porque um serviço de mapa estava fora do ar. */
     const daCidade = cidades.find(c => c.id === selCidade.value) || {};
     const ponto = await coordenadaDaCasa(campos, daCidade);
-    if (ponto) { campos.lat = ponto.lat; campos.lng = ponto.lng; }
+
+    if (ponto) {
+        campos.lat = ponto.lat;
+        campos.lng = ponto.lng;
+    }
+
+    /* Falhar em silêncio seria o pior desfecho: a vaga entraria no ar
+       sem distância, ficaria atrás de todas na ordenação por
+       proximidade e perderia pontos na nota, e ninguém saberia por quê.
+
+       O aviso não impede publicar, e vai junto da mensagem final em vez
+       de antes dela — senão o "Vaga no ar" o apagaria meio segundo
+       depois. Quase sempre é rua escrita de um jeito que o mapa não
+       conhece, e quem arruma isso em dois segundos é a pessoa que está
+       com o formulário aberto. */
+    const semCoordenada = !ponto && faculdadesEscolhidas().length > 0;
 
     const { data: vaga, error } = editandoId
         ? await banco.from('republicas').update(campos)
@@ -706,7 +720,13 @@ form.addEventListener('submit', async evento => {
 
     if (falhas.length) recado += ' Só não consegui gravar ' + falhas.join(' e ') + '.';
 
-    aviso(recado, 'certo');
+    if (semCoordenada) {
+        recado += ' Não achei essa rua no mapa, então a vaga fica sem a '
+                + 'distância até a faculdade: ela aparece na busca, mas atrás '
+                + 'das que têm. Confira a rua e o CEP e salve de novo.';
+    }
+
+    aviso(recado, semCoordenada ? undefined : 'certo');
 
     if (editandoId) {
         // Continua editando o mesmo anúncio: as fotos que subiram agora
@@ -955,7 +975,7 @@ async function carregarParaEditar(id, silencioso) {
        em nada. É o tipo de perda que ninguém percebe na hora. */
     const { data: faculdadesDaVaga } = await banco
         .from('republica_faculdades')
-        .select('faculdade_id, minutos')
+        .select('faculdade_id')
         .eq('republica_id', id);
 
     await carregarFaculdades(faculdadesDaVaga || []);

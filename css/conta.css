@@ -1380,9 +1380,11 @@
    --------------------------------------------------------------------- */
 .faculdades-lista { display: flex; flex-direction: column; gap: 10px; }
 
+/* Duas colunas, e não três: a do meio era o campo de minutos, que saiu
+   do formulário quando a distância passou a ser medida pelo site. */
 .faculdade-linha {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 96px 38px;
+    grid-template-columns: minmax(0, 1fr) 38px;
     gap: 10px;
     align-items: center;
 }
@@ -1403,7 +1405,7 @@
 
 /* Some o botão, mas guarda o espaço: sem isto a primeira linha fica mais
    larga que as outras e a coluna dos minutos dança. */
-.faculdade-linha:has(.tirar-faculdade[hidden]) { grid-template-columns: minmax(0, 1fr) 96px 38px; }
+.faculdade-linha:has(.tirar-faculdade[hidden]) { grid-template-columns: minmax(0, 1fr) 38px; }
 
 .mais-faculdade {
     align-self: flex-start;
@@ -1414,8 +1416,7 @@
 .mais-faculdade[hidden] { display: none; }
 
 @media (max-width: 520px) {
-    /* No celular a linha vira duas: o seletor da faculdade em cima,
-       porque o nome do campus é longo, e minutos + ✕ embaixo. */
-    .faculdade-linha { grid-template-columns: 1fr 38px; }
-    .faculdade-linha .campo:first-child { grid-column: 1 / -1; }
+    /* Já são duas colunas, e o ✕ cabe ao lado do seletor mesmo em tela
+       estreita. Nada a fazer aqui desde que os minutos saíram. */
+    .faculdade-linha { grid-template-columns: minmax(0, 1fr) 38px; }
 }
