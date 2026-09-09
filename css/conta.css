@@ -720,6 +720,10 @@
 
    Situação é a primeira pergunta de quem abre esta tela, então ela é
    cor e não texto corrido no meio de uma frase. */
+/* O endereço é apoio, não identidade: fica um degrau mais apagado que
+   a linha do e-mail e do telefone. */
+.admin-endereco { color: var(--tinta-fraca); font-size: 12.5px; }
+
 .admin-etiqueta {
     flex-shrink: 0;
     padding: 2px 10px;

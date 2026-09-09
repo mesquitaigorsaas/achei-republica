@@ -227,9 +227,12 @@ function quando(iso) {
     return s;
 }
 
-/* O bloco da esquerda: um título com selos ao lado e uma linha fina de
-   dados embaixo. Os nulos caem fora sozinhos. */
-function identidade(titulo, selos, dados) {
+/* O bloco da esquerda: um título com selos ao lado e uma ou duas linhas
+   finas de dados embaixo. Os nulos caem fora sozinhos.
+
+   A segunda linha é opcional e existe para o endereço, que é longo
+   demais para caber ao lado do telefone sem empurrar tudo. */
+function identidade(titulo, selos, dados, segundaLinha) {
     const bloco = document.createElement('div');
     bloco.className = 'admin-identidade';
 
@@ -243,7 +246,44 @@ function identidade(titulo, selos, dados) {
     linha.textContent = dados.filter(Boolean).join(' · ');
 
     bloco.append(nome, linha);
+
+    const extra = (segundaLinha || []).filter(Boolean).join(' · ');
+    if (extra) {
+        const p = document.createElement('p');
+        p.className = 'admin-dado admin-endereco';
+        p.textContent = extra;
+        bloco.appendChild(p);
+    }
+
     return bloco;
+}
+
+/* O ENDEREÇO EM UMA LINHA
+
+   Escrito como se escreve num envelope, e não como está no banco. Vem
+   do 22-endereco-no-painel.sql; se a função ainda for a antiga, os
+   campos não existem e a linha não aparece.
+
+   Serve para uma coisa em especial: dois cadastros no mesmo endereço
+   até o complemento são, quase sempre, a mesma pessoa com duas contas.
+   A triagem já usa isso para mandar à fila, mas quem decide precisava
+   enxergar. */
+function enderecoEmLinha(p) {
+    if (!('logradouro' in p)) return null;
+
+    const rua = [p.logradouro, p.numero].filter(Boolean).join(', ');
+    const cidadeUf = [p.cidade, p.uf].filter(Boolean).join('/');
+    const cep = (p.cep || '').replace(/\D/g, '');
+
+    const partes = [
+        rua || null,
+        p.complemento || null,
+        p.bairro || null,
+        cidadeUf || null,
+        cep.length === 8 ? `CEP ${cep.slice(0, 5)}-${cep.slice(5)}` : null
+    ].filter(Boolean);
+
+    return partes.length ? partes.join(' · ') : 'sem endereço no cadastro';
 }
 
 /* O BOTÃO DE FALAR
@@ -607,7 +647,10 @@ function anuncianteCombina(a, situacao, termo) {
     if (!passaSituacao) return false;
     if (!termo) return true;
 
-    if ([a.nome, a.email].filter(Boolean).join(' ').toLowerCase().includes(termo)) {
+    /* O endereço entra na busca junto: procurar por rua é o jeito de
+       achar duas contas na mesma casa. */
+    if ([a.nome, a.email, a.logradouro, a.bairro, a.cidade, a.uf]
+        .filter(Boolean).join(' ').toLowerCase().includes(termo)) {
         return true;
     }
 
@@ -658,8 +701,13 @@ function desenharAnunciantes() {
             ], [
                 a.email,
                 telefoneLegivel(a.telefone),
+                a.relacao === 'moro' ? 'mora na casa'
+                    : a.relacao === 'dono' ? 'dono do imóvel'
+                    : a.relacao === 'responsavel' ? 'responsável' : null,
                 `${a.anuncios_no_ar} no ar de ${a.anuncios_no_total}`,
                 `teto ${a.limite_anuncios}`
+            ], [
+                enderecoEmLinha(a)
             ]),
 
             acoes(
