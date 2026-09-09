@@ -107,6 +107,9 @@
         <button type="button" class="aba ativa" data-secao="revisao" role="tab">
           Fila de revisão <span class="aba-conta" id="contaRevisao">0</span>
         </button>
+        <button type="button" class="aba" data-secao="vagas" role="tab">
+          Vagas <span class="aba-conta" id="contaVagas">0</span>
+        </button>
         <button type="button" class="aba" data-secao="denuncias" role="tab">
           Denúncias <span class="aba-conta" id="contaDenuncias">0</span>
         </button>
@@ -128,6 +131,51 @@
           está esperando você olhar.
         </p>
         <div id="listaRevisao"></div>
+      </section>
+
+      <!-- TODAS AS VAGAS
+
+           A única lista que mostra o site inteiro. As outras três são
+           listas de exceção: o que a triagem separou, o que alguém
+           denunciou, quem pagou. Esta é para olhar o que está
+           anunciado sem esperar um problema aparecer. -->
+      <section class="conta-caixa larga admin-secao" id="secaoVagas" hidden>
+        <h2 class="bloco-titulo">Todas as vagas</h2>
+        <p class="conta-linha-fina">
+          Tudo que já foi cadastrado, inclusive o que está fora do ar e o
+          que foi recusado. O filtro de tipo é a peneira mais útil daqui:
+          corretor não aluga cama nem lugar em quarto compartilhado, ele
+          anuncia imóvel inteiro. "Apartamento ou casa" junta os dois num
+          clique.
+        </p>
+
+        <form class="admin-filtros" id="filtroVagas">
+          <label>
+            <span>Situação</span>
+            <select id="vagaSituacao">
+              <option value="">Todas</option>
+              <option value="no_ar">No ar</option>
+              <option value="em_revisao">Em revisão</option>
+              <option value="recusada">Recusadas</option>
+              <option value="fora_do_ar">Fora do ar</option>
+              <option value="destacada">Com destaque pago</option>
+            </select>
+          </label>
+          <label>
+            <span>Tipo</span>
+            <select id="vagaTipo">
+              <option value="">Todos</option>
+              <option value="imovel_inteiro">Apartamento ou casa</option>
+            </select>
+          </label>
+          <label class="cresce">
+            <span>Buscar por vaga, anunciante, cidade ou telefone</span>
+            <input type="search" id="vagaTermo" autocomplete="off" />
+          </label>
+          <button type="submit" class="btn btn-azul">Filtrar</button>
+        </form>
+
+        <div id="listaVagas"></div>
       </section>
 
       <!-- DENÚNCIAS -->
@@ -230,6 +278,7 @@
 <script src="../js/supabase-config.js"></script>
 <script src="../js/planos.js"></script>
 <script src="../js/conta.js"></script>
+<script src="../js/marcas.js"></script>
 <script src="../js/admin.js" defer></script>
 
 </body>

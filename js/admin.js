@@ -78,6 +78,7 @@ document.getElementById('botaoSairNegado').addEventListener('click', sair);
    --------------------------------------------------------------------- */
 const secoes = {
     revisao: document.getElementById('secaoRevisao'),
+    vagas: document.getElementById('secaoVagas'),
     denuncias: document.getElementById('secaoDenuncias'),
     anunciantes: document.getElementById('secaoAnunciantes'),
     promocoes: document.getElementById('secaoPromocoes')
@@ -324,6 +325,179 @@ function listaVazia(lista, frase) {
     p.className = 'admin-vazio';
     p.textContent = frase;
     lista.appendChild(p);
+}
+
+
+/* ---------------------------------------------------------------------
+   TODAS AS VAGAS
+
+   A única lista que mostra o site inteiro. As outras três são listas de
+   exceção — o que a triagem separou, o que alguém denunciou, quem pagou
+   — e quem passou limpo pela triagem sumia da vista para sempre.
+
+   Vem do admin_vagas(), do 21-todas-as-vagas.sql.
+   --------------------------------------------------------------------- */
+const NOME_DO_TIPO = Object.fromEntries(typeof TIPOS !== 'undefined' ? TIPOS : []);
+
+/* Apartamento e casa juntos num clique só.
+
+   Corretor não aluga cama nem lugar em quarto compartilhado: ele
+   anuncia imóvel inteiro. Isto não acusa ninguém — apartamento para
+   três estudantes dividirem é legítimo e comum —, só põe na mesma tela
+   o punhado de anúncios onde vale a pena olhar duas vezes. */
+const TIPOS_DE_IMOVEL_INTEIRO = ['apartamento', 'casa'];
+
+let vagas = [];
+
+async function carregarVagas() {
+    const { data, error } = await banco.rpc('admin_vagas');
+    const lista = document.getElementById('listaVagas');
+
+    if (error) {
+        lista.textContent = 'Não consegui carregar as vagas: ' + error.message
+            + ' — se disser que a função não existe, falta rodar o 21-todas-as-vagas.sql.';
+        return;
+    }
+
+    vagas = data || [];
+    document.getElementById('contaVagas').textContent = vagas.length;
+    desenharVagas();
+}
+
+function situacaoDaVaga(v) {
+    if (v.status === 'em_revisao') return { texto: 'Em revisão', tom: 'ouro', chave: 'em_revisao' };
+    if (v.status === 'recusada')   return { texto: 'Recusada', tom: 'vermelha', chave: 'recusada' };
+    if (!v.ativa)                  return { texto: 'Fora do ar', tom: 'neutra', chave: 'fora_do_ar' };
+    return { texto: 'No ar', tom: 'verde', chave: 'no_ar' };
+}
+
+function vagaCombina(v, situacao, tipo, termo) {
+    if (situacao === 'destacada') {
+        if (!destaqueValendo(v)) return false;
+    } else if (situacao && situacaoDaVaga(v).chave !== situacao) {
+        return false;
+    }
+
+    if (tipo === 'imovel_inteiro') {
+        if (!TIPOS_DE_IMOVEL_INTEIRO.includes(v.tipo)) return false;
+    } else if (tipo && v.tipo !== tipo) {
+        return false;
+    }
+
+    if (!termo) return true;
+
+    if ([v.nome, v.anunciante, v.email, v.cidade, v.bairro]
+        .filter(Boolean).join(' ').toLowerCase().includes(termo)) {
+        return true;
+    }
+
+    const digitos = termo.replace(/\D/g, '');
+    return digitos.length >= 3
+        && (v.telefone || '').replace(/\D/g, '').includes(digitos);
+}
+
+function desenharVagas() {
+    const lista = document.getElementById('listaVagas');
+    const situacao = document.getElementById('vagaSituacao').value;
+    const tipo = document.getElementById('vagaTipo').value;
+    const termo = document.getElementById('vagaTermo').value.trim().toLowerCase();
+
+    if (!vagas.length) {
+        listaVazia(lista, 'Nenhuma vaga cadastrada ainda.');
+        return;
+    }
+
+    const visiveis = vagas.filter(v => vagaCombina(v, situacao, tipo, termo));
+
+    if (!visiveis.length) {
+        listaVazia(lista, 'Nenhuma vaga com esse filtro.');
+        return;
+    }
+
+    lista.replaceChildren(...visiveis.map(v => {
+        const caixa = document.createElement('div');
+        caixa.className = 'admin-linha';
+
+        const sit = situacaoDaVaga(v);
+
+        caixa.append(
+            identidade(v.nome, [
+                etiqueta(sit.texto, sit.tom),
+                etiqueta(NOME_DO_TIPO[v.tipo] || v.tipo,
+                    TIPOS_DE_IMOVEL_INTEIRO.includes(v.tipo) ? 'azul' : 'neutra'),
+                etiquetaDoPlano(v),
+                v.denuncias > 0 ? etiqueta(v.denuncias + ' denúncia(s)', 'vermelha') : null,
+                quando(v.criada_em)
+            ], [
+                [v.cidade, v.bairro].filter(Boolean).join(', '),
+                emReais(Math.round(Number(v.preco) * 100)),
+                `${v.vagas} vaga(s)`,
+                v.anunciante,
+                telefoneLegivel(v.telefone)
+            ]),
+
+            acoes(
+                botaoZap(v.telefone, `Olá, ${v.anunciante || ''}! Aqui é do Achei `
+                    + `República, sobre o anúncio "${v.nome}".`),
+                botaoAbrirVaga(v.id),
+
+                /* Duas chaves diferentes, e não uma.
+
+                   "status" é a sua decisão sobre o anúncio: publicado,
+                   esperando revisão ou recusado. "ativa" é a do dono:
+                   alugou e tirou do ar. Juntar as duas num botão só
+                   faria você recusar sem querer quem apenas alugou. */
+                v.status === 'publicada'
+                    ? botaoQuePergunta('Recusar', 'btn-linha admin-recusar',
+                        `Recusar "${v.nome}"? Ele sai da busca. O dono continua `
+                        + 'enxergando o anúncio dele e pode corrigir.', async () => {
+                        await mudarStatus(v.id, 'recusada', 'Anúncio recusado.');
+                    })
+                    : botaoDeAcao('Liberar', 'btn-azul', async () => {
+                        await mudarStatus(v.id, 'publicada', 'Anúncio liberado.');
+                    }),
+
+                v.ativa
+                    ? botaoQuePergunta('Tirar do ar', 'btn-linha admin-recusar',
+                        `Tirar "${v.nome}" do ar? Some da busca na hora. `
+                        + 'Nada é apagado, e dá para pôr de volta.', async () => {
+                        await mudarAtiva(v.id, false, 'Anúncio fora do ar.');
+                    })
+                    : botaoDeAcao('Pôr no ar', 'btn-linha', async () => {
+                        await mudarAtiva(v.id, true, 'Anúncio de volta ao ar.');
+                    })
+            )
+        );
+
+        return caixa;
+    }));
+}
+
+async function mudarAtiva(id, ativa, recado) {
+    const { error } = await banco.from('republicas').update({ ativa }).eq('id', id);
+    if (error) return aviso('Não consegui mudar: ' + error.message);
+    aviso(recado, 'certo');
+    carregarTudo();
+}
+
+/* A lista de tipos nasce do marcas.js, que é onde ela já morava para o
+   formulário de cadastro. Repetir os apelidos aqui seria criar uma
+   segunda verdade sobre a mesma coluna do banco. */
+const seletorDeTipo = document.getElementById('vagaTipo');
+if (seletorDeTipo && typeof TIPOS !== 'undefined') {
+    TIPOS.forEach(([valor, rotulo]) => {
+        const o = document.createElement('option');
+        o.value = valor;
+        o.textContent = rotulo;
+        seletorDeTipo.appendChild(o);
+    });
+}
+
+const filtroVagas = document.getElementById('filtroVagas');
+if (filtroVagas) {
+    filtroVagas.addEventListener('submit', e => e.preventDefault());
+    filtroVagas.addEventListener('input', desenharVagas);
+    filtroVagas.addEventListener('change', desenharVagas);
 }
 
 
@@ -690,6 +864,7 @@ function dataCurta(iso) {
 
 function carregarTudo() {
     carregarRevisao();
+    carregarVagas();
     carregarDenuncias();
     carregarAnunciantes();
     carregarPromocoes();
