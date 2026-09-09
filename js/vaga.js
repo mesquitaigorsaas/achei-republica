@@ -86,10 +86,11 @@ async function carregar() {
     const campos = extra => `
         id, nome, bairro, descricao, tipo, perfil, preco, caucao,
         minutos, modo, vagas, disponivel_em, whatsapp, ativa, status,
-        composicao, moradores, cep, logradouro, numero, complemento,${extra}
+        composicao, moradores, cep, logradouro, numero, complemento,
+        lat, lng,${extra}
         cidades ( nome, slug ),
         faculdades!faculdade_id ( sigla, nome ),
-        republica_faculdades ( minutos, faculdades ( sigla, nome ) ),
+        republica_faculdades ( minutos, faculdades ( sigla, nome, lat, lng ) ),
         republica_fotos ( caminho, ordem ),
         republica_marcas ( marca ),
         republica_cursos ( curso )`;
@@ -308,14 +309,39 @@ function cabecalho(vaga, cidade, faculdade) {
         .filter(r => r && r.faculdades && r.faculdades.sigla);
 
     if (pertoDe.length) {
+        /* O QUADRINHO PREFERE A DISTÂNCIA MEDIDA
+
+           "1,2 km da UNIFENAS" é um número que o site calculou a partir
+           das coordenadas. "10 min a pé" é o que o anunciante digitou, e
+           ninguém conferiu — no único anúncio real do site, ele diz 10
+           minutos e o Google responde 22.
+
+           Então: quando dá para medir, aparece a distância. Quando não
+           dá, aparece o tempo declarado, e a legenda diz de quem é o
+           número. O botão de trajeto, logo abaixo, é quem responde
+           "quantos minutos" de verdade. */
         pertoDe
-            .slice()
-            .sort((a, b) => (a.minutos == null ? 1e9 : a.minutos)
-                          - (b.minutos == null ? 1e9 : b.minutos))
-            .forEach(r => {
-                numeros.appendChild(numero(
-                    r.minutos ? `${r.minutos} min` : 'Perto',
-                    `${NOME_DO_MODO[vaga.modo] || 'a pé'} da ${r.faculdades.sigla}`));
+            .map(r => ({
+                r,
+                km: distanciaEmKm(vaga.lat, vaga.lng, r.faculdades.lat, r.faculdades.lng)
+            }))
+            .sort((a, b) => {
+                const pa = a.km !== null ? a.km
+                    : (a.r.minutos == null ? 1e9 : a.r.minutos / 12);
+                const pb = b.km !== null ? b.km
+                    : (b.r.minutos == null ? 1e9 : b.r.minutos / 12);
+                return pa - pb;
+            })
+            .forEach(({ r, km }) => {
+                if (km !== null) {
+                    numeros.appendChild(numero(kmEscrito(km), `até a ${r.faculdades.sigla}`));
+                } else {
+                    numeros.appendChild(numero(
+                        r.minutos ? `${r.minutos} min` : 'Perto',
+                        r.minutos
+                            ? `da ${r.faculdades.sigla}, segundo o anunciante`
+                            : `${NOME_DO_MODO[vaga.modo] || 'a pé'} da ${r.faculdades.sigla}`));
+                }
             });
     } else if (vaga.minutos && faculdade) {
         numeros.appendChild(numero(

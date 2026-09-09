@@ -83,10 +83,10 @@ document.querySelectorAll('.anuncio[data-exemplo]').forEach(cartao => {
    e a vitrine inteira vem vazia — sem erro na tela, só sem casa. */
 const CAMPOS_BASE = `
     id, nome, bairro, preco, caucao, minutos, modo, tipo, perfil, vagas,
-    disponivel_em,
+    disponivel_em, lat, lng,
     cidades ( slug ),
     faculdades!faculdade_id ( sigla ),
-    republica_faculdades ( minutos, faculdades ( sigla ) ),
+    republica_faculdades ( minutos, faculdades ( sigla, lat, lng ) ),
     republica_fotos ( caminho, ordem ),
     republica_marcas ( marca ),
     republica_cursos ( curso )`;
@@ -176,6 +176,20 @@ function montarCartao(vaga) {
     if (perto.length) {
         cartao.dataset.uni = perto.map(r => r.faculdades.sigla).join(',');
         cartao.dataset.min = perto.map(r => r.minutos == null ? 999 : r.minutos).join(',');
+
+        /* A DISTÂNCIA MEDIDA, uma terceira lista na mesma ordem.
+
+           Vazio onde não deu para medir: casa sem coordenada, ou
+           faculdade sem coordenada. Quem lê trata o vazio caindo para
+           o tempo declarado, que é o combinado — sumir da busca por
+           falha nossa seria punir o anunciante. */
+        cartao.dataset.km = perto
+            .map(r => {
+                const km = distanciaEmKm(vaga.lat, vaga.lng,
+                                         r.faculdades.lat, r.faculdades.lng);
+                return km == null ? '' : km.toFixed(2);
+            })
+            .join(',');
     } else {
         /* Vaga anterior ao 18-varias-faculdades.sql, ou banco que ainda
            não tem a tabela. A coluna antiga continua sendo escrita com

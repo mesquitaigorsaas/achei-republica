@@ -103,8 +103,11 @@ if (painelFiltrosEl && typeof MARCAS !== 'undefined') {
     refazer(selComo, 'Tanto faz',
         MODOS.map(([apelido, nome]) => [apelido, nome.charAt(0).toUpperCase() + nome.slice(1)]));
 
-    refazer(selTempo, 'Qualquer tempo',
-        [5, 10, 15, 20, 30].map(m => [String(m), 'Até ' + m + ' min']));
+    /* Era "até X minutos", e o minuto vinha do que o anunciante
+       digitou. Agora é distância, que o site mede: um quilômetro a pé e
+       um quilômetro de bike são o mesmo quilômetro. */
+    refazer(selTempo, 'Qualquer distância',
+        [1, 2, 3, 5, 10].map(k => [String(k), 'Até ' + k + ' km']));
 
     /* Bairro e faculdade saem dos anúncios que existem, e não de uma
        lista fixa. A lista escrita à mão era de Alfenas: em Varginha ela
@@ -214,14 +217,17 @@ if (painelFiltrosEl && typeof MARCAS !== 'undefined') {
 
         if (selComo && selComo.value && cartao.dataset.modo !== selComo.value) return false;
 
-        /* O teto de tempo vale para a faculdade escolhida ali em cima.
-           Sem faculdade escolhida vale a mais perto — senão "até 10
-           minutos" recusaria uma casa a 8 da UFMG só porque ela também
-           fica a 30 da PUC. */
+        /* O teto de distância vale para a faculdade escolhida ali em
+           cima. Sem faculdade escolhida vale a mais perto — senão "até
+           2 km" recusaria uma casa a 800 m da UFMG só porque ela também
+           fica a 5 km da PUC.
+
+           Casa sem coordenada entra pelo tempo declarado, convertido:
+           é o combinado de não punir o anunciante por falha nossa. */
         if (selTempo && selTempo.value) {
-            const teto = parseInt(selTempo.value, 10);
-            const min = minutosDoCartao(cartao, selUni && selUni.value);
-            if (Number.isFinite(teto) && min > teto) return false;
+            const teto = Number(selTempo.value);
+            const km = distanciaPara(cartao, selUni && selUni.value);
+            if (Number.isFinite(teto) && km > teto) return false;
         }
 
         const minimo = Number(document.getElementById('fMin').value);

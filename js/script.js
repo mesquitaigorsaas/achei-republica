@@ -88,6 +88,60 @@ function minutosDoCartao(cartao, sigla) {
     return Number.isFinite(mins[i]) ? mins[i] : 999;
 }
 
+
+/* ---------------------------------------------------------------------
+   A DISTÂNCIA MEDIDA, E A DECLARADA
+
+   data-km é a terceira lista paralela, calculada pela vitrine a partir
+   das coordenadas da casa e da faculdade. Vazio onde não deu para
+   medir.
+
+   Duas funções, e a diferença entre elas é o ponto do desenho:
+
+   kmDoCartao ..... só o que foi MEDIDO. É o que a tela mostra, porque
+                    mostrar número inventado é o defeito que estamos
+                    consertando.
+
+   distanciaPara .. o que serve para COMPARAR. Cai para o tempo
+                    declarado quando não há medida, convertido a pé.
+                    Sumir da busca por falha nossa puniria o anunciante
+                    que preencheu tudo certo.
+
+   O 12 é minuto por quilômetro caminhando, que é o passo de gente
+   normal, com mochila, subindo alguma coisa. Ele só aparece aqui, e só
+   para ordenar: em nenhum lugar o site escreve um tempo que ele mesmo
+   calculou.
+   --------------------------------------------------------------------- */
+const MINUTOS_POR_KM_A_PE = 12;
+
+function kmDoCartao(cartao, sigla) {
+    const unis = unisDoCartao(cartao);
+    const kms = (cartao.dataset.km || '').split(',');
+
+    const i = sigla ? unis.indexOf(sigla) : 0;
+    if (i < 0) return null;
+
+    const bruto = (kms[i] || '').trim();
+    if (!bruto) return null;
+
+    const km = Number(bruto);
+    return Number.isFinite(km) ? km : null;
+}
+
+function distanciaPara(cartao, sigla) {
+    const medida = kmDoCartao(cartao, sigla);
+    if (medida !== null) return medida;
+
+    const min = minutosDoCartao(cartao, sigla);
+    if (!Number.isFinite(min)) return Infinity;
+
+    return min / MINUTOS_POR_KM_A_PE;
+}
+
+/* kmEscrito() e distanciaEmKm() vêm do js/distancia.js, carregado antes
+   deste. Moram lá porque a página da vaga precisa das mesmas duas e não
+   carrega este arquivo. */
+
 let fichaAtiva = 'combinam';
 // A ordem de partida da vitrine. Vira a ordem do questionário depois
 // que ele roda, para "Mais combinam" ter ao que voltar.
@@ -323,7 +377,7 @@ function aplicarFicha() {
            lugares diferentes de cada lista — que é o certo, porque são
            trajetos diferentes. */
         lista = base.filter(c => unisDoCartao(c).includes(alvo))
-                    .sort((a, b) => minutosDoCartao(a, alvo) - minutosDoCartao(b, alvo));
+                    .sort((a, b) => distanciaPara(a, alvo) - distanciaPara(b, alvo));
     } else if (fichaAtiva === 'preco') {
         lista = [...base].sort((a, b) => Number(a.dataset.preco) - Number(b.dataset.preco));
     } else if (fichaAtiva === 'pet') {
@@ -761,13 +815,24 @@ const PERGUNTAS = [
         ],
     },
     {
+        /* A pergunta era "quanto TEMPO topa até a faculdade", com as
+           respostas em minutos. Virou distância porque um quilômetro a
+           pé e um quilômetro de bike são o mesmo quilômetro — o tempo
+           depende de quem anda, a distância não. E porque o tempo que
+           existia era o que o anunciante digitou, sem ninguém conferir.
+
+           A chave continua 'tempo' e passa a carregar quilômetro. Quem
+           respondeu ontem tem um número de minutos guardado no
+           navegador, que agora será lido como quilômetro: "15" vira 15
+           km em vez de 15 minutos. Fica mais generoso, nunca mais
+           restritivo — ninguém deixa de ver casa por causa disso. */
         chave: 'tempo',
-        titulo: 'Quanto tempo topa até a faculdade?',
+        titulo: 'Quão longe da faculdade você aceita morar?',
         dica: 'Todo dia, ida e volta. Pense no dia de chuva.',
         opcoes: [
-            { valor: 5, rotulo: 'Até 5 minutos' },
-            { valor: 10, rotulo: 'Até 10 minutos' },
-            { valor: 15, rotulo: 'Até 15 minutos' },
+            { valor: 1, rotulo: 'Até 1 km — dá para ir a pé' },
+            { valor: 2, rotulo: 'Até 2 km' },
+            { valor: 4, rotulo: 'Até 4 km' },
             { valor: 99, rotulo: 'Distância não é problema' },
         ],
     },
@@ -948,6 +1013,8 @@ function pontuar(cartao) {
         unis: unisDoCartao(cartao),
         cursos: (cartao.dataset.cursos || '').split(','),
         preco: Number(cartao.dataset.preco),
+        km: distanciaPara(cartao, resposta.uni),
+        kmMedido: kmDoCartao(cartao, resposta.uni),
         minutos: minutosDoCartao(cartao, resposta.uni),
         modo: cartao.dataset.modo === 'bike' ? 'de bike' : 'a pé',
         perfil: (cartao.dataset.perfil || '').split(','),
@@ -976,10 +1043,17 @@ function pontuar(cartao) {
         pontos += 12;
     }
 
-    // Trajeto — 20
-    if (dados.minutos <= resposta.tempo) {
+    /* Trajeto — 20
+
+       Compara quilômetro com quilômetro. O motivo escrito no cartão
+       prefere a distância MEDIDA; só quando ela não existe é que a
+       frase volta a citar o tempo, e aí ela diz "segundo o anunciante",
+       porque é dele o número e é justo que apareça de quem é. */
+    if (dados.km <= resposta.tempo) {
         pontos += 20;
-        motivos.push(`A ${dados.minutos} minutos ${dados.modo} da sua faculdade`);
+        motivos.push(dados.kmMedido !== null
+            ? `A ${kmEscrito(dados.kmMedido)} da sua faculdade`
+            : `A ${dados.minutos} minutos ${dados.modo}, segundo o anunciante`);
     }
 
     // Jeito de morar — 10 divididos entre o que a pessoa marcou
