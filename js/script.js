@@ -516,7 +516,6 @@ const nomeCidadeVazia = document.getElementById('nomeCidadeVazia');
 const barraConta = document.getElementById('barraConta');
 const vitrineVazia = document.getElementById('vitrineVazia');
 const avisoExemplo = document.getElementById('avisoExemplo');
-const chapeuDobra = document.querySelector('.heroi .chapeu');
 
 /* Se o questionário já foi respondido. Separa o que a página pode
    afirmar do que ela ainda não sabe: antes disso não há perfil, e tudo
@@ -634,10 +633,8 @@ function trocarCidade() {
     if (!escolheu) {
         barraConta.classList.add('vazia');
         barraConta.innerHTML = `<span class="bolinha"></span>15 cidades universitárias de Minas Gerais`;
-        chapeuDobra.innerHTML = `<span class="pisca"></span>Minas Gerais · Alfenas no ar`;
     } else if (temAnuncio) {
         atualizarContagem(daCidade.length);
-        chapeuDobra.innerHTML = `<span class="pisca"></span>${nome}, MG · no ar`;
 
         /* A ordem, a contagem de aparições e a origem nos links.
 
@@ -650,7 +647,6 @@ function trocarCidade() {
     } else {
         barraConta.classList.add('vazia');
         barraConta.innerHTML = `<span class="bolinha"></span>Nenhuma república cadastrada ainda`;
-        chapeuDobra.innerHTML = `<span class="pisca"></span>${nome}, MG · em breve`;
     }
 }
 
